@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: my-nginx-container
+    ports:
+      - "80:80"
+    volumes:
+      - ./html:/usr/share/nginx/html
+      - ./conf:/etc/nginx/conf.d
+    command: /bin/bash -c "nginx -g 'daemon off;'"
