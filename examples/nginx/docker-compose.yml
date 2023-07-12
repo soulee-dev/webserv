@@ -9,4 +9,3 @@ services:
     volumes:
       - ./html:/usr/share/nginx/html
       - ./conf:/etc/nginx/conf.d
-    command: /bin/bash -c "nginx -g 'daemon off;'"
