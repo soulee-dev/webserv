@@ -58,7 +58,7 @@ void doit(int fd)
   sscanf(buf, "%s %s %s", method, uri, version);
   // method가 GET이 아니라면 error message 출력
   // problem 11.11을 위해 HEAD 추가
-  if (strcasecmp(method, "GET") != 0 || strcasecmp(method, "HEAD") != 0) {
+  if (strcasecmp(method, "GET") != 0 && strcasecmp(method, "HEAD") != 0) {
     clienterror(fd, method, "501", "Not implemented", "Tiny does not implement this method");
     return;
   }
