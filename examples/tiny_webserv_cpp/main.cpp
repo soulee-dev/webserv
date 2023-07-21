@@ -1,19 +1,9 @@
-#include <string>
-#include <iostream>
+#include "Server.hpp"
 
-int	main(int argc, char **argv)
+int	main()
 {
-	int	listen_fd;
-	int	conn_fd;
-	std::string	hostname;
-	std::string	port;
+	Server	server = Server("0.0.0.0", 80);
+	server.run();
 
-	if (argc != 2)
-	{
-		std::cerr << "usage: " << port << std::endl;
-		return (1);
-	}
-
-	listen_fd = 
-
+	return (0);
 }

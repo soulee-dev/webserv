@@ -1,17 +1,45 @@
+#pragma once
+
+# include <stdio.h>
+# include <sys/socket.h>
+# include <arpa/inet.h>
+# include <sys/stat.h>
+# include <stdlib.h>
+# include <string>
+# include <iostream>
+# include <fstream>
+# include <cstdio>
+# include <sstream>
+# include <unistd.h>
+# include <vector>
+# include <map>
+
+# include "request.hpp"
+
+# define BUFFER_SIZE 30720
+# define SERVER_NAME "Tiny Web Server"
+# define CRLF "\r\n"
+
 class Server
 {
 	private:
-	public:
-		Server(void);
-		~Server();
+		const std::string		_ip_addr;
+		const unsigned short	_port;
+		unsigned int			_socket;
+		int						_new_socket;
+		long					_incoming_message;
+		struct sockaddr_in		_sock_addr;
+		unsigned int			_sock_addr_len;
+		std::map<std::string, std::string>	_config;
 
-		void	run(std::string ip, std::string port);
+		void		ServeStatic(Request& req);
+		void		ServeDynamic(Request& req);
+		void		ClientError(std::string cause, std::string error_num, std::string short_msg, std::string long_msg);
+		void		ProcessTraffic(void);
+		void		ParseURI(std::string uri, Request &req);
+
+public:
+	Server(std::string ip_addr, unsigned int port);
+	~Server();
+	void		run();
 };
-
-Server::Server(void)
-{
-}
-
-Server::~Server()
-{
-}
