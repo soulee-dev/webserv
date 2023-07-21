@@ -750,7 +750,7 @@ ssize_t rio_readn(int fd, void *usrbuf, size_t n)
 {
     size_t nleft = n;
     ssize_t nread;
-    char *bufp = usrbuf;
+    char *bufp = (char *) usrbuf;
 
     while (nleft > 0) {
 	if ((nread = read(fd, bufp, nleft)) < 0) {
@@ -776,7 +776,7 @@ ssize_t rio_writen(int fd, void *usrbuf, size_t n)
 {
     size_t nleft = n;
     ssize_t nwritten;
-    char *bufp = usrbuf;
+    char *bufp = (char *) usrbuf;
 
     while (nleft > 0) {
 	if ((nwritten = write(fd, bufp, nleft)) <= 0) {
@@ -850,7 +850,7 @@ ssize_t rio_readnb(rio_t *rp, void *usrbuf, size_t n)
 {
     size_t nleft = n;
     ssize_t nread;
-    char *bufp = usrbuf;
+    char *bufp = (char *) usrbuf;
     
     while (nleft > 0) {
 	if ((nread = rio_read(rp, bufp, nleft)) < 0) 
@@ -871,7 +871,7 @@ ssize_t rio_readnb(rio_t *rp, void *usrbuf, size_t n)
 ssize_t rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen) 
 {
     int n, rc;
-    char c, *bufp = usrbuf;
+    char c, *bufp = (char *) usrbuf;
 
     for (n = 1; n < maxlen; n++) { 
         if ((rc = rio_read(rp, &c, 1)) == 1) {
@@ -1008,6 +1008,13 @@ int open_listenfd(char *port)
         fprintf(stderr, "getaddrinfo failed (port %s): %s\n", port, gai_strerror(rc));
         return -2;
     }
+    // getaddrinfo() -> int getaddrinfo(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res);
+    // const char *node => NULL, localhost 참조
+    // const char *service => "http", "80", 서비스 이름이나 포트 참조
+    // const struct addrinfo *hints => struct addrinfo 구조체에 대한 포인터로, 원하는 주소 정보의 특성과 옵션을 지정.
+    // struct addrinfo **res => struct addrinfo 구조체에 대한 포인터의 포인터입니다. 
+    //  getaddrinfo() 함수가 호출되면 이 포인터에 호스트의 주소 정보가 저장된다. 이후에는 이 주소 정보를 활용할 수 있다.
+
 
     /* Walk the list for one that we can bind to */
     for (p = listp; p; p = p->ai_next) {
