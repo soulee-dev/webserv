@@ -5,6 +5,7 @@
 
 struct Request
 {
+	int									fd;
 	bool								is_static;
 	std::map<std::string, std::string>	headers;
 	// Method								_method;

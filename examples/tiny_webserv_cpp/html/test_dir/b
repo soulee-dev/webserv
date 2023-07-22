@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Index of /</title>
+</head>
+<body>
+<h1>Index of /</h1>
+<ul>
+    <li><a href="/file1.txt">file1.txt</a></li>
+    <li><a href="/file2.txt">file2.txt</a></li>
+    <li><a href="/subdirectory/">subdirectory/</a></li>
+</ul>
+</body>
+</html>

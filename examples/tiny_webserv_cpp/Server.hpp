@@ -11,6 +11,7 @@
 # include <cstdio>
 # include <sstream>
 # include <unistd.h>
+# include <dirent.h>
 # include <vector>
 # include <map>
 
@@ -26,7 +27,6 @@ class Server
 		const std::string		_ip_addr;
 		const unsigned short	_port;
 		unsigned int			_socket;
-		int						_new_socket;
 		long					_incoming_message;
 		struct sockaddr_in		_sock_addr;
 		unsigned int			_sock_addr_len;
@@ -34,12 +34,14 @@ class Server
 
 		void		ServeStatic(Request& req);
 		void		ServeDynamic(Request& req);
-		void		ClientError(std::string cause, std::string error_num, std::string short_msg, std::string long_msg);
-		void		ProcessTraffic(void);
+		void		ServeAutoIndex(Request& req);
+		void		ClientError(int fd, std::string cause, std::string error_num, std::string short_msg, std::string long_msg);
+		void		ProcessTraffic(int fd);
 		void		ParseURI(std::string uri, Request &req);
 
 public:
 	Server(std::string ip_addr, unsigned int port);
 	~Server();
 	void		run();
+	void		nb_run();
 };

@@ -20,12 +20,13 @@ Server::Server(std::string ip_addr, unsigned int port) : _ip_addr(ip_addr), _por
 	
 	_config["root"] = "/html";
 	_config["index"] = "index.html"; // vector, index.html, index.htm, directory
+	_config["autoindex"] = "on";
 }
 
 Server::~Server()
 {
 	close(_socket);
-	close(_new_socket);
+	// close(_new_socket);
 }
 
 void	Server::ParseURI(std::string uri, Request &req)
@@ -47,7 +48,7 @@ void	Server::ParseURI(std::string uri, Request &req)
 	}
 }
 
-void	Server::ProcessTraffic()
+void	Server::ProcessTraffic(int fd)
 {
 	char		method[BUFFER_SIZE];
 	char		uri[BUFFER_SIZE];
@@ -56,23 +57,34 @@ void	Server::ProcessTraffic()
 	struct stat	stat_buf;
 	char		buf[BUFFER_SIZE] = {0};
 	Request		req;
+	int			ret_stat;
 	
-	if ((received_bytes = read(_new_socket, buf, BUFFER_SIZE)) < 0)
+	if ((received_bytes = read(fd, buf, BUFFER_SIZE)) < 0)
 		std::runtime_error("Cannot read bytes");
 	std::sscanf(buf, "%s %s %s\r\n", method, uri, version);
 	req.method = method;
+	req.fd = fd;
 	ParseURI(std::string(uri), req);
-	if (stat(req.file_name.c_str(), &stat_buf) < 0)
-	{
-		std::cout << "404 ";
-		ClientError(req.file_name, "404", "Not found", "Tiny couldn't find this file");
-		return ;
-	}
+	ret_stat = stat(req.file_name.c_str(), &stat_buf);
 	if (req.is_static)
 	{
-		// If static
+		if ((S_ISDIR(stat_buf.st_mode)) && _config["autoindex"] == "on")
+		{
+			ServeAutoIndex(req);
+			return ;
+		}
+		if (ret_stat < 0)
+		{
+			std::cout << "404 ";
+			ClientError(req.fd, req.file_name, "404", "Not found", "Tiny couldn't find this file");
+			return ;
+		}
+		// Check its regular file and check whether read or not;
 		if (!(S_ISREG(stat_buf.st_mode)) || !(S_IRUSR & stat_buf.st_mode))
-			ClientError(req.file_name, "403", "Forbidden", "Tiny couldn't read the file");
+		{
+			ClientError(req.fd, req.file_name, "403", "Forbidden", "Tiny couldn't read the file");
+			return ;
+		}
 		req.file_size = stat_buf.st_size;
 		ServeStatic(req);
 		return ;
@@ -80,8 +92,41 @@ void	Server::ProcessTraffic()
 	ServeDynamic(req);
 }
 
+void	Server::ServeAutoIndex(Request& req)
+{
+	DIR							*dir = opendir(req.file_name.c_str());
+	std::stringstream			html_file;
+	std::vector<std::string>	dirs;
+
+	if (dir)
+	{
+		struct dirent	*ent;
+ 		while ((ent = readdir(dir)) != NULL)
+        	dirs.push_back(ent->d_name);
+		closedir(dir);
+	}
+	else
+	{
+		// NO DIRECTORY
+		// NOT IMPLEMENTED
+		std::cout << "Could not open dir" << std::endl;
+	}
+    // std::string	message = buildHeader("200 OK", html_file.size(), "text/html") + html_file;
+
+	// ssize_t	sent_bytes;
+
+	// if ((sent_bytes = send(req.fd, message.c_str(), message.size(), 0)) < 0)
+	// 	std::runtime_error("Send failed");
+	// if (sent_bytes == message.size())
+	// 	std::cout << "Successfully send message" << std::endl;
+	// else
+	// 	std::cout << "Error" << std::endl;
+}
+
 void	Server::run()
 {
+	int	_new_socket;
+
 	// Second parameter is backlog (maximum length for the queue of pending connects)
 	if (listen(_socket, 20))
 		std::runtime_error("Cannot listen socket");
@@ -90,7 +135,7 @@ void	Server::run()
 		std::cout << "Waiting for a new connection" << std::endl;
 		if ((_new_socket = accept(_socket, (sockaddr *)&_sock_addr, &_sock_addr_len)) < 0)
 			std::runtime_error("Cannot accept incoming connection");
-		ProcessTraffic();
+		ProcessTraffic(_new_socket);
 		close(_new_socket);
 	}
 }
@@ -127,14 +172,14 @@ std::string	buildHeader(std::string status_code, int file_size, std::string file
 	return (header.str());
 }
 
-void	Server::ClientError(std::string cause, std::string error_num, std::string short_msg, std::string long_msg)
+void	Server::ClientError(int fd, std::string cause, std::string error_num, std::string short_msg, std::string long_msg)
 {
 	std::string htmlFile = "<html><title>Tiny Error</title><body bgcolor=""ffffff"">" + error_num + ":" + short_msg + "<p>" + long_msg + ":" + cause + "</p> <hr><em>The Tiny Web server</em></body></html>";
     std::string	message = buildHeader(error_num + " " + short_msg, htmlFile.size(), "text/html") + htmlFile;
 
 	ssize_t	sent_bytes;
 
-	if ((sent_bytes = send(_new_socket, message.c_str(), message.size(), 0)) < 0)
+	if ((sent_bytes = send(fd, message.c_str(), message.size(), 0)) < 0)
 		std::runtime_error("Send failed");
 	if (sent_bytes == message.size())
 		std::cout << "Successfully send message" << std::endl;
@@ -180,7 +225,7 @@ void	Server::ServeStatic(Request& req)
 	header = buildHeader("200 OK", length, file_type);
 	std::vector<char> response(header.begin(), header.end());
 	response.insert(response.end(), buffer.begin(), buffer.end());
-	if ((sent_bytes = send(_new_socket, &response[0], response.size(), 0)) < 0)
+	if ((sent_bytes = send(req.fd, &response[0], response.size(), 0)) < 0)
 		throw std::runtime_error("Send failed");
 	if (sent_bytes == response.size())
 		std::cout << "Successfully send message" << std::endl;
@@ -198,7 +243,7 @@ void	Server::ServeDynamic(Request& req)
 
 	header << "HTTP/1.1 200 OK" << CRLF;
 	header << "Server: " << SERVER_NAME << CRLF;
-	if (send(_new_socket, header.str().c_str(), header.str().size(), 0) < 0)
+	if (send(req.fd, header.str().c_str(), header.str().size(), 0) < 0)
 		throw std::runtime_error("Send failed");
 
 	std::cout << "Attempting to execve: " << req.file_name.c_str() << std::endl;
@@ -209,7 +254,7 @@ void	Server::ServeDynamic(Request& req)
 	{
 		setenv("QUERY_STRING", req.cgi_args.c_str(), 1);
 		setenv("REQUEST_METHOD", req.method.c_str(), 1);
-		dup2(_new_socket, STDOUT_FILENO);
+		dup2(req.fd, STDOUT_FILENO);
 		if(execve(req.file_name.c_str(), empty_list, environ) == -1) 
 		{
 			std::cerr << "execve failed with error: " << strerror(errno) << std::endl;
