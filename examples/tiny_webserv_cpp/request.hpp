@@ -11,6 +11,7 @@ struct Request
 	// Method								_method;
 	std::string							method;
 	std::string							file_name;
+	bool								is_directory;
 	// Original path
 	std::string							path;
 	off_t								file_size;

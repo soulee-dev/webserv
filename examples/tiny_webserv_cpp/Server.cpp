@@ -13,14 +13,15 @@ Server::Server(std::string ip_addr, unsigned int port) : _ip_addr(ip_addr), _por
 	// AF_INET: set socket as IPv4
 	// SOCK_STREAM: set socket as TCP
 	if ((_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-		std::runtime_error("Cannot create socket");
+		throw std::runtime_error("Cannot create socket");
 	setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 	if (bind(_socket, (sockaddr *)&_sock_addr, _sock_addr_len) < 0)
-		std::runtime_error("Cannot bind socket to address");
+		throw std::runtime_error("Cannot bind socket to address");
 	
 	_config["root"] = "/html";
 	index.push_back("index.html");
-	_config["index"] = "index.html"; // vector, index.html, index.htm, directory
+	index.push_back("index.htm");
+	// _config["index"] = "index.html"; // vector, index.html, index.htm, directory
 	_config["autoindex"] = "on";
 }
 
@@ -38,7 +39,7 @@ void	Server::ParseURI(std::string uri, Request &req)
 		req.path = uri;
 		req.file_name += "." + _config["root"] + uri; //./index.html
 		if (uri[uri.length() - 1] == '/')
-			req.file_name += "index.html";
+			req.is_directory = true;
 	}
 	else
 	{
@@ -62,18 +63,35 @@ void	Server::ProcessTraffic(int fd)
 	int			ret_stat;
 	
 	if ((received_bytes = read(fd, buf, BUFFER_SIZE)) < 0)
-		std::runtime_error("Cannot read bytes");
+		throw std::runtime_error("Cannot read bytes");
 	std::sscanf(buf, "%s %s %s\r\n", method, uri, version);
 	req.method = method;
 	req.fd = fd;
 	ParseURI(std::string(uri), req);
-	ret_stat = stat(req.file_name.c_str(), &stat_buf);
 	if (req.is_static)
 	{
-		if ((S_ISDIR(stat_buf.st_mode)) && _config["autoindex"] == "on")
+		ret_stat = stat(req.file_name.c_str(), &stat_buf);
+		if (S_ISDIR(stat_buf.st_mode))
 		{
-			ServeAutoIndex(req);
-			return ;
+			std::cout << req.file_name << " is dir" << std::endl;
+			for (std::vector<std::string>::iterator it = index.begin(); it != index.end(); ++it)
+			{
+				struct stat	stat_buf2;
+				std::string	path = req.file_name + *it;
+				int	ret_stat2 = stat(path.c_str(), &stat_buf2);
+				if ((ret_stat2 == 0) && S_ISREG(stat_buf2.st_mode) && (S_IRUSR & stat_buf2.st_mode))
+				{
+					std::cout << "Serve " << path << std::endl;
+					req.file_name = path;
+					ServeStatic(req);
+					return ;
+				}
+			}
+			if (_config["autoindex"] == "on")
+			{
+				ServeAutoIndex(req);
+				return ;
+			}
 		}
 		if (ret_stat < 0)
 		{
@@ -132,7 +150,7 @@ void	Server::ServeAutoIndex(Request& req)
 	ssize_t	sent_bytes;
 
 	if ((sent_bytes = send(req.fd, message.c_str(), message.size(), 0)) < 0)
-		std::runtime_error("Send failed");
+		throw std::runtime_error("Send failed");
 	if (sent_bytes == message.size())
 		std::cout << "Successfully send message" << std::endl;
 	else
@@ -145,12 +163,12 @@ void	Server::run()
 
 	// Second parameter is backlog (maximum length for the queue of pending connects)
 	if (listen(_socket, 20))
-		std::runtime_error("Cannot listen socket");
+		throw std::runtime_error("Cannot listen socket");
 	while (true)
 	{
 		std::cout << "Waiting for a new connection" << std::endl;
 		if ((_new_socket = accept(_socket, (sockaddr *)&_sock_addr, &_sock_addr_len)) < 0)
-			std::runtime_error("Cannot accept incoming connection");
+			throw std::runtime_error("Cannot accept incoming connection");
 		ProcessTraffic(_new_socket);
 		close(_new_socket);
 	}
@@ -196,7 +214,7 @@ void	Server::ClientError(int fd, std::string cause, std::string error_num, std::
 	ssize_t	sent_bytes;
 
 	if ((sent_bytes = send(fd, message.c_str(), message.size(), 0)) < 0)
-		std::runtime_error("Send failed");
+		throw std::runtime_error("Send failed");
 	if (sent_bytes == message.size())
 		std::cout << "Successfully send message" << std::endl;
 	else
@@ -207,7 +225,7 @@ std::string	getFileType(std::string file_name)
 {
 	std::string	file_type;
 
-	if (file_name.find(".html") != std::string::npos)
+	if (file_name.find(".html") != std::string::npos || file_name.find(".htm") != std::string::npos)
 		file_type = "text/html";
 	else if (file_name.find(".gif") != std::string::npos)
 		file_type = "image/gif";
