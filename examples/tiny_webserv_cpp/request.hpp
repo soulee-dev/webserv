@@ -11,6 +11,8 @@ struct Request
 	// Method								_method;
 	std::string							method;
 	std::string							file_name;
+	// Original path
+	std::string							path;
 	off_t								file_size;
 	std::string							cgi_args;
 	unsigned int						major_version;

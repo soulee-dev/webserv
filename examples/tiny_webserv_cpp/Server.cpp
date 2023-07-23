@@ -19,6 +19,7 @@ Server::Server(std::string ip_addr, unsigned int port) : _ip_addr(ip_addr), _por
 		std::runtime_error("Cannot bind socket to address");
 	
 	_config["root"] = "/html";
+	index.push_back("index.html");
 	_config["index"] = "index.html"; // vector, index.html, index.htm, directory
 	_config["autoindex"] = "on";
 }
@@ -34,6 +35,7 @@ void	Server::ParseURI(std::string uri, Request &req)
 	if (uri.find("cgi-bin") == std::string::npos)
 	{
 		req.is_static = true;
+		req.path = uri;
 		req.file_name += "." + _config["root"] + uri; //./index.html
 		if (uri[uri.length() - 1] == '/')
 			req.file_name += "index.html";
@@ -98,11 +100,24 @@ void	Server::ServeAutoIndex(Request& req)
 	std::stringstream			html_file;
 	std::vector<std::string>	dirs;
 
+	html_file << "<!DOCTYPE html>";
+	html_file << "<head><title>Index of " << req.path;
+	html_file << "</title></head>";
+	html_file << "<body>";
+	html_file << "<h1>Index of " << req.path;
+	html_file << "</h1><ul>";
 	if (dir)
 	{
 		struct dirent	*ent;
  		while ((ent = readdir(dir)) != NULL)
-        	dirs.push_back(ent->d_name);
+		{
+			html_file << "<li><a href=";
+			html_file << req.path << "/";
+			html_file << ent->d_name;
+			html_file << ">";
+			html_file << ent->d_name;
+			html_file << "</a></li>";
+		}
 		closedir(dir);
 	}
 	else
@@ -111,16 +126,17 @@ void	Server::ServeAutoIndex(Request& req)
 		// NOT IMPLEMENTED
 		std::cout << "Could not open dir" << std::endl;
 	}
-    // std::string	message = buildHeader("200 OK", html_file.size(), "text/html") + html_file;
+	html_file << "</ul></body></html>";
+    std::string	message = BuildHeader("200 OK", html_file.str().size(), "text/html") + html_file.str();
 
-	// ssize_t	sent_bytes;
+	ssize_t	sent_bytes;
 
-	// if ((sent_bytes = send(req.fd, message.c_str(), message.size(), 0)) < 0)
-	// 	std::runtime_error("Send failed");
-	// if (sent_bytes == message.size())
-	// 	std::cout << "Successfully send message" << std::endl;
-	// else
-	// 	std::cout << "Error" << std::endl;
+	if ((sent_bytes = send(req.fd, message.c_str(), message.size(), 0)) < 0)
+		std::runtime_error("Send failed");
+	if (sent_bytes == message.size())
+		std::cout << "Successfully send message" << std::endl;
+	else
+		std::cout << "Error" << std::endl;
 }
 
 void	Server::run()
@@ -158,7 +174,7 @@ std::string escapeControlChars(const std::string& input) {
     return result;
 }
 
-std::string	buildHeader(std::string status_code, int file_size, std::string file_type)
+std::string	Server::BuildHeader(std::string status_code, int file_size, std::string file_type)
 {
 	std::ostringstream	header;
 
@@ -175,7 +191,7 @@ std::string	buildHeader(std::string status_code, int file_size, std::string file
 void	Server::ClientError(int fd, std::string cause, std::string error_num, std::string short_msg, std::string long_msg)
 {
 	std::string htmlFile = "<html><title>Tiny Error</title><body bgcolor=""ffffff"">" + error_num + ":" + short_msg + "<p>" + long_msg + ":" + cause + "</p> <hr><em>The Tiny Web server</em></body></html>";
-    std::string	message = buildHeader(error_num + " " + short_msg, htmlFile.size(), "text/html") + htmlFile;
+    std::string	message = BuildHeader(error_num + " " + short_msg, htmlFile.size(), "text/html") + htmlFile;
 
 	ssize_t	sent_bytes;
 
@@ -214,15 +230,15 @@ void	Server::ServeStatic(Request& req)
 	ssize_t	sent_bytes;
 	std::vector<char> buffer;
 	std::string header;
-
 	std::ifstream file(req.file_name, std::ios::binary);
+
 	// get length of file:
 	file.seekg(0, file.end);
 	int length = file.tellg();
 	file.seekg(0, file.beg);
 	buffer.resize(length);
 	file.read(&buffer[0], length);
-	header = buildHeader("200 OK", length, file_type);
+	header = BuildHeader("200 OK", length, file_type);
 	std::vector<char> response(header.begin(), header.end());
 	response.insert(response.end(), buffer.begin(), buffer.end());
 	if ((sent_bytes = send(req.fd, &response[0], response.size(), 0)) < 0)
