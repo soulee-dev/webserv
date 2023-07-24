@@ -30,13 +30,17 @@ class Server
 		long					_incoming_message;
 		struct sockaddr_in		_sock_addr;
 		unsigned int			_sock_addr_len;
+		
+		std::map<std::string, std::map<std::string, std::string> >	sessions;
 
 		// REMOVE BEFORE FLIGHT
 		std::map<std::string, std::string>	_config;
 		std::vector<std::string>			index;
+		std::map<std::string, std::string>	cookies;
 		// REMOVE BEFORE FLIGHT
 
-		std::string	BuildHeader(std::string status_code, int file_size, std::string file_type);
+		std::string	BuildHeader(std::string status_code, int file_size, std::string file_type, std::map<std::string, std::string> cookies);
+		std::string BuildHeader(std::string status_code, int file_size, std::string file_type);
 		void		ServeStatic(Request& req);
 		void		ServeDynamic(Request& req);
 		void		ServeAutoIndex(Request& req);

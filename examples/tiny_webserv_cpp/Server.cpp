@@ -18,6 +18,7 @@ Server::Server(std::string ip_addr, unsigned int port) : _ip_addr(ip_addr), _por
 	if (bind(_socket, (sockaddr *)&_sock_addr, _sock_addr_len) < 0)
 		throw std::runtime_error("Cannot bind socket to address");
 	
+	cookies["foo"] = "bar";
 	_config["root"] = "/html";
 	index.push_back("index.html");
 	index.push_back("index.htm");
@@ -206,6 +207,37 @@ std::string	Server::BuildHeader(std::string status_code, int file_size, std::str
 	return (header.str());
 }
 
+// Session management
+// Check wheter session id setted
+// If there is no seesion id, I should allocate new one.
+// Ref: PHP Session
+// Ref: How JESSIONID, PHPSESSID maek
+
+// std::string	generateSessionID(size_t length)
+// {
+// 	const char		*char_map = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+// 								"abcdefghijklmnopqrstuvwxyz"
+// 								"0123456789";
+// 	const size_t	
+// }
+
+std::string	Server::BuildHeader(std::string status_code, int file_size, std::string file_type, std::map<std::string, std::string> cookies)
+{
+	std::ostringstream	header;
+
+	header << "HTTP/1.1 " << status_code << CRLF;
+	header << "Server: " << SERVER_NAME << CRLF;
+	header << "Connection: close" << CRLF;
+	header << "Content-length: " << file_size << CRLF;
+	header << "Content-type: " << file_type << CRLF;
+	// For security, SESSIONID should be set as HttpOnly and Secure 
+	for (std::map<std::string, std::string>::iterator it = cookies.begin(); it != cookies.end(); ++it)
+		header << "Set-Cookie: " << it->first << "=" << it->second << CRLF;
+	header << CRLF;
+
+	return (header.str());
+}
+
 void	Server::ClientError(int fd, std::string cause, std::string error_num, std::string short_msg, std::string long_msg)
 {
 	std::string htmlFile = "<html><title>Tiny Error</title><body bgcolor=""ffffff"">" + error_num + ":" + short_msg + "<p>" + long_msg + ":" + cause + "</p> <hr><em>The Tiny Web server</em></body></html>";
@@ -256,7 +288,7 @@ void	Server::ServeStatic(Request& req)
 	file.seekg(0, file.beg);
 	buffer.resize(length);
 	file.read(&buffer[0], length);
-	header = BuildHeader("200 OK", length, file_type);
+	header = BuildHeader("200 OK", length, file_type, cookies);
 	std::vector<char> response(header.begin(), header.end());
 	response.insert(response.end(), buffer.begin(), buffer.end());
 	if ((sent_bytes = send(req.fd, &response[0], response.size(), 0)) < 0)

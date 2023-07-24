@@ -31,7 +31,7 @@ int main(void)
   method = getenv("REQUEST_METHOD");
   /* Make the response body */
   sprintf(content, "QUERY_STRING=%s", buf);
-  sprintf(content, "Welcome to new_add.com: ");
+  sprintf(content, "Welcome to adder.com: ");
   sprintf(content, "%sTHE Internet addition portal.\r\n<p>", content);
   sprintf(content, "%sThe answer is: %d + %d = %d\r\n<p>", content, n1, n2, n1 + n2);
   sprintf(content, "%sThanks for visiting!\r\n", content);
