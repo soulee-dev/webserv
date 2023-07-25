@@ -56,10 +56,6 @@ void RequestMessageReader::readBody(const char *buffer, int client_fd)
 	if ((pos = std::search(currReadBuffer.begin(), currReadBuffer.end(), "\r\n\r\n", &"\r\n\r\n"[4])) != currReadBuffer.end())
 	{
 		currMessage.body = std::vector<unsigned char>(currReadBuffer.begin(), pos);
-		a = std::string(currMessage.body.begin(), currMessage.body.end());
-		std::cout << a << std::endl;
-		std::cout << "a" << std::endl;
-		currReadBuffer.erase(currReadBuffer.begin(), pos + 4);
 		ParseState[client_fd] = DONE;
 	}
 }

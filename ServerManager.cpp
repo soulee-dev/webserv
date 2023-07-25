@@ -194,13 +194,9 @@ void ServerManager::start_server()
                                 headerIt++;
                             }
 
-                            std::cout  << "BODY : " << std::endl;
-                            std::vector<unsigned char>::iterator bodyIt = currRequest.body.begin();
-                            while (bodyIt != currRequest.body.end())
-                            {
-                                std::cout << *bodyIt;
-                                bodyIt++;
-                            }
+                            std::cout  << "BODY : ";;
+                            std::string a(currRequest.body.begin(), currRequest.body.end());
+                            std::cout << a.c_str() << std::endl;
                             messageReader.ParseState[curr_event->ident] = METHOD;
                             messageReader.messageBuffer[curr_event->ident].clear();
 
