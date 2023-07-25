@@ -17,9 +17,14 @@ enum RequestMessageParseState
 class MessageReader
 {
 public:
-	static std::map<int, std::stringstream> readBuffer;
-	static std::map<int, Message> messageBuffer;
-	static std::map<int, enum RequestMessageParseState> ParseState;
+	static MessageReader &getInstance()
+	{
+		static MessageReader instance;
+		return instance;
+	}
+	std::map<int, std::stringstream> readBuffer;
+	std::map<int, Message> messageBuffer;
+	std::map<int, enum RequestMessageParseState> ParseState;
 	void readHeader(const char *buffer, int client_fd);
 	void readBody(const char *buffer, int client_fd);
 	~MessageReader() {};
