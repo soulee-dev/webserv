@@ -1,6 +1,6 @@
 #pragma once
 
-enum State
+enum MessageParseState
 {
 	START,
 	HEADER,
