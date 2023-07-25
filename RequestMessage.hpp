@@ -7,5 +7,4 @@ public:
 	~RequestMessage() {};
 	std::string method;
 	std::string requestTarget;
-	std::string httpVersion;
 };
