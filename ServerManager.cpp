@@ -1,4 +1,5 @@
 #include "ServerManager.hpp"
+#include "RequestMessageReader.hpp"
 #include "algorithm"
 #include <iostream>
 #include <sstream>
@@ -31,11 +32,10 @@ void ServerManager::disconnect_server(int server_fd)
     close(server_fd);
 }
 
-void ServerManager::disconnect_client(int client_fd, std::map<int, std::string>& clients)
+void ServerManager::disconnect_client(int client_fd)
 {
     std::cout << "client disconnected: " << client_fd << std::endl;
     close(client_fd);
-    clients.erase(client_fd);
 }
 
 int ServerManager::getKq()
@@ -105,5 +105,125 @@ void ServerManager::init_server()
 
 void ServerManager::start_server()
 {
+    std::map<PORT, std::vector<Server> >::iterator it;
+    std::map<SOCKET, PORT>::iterator it2;
+    struct kevent event_list[8];
+    RequestMessageReader messageReader = RequestMessageReader::getInstance();
+    int new_events;
+    struct kevent* curr_event;
+    int client_socket;
 
+    while (1)
+    {
+        new_events = kevent(this->kq, &this->change_list[0], this->change_list.size(), event_list, 8, NULL);
+        if (new_events == -1)
+        {
+            std::cout << "kevent error" << std::endl;
+            exit(1);
+        }
+        change_list.clear();
+
+        for (int i = 0; i < new_events; i++)
+        {
+            curr_event = &event_list[i];
+
+            if (curr_event->flags & EV_ERROR)
+            {
+                // this->server_sockets 안에 curr_event->ident 가 있으면 server socket 에러
+                if (this->server_sockets.find(server_sockets.end()->first) != this->server_sockets.end())
+                {
+                    std::cout << "server socket error" << std::endl;
+                    disconnect_server(curr_event->ident);
+                }
+                else // 없으면 클라이언트 소켓 에러
+                {
+                    std::cout << "client socket error" << std::endl;
+                    disconnect_client(curr_event->ident);
+                }
+            }
+            else if (curr_event->filter == EVFILT_READ)
+            {
+                if (server_sockets.find(curr_event->ident) != server_sockets.end())
+                {
+                    int client_socket;
+                    if ((client_socket = accept(curr_event->ident, NULL, NULL)) == -1)
+                    {
+                        std::cout << "accept error" << std::endl;
+                        continue;
+                    }
+                    fcntl(client_socket, F_SETFL, O_NONBLOCK);
+                    change_events(client_socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+                    messageReader.messageBuffer.insert(std::pair<int, RequestMessage>(client_socket, RequestMessage()));
+                    messageReader.readBuffer.insert(std::pair<int, std::vector<unsigned char> >(client_socket, std::vector<unsigned char>()));
+                }
+                else if (messageReader.messageBuffer.find(curr_event->ident) != messageReader.messageBuffer.end())
+                {
+                    char buf[1000]; // 1000byte
+                    int n = read(curr_event->ident, buf, (sizeof(buf) - 1));
+                    if (n <= 0)
+                    {
+                        if (n < 0)
+                            std::cout << "client read error" << std::endl;
+                        disconnect_client(curr_event->ident);
+                    }
+                    else
+                    {
+                        buf[n] = '\0';
+                        if (messageReader.ParseState[curr_event->ident] == METHOD)
+                            messageReader.readMethod(buf, curr_event->ident);
+                        else if (messageReader.ParseState[curr_event->ident] == REQUEST_TARGET)
+                            messageReader.readRequestTarget(buf, curr_event->ident);
+                        else if (messageReader.ParseState[curr_event->ident] == HTTP_VERSION)
+                            messageReader.readHttpVersion(buf, curr_event->ident);
+                        else if (messageReader.ParseState[curr_event->ident] == HEADER)
+                            messageReader.readHeader(buf, curr_event->ident);
+                        else if (messageReader.ParseState[curr_event->ident] == BODY)
+                            messageReader.readBody(buf, curr_event->ident);
+                        if (messageReader.ParseState[curr_event->ident] == DONE)
+                        {
+                            RequestMessage currRequest = messageReader.messageBuffer[curr_event->ident];
+                            // messageReader의 message버퍼와 입력버퍼를 claer해줘야함.
+
+
+                            std::cout << "START LINE : " << currRequest.startLine << std::endl;
+                            std::map<std::string, std::string>::iterator headerIt = currRequest.headers.begin();
+                            while (headerIt != currRequest.headers.end())
+                            {
+                                std::cout << headerIt->first << " : " << headerIt->second << std::endl;
+                                headerIt++;
+                            }
+
+                            std::cout  << "BODY : " << std::endl;
+                            std::vector<unsigned char>::iterator bodyIt = currRequest.body.begin();
+                            while (bodyIt != currRequest.body.end())
+                            {
+                                std::cout << *bodyIt;
+                                bodyIt++;
+                            }
+                            messageReader.ParseState[curr_event->ident] = METHOD;
+                            messageReader.messageBuffer[curr_event->ident].clear();
+
+                            // change_events(curr_event->ident, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
+
+                            // 여기에 유효한 메시지인지 확인하는 부분이 들어가야함
+                            // std::cout << "received data from " << curr_event->ident << ": " << clients[curr_event->ident] << std::endl;
+
+                            // for (iter = requestMessage.begin(); iter != requestMessage.end(); iter++)
+                            // {
+                            //     std::cout << "key : " << iter->first << "val : " << iter->second << std::endl;
+                            // }
+                            // 맞는  서버  찾찾고고, 찾찾았았으면 그그서서버가 일일하하게  server.process(requestE);
+                            // 맞는 서버가 없으면, 그 포트의 첫번째 서버가 일하게 (서버 찾는 로직으로 서버 찾아서 프로세스);
+                            // response 클래스에 데이터 넣어서 종료
+                            // process_inner(currRequest);
+                            // clients[curr_event->ident].clear();
+                        }
+                    }
+                }
+            }
+            else if (curr_event->filter == EVFILT_WRITE)
+            {
+            }
+        }
+    }
 }

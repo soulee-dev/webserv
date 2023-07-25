@@ -33,6 +33,6 @@ private:
 	ServerManager();
 	void change_events(int socket, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void* udata);
 	void disconnect_server(int server_fd);
-	void disconnect_client(int client_fd, std::map<int, std::string>& clients);
+	void disconnect_client(int client_fd);
 	int kq;
 };
