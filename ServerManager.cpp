@@ -158,7 +158,8 @@ void ServerManager::start_server()
                 }
                 else if (messageReader.messageBuffer.find(curr_event->ident) != messageReader.messageBuffer.end())
                 {
-                    char buf[1000]; // 1000byte
+                    char buf[20]; // 1000byte
+                    memset(buf, 0, 20);
                     int n = read(curr_event->ident, buf, (sizeof(buf) - 1));
                     if (n <= 0)
                     {
@@ -181,7 +182,7 @@ void ServerManager::start_server()
                             messageReader.readBody(buf, curr_event->ident);
                         if (messageReader.ParseState[curr_event->ident] == DONE)
                         {
-                            RequestMessage currRequest = messageReader.messageBuffer[curr_event->ident];
+                            RequestMessage &currRequest = messageReader.messageBuffer[curr_event->ident];
                             // messageReader의 message버퍼와 입력버퍼를 claer해줘야함.
 
 
