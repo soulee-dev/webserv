@@ -42,5 +42,4 @@ void MessageReader::readBody(const char *buffer, int client_fd)
 		ParseState[client_fd] = DONE;
 		return ;
 	}
-	;
 }
