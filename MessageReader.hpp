@@ -2,9 +2,23 @@
 #include "Message.hpp"
 #include <sstream>
 
-enum MessageParseState
+enum RequestMessageParseState
 {
 	START,
+	METHOD,
+	REQUEST_TARGET,
+	HTTP_VERSION,
+	HEADER,
+	BODY,
+	DONE
+};
+
+enum RespondMessageParseState
+{
+	START,
+	HTTP_VERSION,
+	STATUS_CODE,
+	REASON_PHRASE,
 	HEADER,
 	BODY,
 	DONE
