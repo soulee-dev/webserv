@@ -1,4 +1,6 @@
 #pragma once
+#include "Message.hpp"
+#include <sstream>
 
 enum MessageParseState
 {
