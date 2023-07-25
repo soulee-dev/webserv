@@ -32,6 +32,8 @@ void RequestMessageReader::readHeader(const char *buffer, int client_fd)
 		// value의 처음 ifs들을 지움 근데 하나가 아닐 수 있음
 		while (value[0] == ' ')
 			value.erase(value.begin());
+		for (int i = 0; i < key.size(); i++)
+			key[i] = tolower(key[i]);
 		currMessage.headers[key] = value;
 	}
 }
