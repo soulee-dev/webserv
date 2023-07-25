@@ -6,7 +6,7 @@
 class Message
 {
 public:
-	Message() {};
+	Message() : parseState(0) {};
 	~Message() {};
 	int parseState;
 	std::vector<unsigned char> raw;

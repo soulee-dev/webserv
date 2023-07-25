@@ -2,9 +2,10 @@
 #include "Message.hpp"
 #include <sstream>
 
+// 일단 버퍼에 담고 나서 현재 state에 있는 토큰을 읽어야 한다.
+
 enum RequestMessageParseState
 {
-	START,
 	METHOD,
 	REQUEST_TARGET,
 	HTTP_VERSION,
@@ -15,7 +16,6 @@ enum RequestMessageParseState
 
 enum RespondMessageParseState
 {
-	START,
 	HTTP_VERSION,
 	STATUS_CODE,
 	REASON_PHRASE,
