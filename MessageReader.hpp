@@ -11,9 +11,10 @@ enum MessageParseState
 class MessageReader
 {
 public:
-	MessageReader();
-	~MessageReader();
-	static void readStartLine(const char *buffer);
-	static void readHeader(const char *buffer);
-	static void readBody(const char *buffer);
+	MessageReader() {};
+	~MessageReader() {};
+	virtual void readStartLine(const char *buffer, Message &message) = 0;
+	virtual void readHeader(const char *buffer, Message &message);
+	virtual void readBody(const char *buffer, Message &message);
+private:
 };
