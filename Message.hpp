@@ -6,9 +6,8 @@
 class Message
 {
 public:
-	Message() : parseState(0) {};
+	Message() {};
 	~Message() {};
-	int parseState;
 	std::vector<unsigned char> raw;
 	std::string startLine;
 	std::string httpVersion;

@@ -27,12 +27,12 @@ enum RespondMessageParseState
 class MessageReader
 {
 public:
-	MessageReader() {};
+	static std::map<int, std::stringstream> readBuffer;
+	static std::map<int, Message> messageBuffer;
+	static std::map<int, enum RequestMessageParseState> ParseState;
+	void readHeader(const char *buffer, int client_fd);
+	void readBody(const char *buffer, int client_fd);
 	~MessageReader() {};
-	std::map<int, std::stringstream> readBuffer;
-	std::map<int, Message> messageBuffer;
-	virtual void readStartLine(const char *buffer, int client_fd) = 0;
-	virtual void readHeader(const char *buffer, int client_fd);
-	virtual void readBody(const char *buffer, int client_fd);
 private:
+	MessageReader() {};
 };
