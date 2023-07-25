@@ -15,7 +15,7 @@ void RequestMessageReader::readMethod(const char *buffer, int client_fd)
 		method = readBuffer[client_fd].str().substr(0, pos);
 		currMessage.startLine = method;
 		readBuffer[client_fd].str(readBuffer[client_fd].str().substr(pos + 1));
-		ParseState[client_fd] = RequestMessageParseState::REQUEST_TARGET;
+		ParseState[client_fd] = REQUEST_TARGET;
 		if (pos = readBuffer[client_fd].str().find(' ') != std::string::npos)
 			readRequestTarget(NULL, client_fd);
 		return ;
@@ -36,7 +36,7 @@ void RequestMessageReader::readRequestTarget(const char *buffer, int client_fd)
 		RequestTarget = readBuffer[client_fd].str().substr(0, pos);
 		currMessage.startLine = RequestTarget;
 		readBuffer[client_fd].str(readBuffer[client_fd].str().substr(pos + 1));
-		ParseState[client_fd] = RequestMessageParseState::HTTP_VERSION;
+		ParseState[client_fd] = HTTP_VERSION;
 		if (pos = readBuffer[client_fd].str().find(' ') != std::string::npos)
 			readHttpVersion(NULL, client_fd);
 		return ;
@@ -57,7 +57,7 @@ void RequestMessageReader::readHttpVersion(const char *buffer, int client_fd)
 		httpVersion = readBuffer[client_fd].str().substr(0, pos);
 		currMessage.startLine = httpVersion;
 		readBuffer[client_fd].str(readBuffer[client_fd].str().substr(pos + 1));
-		ParseState[client_fd] = RequestMessageParseState::HEADER;
+		ParseState[client_fd] = HEADER;
 		if (pos = readBuffer[client_fd].str().find('\n') != std::string::npos)
 			readHeader(NULL, client_fd);
 		return ;
