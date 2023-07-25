@@ -16,7 +16,7 @@ void MessageReader::readHeader(const char *buffer, int client_fd)
 			line.pop_back();
 		if (line.empty())
 		{
-			currMessage.parseState = BODY;
+			ParseState[client_fd] = RequestMessageParseState::BODY;
 			break;
 		}
 		headerSstream << line;
@@ -28,18 +28,17 @@ void MessageReader::readHeader(const char *buffer, int client_fd)
 
 void MessageReader::readBody(const char *buffer, int client_fd)
 {
-	std::stringstream sstream;
-	std::string line;
-	Message currMessage = messageBuffer[client_fd];
+	Message &currMessage = messageBuffer[client_fd];
+	std::stringstream &currReadBuffer = readBuffer[client_fd];
+	size_t pos;
 
 	readBuffer[client_fd] << buffer;
-	while (getline(sstream, line, '\n'))
+	if ((pos = readBuffer[client_fd].str().find("\r\n\r\n")) != std::string::npos)
 	{
-		if (line.empty())
-		{
-			currMessage.body = std::vector<unsigned char>(readBuffer[client_fd].str().begin(), readBuffer[client_fd].str().end());
-			currMessage.parseState = DONE;
-			return ;
-		}
+		currMessage.body = std::vector<unsigned char>(readBuffer[client_fd].str().begin(), readBuffer[client_fd].str().begin() + pos);
+		currReadBuffer.str(currReadBuffer.str().substr(pos + 4));
+		ParseState[client_fd] = RequestMessageParseState::DONE;
+		return ;
 	}
+	;
 }
