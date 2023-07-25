@@ -18,7 +18,7 @@ void MessageReader::readHeader(const char *buffer, int client_fd)
 			line.pop_back();
 		if (line.empty())
 		{
-			ParseState[client_fd] = RequestMessageParseState::BODY;
+			ParseState[client_fd] = BODY;
 			return (readBody(NULL, client_fd));
 		}
 		headerSstream << line;
@@ -39,7 +39,7 @@ void MessageReader::readBody(const char *buffer, int client_fd)
 	{
 		currMessage.body = std::vector<unsigned char>(readBuffer[client_fd].str().begin(), readBuffer[client_fd].str().begin() + pos);
 		currReadBuffer.str(currReadBuffer.str().substr(pos + 4));
-		ParseState[client_fd] = RequestMessageParseState::DONE;
+		ParseState[client_fd] = DONE;
 		return ;
 	}
 	;

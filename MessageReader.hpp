@@ -14,16 +14,6 @@ enum RequestMessageParseState
 	DONE
 };
 
-enum RespondMessageParseState
-{
-	HTTP_VERSION,
-	STATUS_CODE,
-	REASON_PHRASE,
-	HEADER,
-	BODY,
-	DONE
-};
-
 class MessageReader
 {
 public:
