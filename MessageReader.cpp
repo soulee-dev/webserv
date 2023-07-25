@@ -2,22 +2,24 @@
 
 void MessageReader::readHeader(const char *buffer, int client_fd)
 {
-	std::stringstream sstream;
 	std::stringstream headerSstream;
 	std::string line;
 	std::string key;
 	std::string value;
 	Message currMessage = messageBuffer[client_fd];
+	std::stringstream &currReadBuffer = readBuffer[client_fd];
+	size_t pos;
 
-	readBuffer[client_fd] << buffer;
-	while (getline(sstream, line, '\n'))
+	currReadBuffer << buffer;
+	while ((pos = currReadBuffer.str().find('\n')) != std::string::npos)
 	{
+		getline(currReadBuffer, line, '\n');
 		if (*line.end() == '\r')
 			line.pop_back();
 		if (line.empty())
 		{
 			ParseState[client_fd] = RequestMessageParseState::BODY;
-			break;
+			return (readBody(NULL, client_fd));
 		}
 		headerSstream << line;
 		getline(headerSstream, key, ':');
