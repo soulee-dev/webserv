@@ -215,6 +215,14 @@ void ServerManager::start_server()
                             // process_inner(currRequest);
                             // clients[curr_event->ident].clear();
                         }
+						else if (messageReader.ParseState[curr_event->ident] == ERROR)
+						{
+							// 에러처리 함
+							std::cout << "BAD REQUEST!!" << std::endl;
+							messageReader.ParseState[curr_event->ident] = METHOD;
+							messageReader.messageBuffer[curr_event->ident].clear();
+							continue;
+						}
                     }
                 }
             }

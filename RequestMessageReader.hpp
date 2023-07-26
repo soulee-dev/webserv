@@ -8,7 +8,8 @@ enum RequestMessageParseState
 	HTTP_VERSION,
 	HEADER,
 	BODY,
-	DONE
+	DONE,
+	ERROR
 };
 
 class RequestMessageReader

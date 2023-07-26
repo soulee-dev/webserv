@@ -22,8 +22,16 @@ void RequestMessageReader::readHeader(const char *buffer, int client_fd)
 			line.pop_back();
 		if (line.empty())
 		{
-			ParseState[client_fd] = BODY;
-			return (readBody("", client_fd));
+			if (currMessage.headers.find("host") == currMessage.headers.end())
+			{
+				ParseState[client_fd] = ERROR;
+				return ;
+			}
+			else
+			{
+				ParseState[client_fd] = BODY;
+				return (readBody("", client_fd));
+			}
 		}
 		headerSstream << line;
 		getline(headerSstream, key, ':');
@@ -56,6 +64,7 @@ void RequestMessageReader::readBody(const char *buffer, int client_fd)
 	if ((pos = std::search(currReadBuffer.begin(), currReadBuffer.end(), "\r\n\r\n", &"\r\n\r\n"[4])) != currReadBuffer.end())
 	{
 		currMessage.body = std::vector<unsigned char>(currReadBuffer.begin(), pos);
+		currReadBuffer.erase(currReadBuffer.begin(), pos + 4);
 		ParseState[client_fd] = DONE;
 	}
 }
@@ -94,7 +103,7 @@ void RequestMessageReader::readRequestTarget(const char *buffer, int client_fd)
 		currMessage.startLine += " " + currMessage.requestTarget;
 		currReadBuffer.erase(currReadBuffer.begin(), pos + 1);
 		ParseState[client_fd] = HTTP_VERSION;
-		if ((pos = std::search(currReadBuffer.begin(), currReadBuffer.end(), " ", &" "[1])) != currReadBuffer.end())
+		if ((pos = std::search(currReadBuffer.begin(), currReadBuffer.end(), "\r\n", &"\r\n"[2])) != currReadBuffer.end())
 			readHttpVersion("", client_fd);
 		return ;
 	}
@@ -111,8 +120,18 @@ void RequestMessageReader::readHttpVersion(const char *buffer, int client_fd)
 	if ((pos = std::search(currReadBuffer.begin(), currReadBuffer.end(), "\r\n", &"\r\n"[2])) != currReadBuffer.end())
 	{
 		currMessage.httpVersion = std::string(currReadBuffer.begin(), pos);
-		currMessage.startLine += " " + currMessage.httpVersion;
 		currReadBuffer.erase(currReadBuffer.begin(), pos + 2);
+		if (currMessage.httpVersion != "HTTP/1.1" && currMessage.httpVersion != "HTTP/1.0")
+		{
+			ParseState[client_fd] = ERROR;
+			return ;
+		}
+		else if (currMessage.method != "GET" && currMessage.method != "POST" && currMessage.method != "PUT" && currMessage.method != "DELETE")
+		{
+			ParseState[client_fd] = ERROR;
+			return ;
+		}
+		currMessage.startLine += " " + currMessage.httpVersion;
 		ParseState[client_fd] = HEADER;
 		if ((pos = std::search(currReadBuffer.begin(), currReadBuffer.end(), "\r\n", &"\r\n"[2])) != currReadBuffer.end())
 			readHeader("", client_fd);
