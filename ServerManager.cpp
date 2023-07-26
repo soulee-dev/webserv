@@ -153,11 +153,13 @@ void ServerManager::start_server()
                     }
                     fcntl(client_socket, F_SETFL, O_NONBLOCK);
                     change_events(client_socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+                    change_events(client_socket, EVFILT_TIMER, EV_ADD | EV_ENABLE, NOTE_SECONDS, 10, NULL);
                     messageReader.messageBuffer.insert(std::pair<int, RequestMessage>(client_socket, RequestMessage()));
                     messageReader.readBuffer.insert(std::pair<int, std::vector<unsigned char> >(client_socket, std::vector<unsigned char>()));
                 }
                 else if (messageReader.messageBuffer.find(curr_event->ident) != messageReader.messageBuffer.end())
                 {
+                    change_events(curr_event->ident, EVFILT_TIMER, EV_EOF, NOTE_SECONDS, 10, NULL);
                     char buf[20]; // 1000byte
                     memset(buf, 0, 20);
                     int n = read(curr_event->ident, buf, (sizeof(buf) - 1));
@@ -228,6 +230,11 @@ void ServerManager::start_server()
             }
             else if (curr_event->filter == EVFILT_WRITE)
             {
+            }
+            else if (curr_event->filter == EVFILT_TIMER)
+            {
+                disconnect_client(curr_event->ident);
+                change_events(curr_event->ident, EVFILT_TIMER, EV_DISABLE, 0, 0, NULL);
             }
         }
     }
