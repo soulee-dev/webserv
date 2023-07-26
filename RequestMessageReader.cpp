@@ -35,6 +35,19 @@ void RequestMessageReader::readHeader(const char *buffer, int client_fd)
 		}
 		headerSstream << line;
 		getline(headerSstream, key, ':');
+		if (key.size() == 0)
+		{
+			ParseState[client_fd] = ERROR;
+			return ;
+		}
+		for (int i = 0; i < key.size(); i++)
+		{
+			if (isspace(key[i]))
+			{
+				ParseState[client_fd] = ERROR;
+				return ;
+			}
+		}
 		getline(headerSstream, value);
 		if (value.size() == 0)
 		{
