@@ -1,4 +1,5 @@
 #include "ServerManager.hpp"
+#include "RespondMessageWriter.hpp"
 #include "RequestMessageReader.hpp"
 #include "algorithm"
 #include <iostream>
@@ -109,6 +110,7 @@ void ServerManager::start_server()
     std::map<SOCKET, PORT>::iterator it2;
     struct kevent event_list[8];
     RequestMessageReader messageReader = RequestMessageReader::getInstance();
+    RespondMessageWriter messageGenerator = RespondMessageWriter::getInstance();
     int new_events;
     struct kevent* curr_event;
     int client_socket;
