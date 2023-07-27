@@ -1,7 +1,7 @@
 NAME = web
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -pedantic-errors -g
-SRCS = srcs/main.cpp srcs/Server.cpp srcs/kq.cpp
+SRCS = srcs/main.cpp srcs/Server.cpp srcs/Kq.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 %.o : %.cpp

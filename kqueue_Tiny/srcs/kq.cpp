@@ -1,4 +1,5 @@
 #include "../includes/Server.hpp"
+#include "../includes/color.hpp"
 
 void exitWithPerror(const std::string& msg)
 {
@@ -16,24 +17,26 @@ void changeEvents(std::vector<struct kevent>& change_list, uintptr_t ident,
 	change_list.push_back(_temp_event);
 }
 
-void Server::disconnectFd(int client_fd, std::map<int, std::string>& clients)
+void Server::disconnectfd(int client_fd, std::map<int, std::string>& clients)
 {
-	std::cout << "client disconnectFd: " << client_fd << std::endl;
+	std::cout << "client disconnected" << '\n'; 
+	std::cout << "client fd: " << client_fd << std::endl;
 	close(client_fd);
 	clients.erase(client_fd);
 }
 
-void Server::run(void)
-{
 	// std::map<int, std::string> clients;
 	// std::vector<struct kevent> change_list;
 	// struct kevent event_list[8];
+
+void Server::run(void)
+{
 	if (listen(server_socket, 20))
 			throw std::runtime_error("Cannot listen socket");
 
 	changeEvents(change_list, server_socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0,
 				 0, NULL);
-	std::cout << "echo server started" << std::endl;
+	std::cout << BOLDGREEN << "-- Server started -- " << RESET << std::endl;
 
 	int new_events;
 	struct kevent* curr_event;
@@ -46,7 +49,6 @@ void Server::run(void)
 		change_list.clear();
 		for (int i = 0; i != new_events; ++i)
 		{
-			std::cout << i << std::endl;
 			curr_event = &event_list[i];
 			if (curr_event->flags & EV_ERROR)
 			{
@@ -55,15 +57,15 @@ void Server::run(void)
 				else
 				{
 					std::cerr << "client socket error" << std::endl;
-					disconnectFd(curr_event->ident, clients);
+					disconnectfd(curr_event->ident, clients);
 				}
 			}
 			else if (curr_event->filter == EVFILT_READ)
 			{
 				if (curr_event->ident == (unsigned int) server_socket)
 				{
-					sleep(3);
-					std::cout << "read" << std::endl;
+					sleep(1);
+					std::cout << BOLDYELLOW << "read" << RESET << std::endl;
 					int client_socket;
 
 					if ((client_socket = accept(server_socket, NULL, NULL)) == -1)
@@ -79,14 +81,14 @@ void Server::run(void)
 				}
 				else if (clients.find(curr_event->ident) != clients.end())
 				{
-					std::cout << "reading" << std::endl;
+					std::cout << BOLDMAGENTA << "reading" << RESET << std::endl;
 					char buf[1024];
 					int n = read(curr_event->ident, buf, sizeof(buf));
 					if (n <= 0)
 					{
 						if (n < 0)
 							std::cerr << " client read error! " << std::endl;
-						disconnectFd(curr_event->ident, clients);
+						disconnectfd(curr_event->ident, clients);
 					}
 					else
 					{
@@ -94,15 +96,15 @@ void Server::run(void)
 									 EV_ENABLE, 0, 0, NULL);
 						buf[n] = '\0';
 						clients[curr_event->ident] += buf;
-						std::cout << "received data from " << curr_event->ident << " : "
-								  << clients[curr_event->ident] << std::endl;
+						std::cout << "received data from " << curr_event->ident << " : \n" 
+								  << clients[curr_event->ident];
 					}
 				}
 			}
 			else if (curr_event->filter == EVFILT_WRITE)
 			{
-				sleep(3);
-				std::cout << "write" << std::endl;
+				sleep(1);
+				std::cout << BOLDPURPLE << "write" << RESET << std::endl;
 				std::map<int, std::string>::iterator it =
 					clients.find(curr_event->ident);
 
@@ -113,7 +115,7 @@ void Server::run(void)
 								   clients[curr_event->ident].size()) == -1))
 					{
 						std::cerr << "client write error!" << std::endl;
-						disconnectFd(curr_event->ident, clients);
+						disconnectfd(curr_event->ident, clients);
 					}
 					else
 					{
