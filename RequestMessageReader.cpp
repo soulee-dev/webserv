@@ -35,7 +35,25 @@ void RequestMessageReader::readHeader(const char *buffer, int client_fd)
 		}
 		headerSstream << line;
 		getline(headerSstream, key, ':');
+		if (key.size() == 0)
+		{
+			ParseState[client_fd] = ERROR;
+			return ;
+		}
+		for (int i = 0; i < key.size(); i++)
+		{
+			if (isspace(key[i]))
+			{
+				ParseState[client_fd] = ERROR;
+				return ;
+			}
+		}
 		getline(headerSstream, value);
+		if (value.size() == 0)
+		{
+			ParseState[client_fd] = ERROR;
+			return ;
+		}
 		headerSstream.clear();
 		// value의 처음 ifs들을 지움 근데 하나가 아닐 수 있음
 		while (value[0] == ' ')
