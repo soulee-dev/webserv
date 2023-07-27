@@ -85,7 +85,7 @@ void RequestMessageReader::readMethod(const char *buffer, int client_fd)
 		ParseState[client_fd] = REQUEST_TARGET;
 		if ((pos = std::search(currReadBuffer.begin(), currReadBuffer.end(), " ", &" "[1])) != currReadBuffer.end())
 			readRequestTarget("", client_fd);
-		else
+		else if ((pos = std::search(currReadBuffer.begin(), currReadBuffer.end(), "\r\n", &"\r\n"[2])) != currReadBuffer.end())
 		{
 			ParseState[client_fd] = ERROR;
 		}
@@ -113,7 +113,7 @@ void RequestMessageReader::readRequestTarget(const char *buffer, int client_fd)
 		ParseState[client_fd] = HTTP_VERSION;
 		if ((pos = std::search(currReadBuffer.begin(), currReadBuffer.end(), "\r\n", &"\r\n"[2])) != currReadBuffer.end())
 			readHttpVersion("", client_fd);
-		else
+		else if ((pos = std::search(currReadBuffer.begin(), currReadBuffer.end(), " ", &" "[1])) != currReadBuffer.end())
 		{
 			ParseState[client_fd] = ERROR;
 		}
