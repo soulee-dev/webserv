@@ -6,7 +6,7 @@
 #    By: jinam <jinam@student.42seoul.kr>           +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/06/02 11:11:51 by jinam             #+#    #+#              #
-#    Updated: 2023/07/26 13:17:53 by jinam            ###   ########.fr        #
+#    Updated: 2023/07/27 16:26:38 by jinam            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,11 +16,11 @@ NAME = Server
 
 # Cmd & Options
 CXX			= c++
-CXXFLAGS	= -fsanitize=address -g#-Wall -Werror -Wextra -std=c++98 -g3
+CXXFLAGS	= #-fsanitize=address -g#-Wall -Werror -Wextra -std=c++98 -g3
 RM 			= rm
 RMFLAGS		= -f
 OUT_DIR		= objs
-FILE		= main parse_func config action ServerManager RequestMessageReader
+FILE		= main Location Server config action ServerManager RequestMessageReader
 OBJECTS		= $(addprefix $(OUT_DIR)/, $(addsuffix .o, $(FILE)))
 
 # Compile rules
