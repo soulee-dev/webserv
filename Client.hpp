@@ -9,20 +9,19 @@ class Client
 private:
     Server* server;
     RequestMessage* req;
-    RespondMessage* res;
+    RespondMessage res;
+
+    Client(const Client& ref);
+    Client& operator=(const Client& ref);
 
 public:
     Client();
+    Client(RequestMessage* req, Server* server);
     ~Client();
-    Client(const Client& ref);
-    Client& operator=(const Client& ref);
     int runServer(void);
+    void setReq(RequestMessage* req);
+    void setServer(Server* server);
+    RespondMessage* getRes(void);
 };
-
-Client::Client() {}
-
-Client::~Client() {}
-Client::Client(const Client& ref) {}
-Client& Client::operator=(const Client& ref) {}
 
 #endif
