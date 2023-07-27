@@ -17,7 +17,7 @@ RespondMessage* Client::getRes(void)
     return &this->res;
 }
 
-int Client::runServer()
+void Client::runServer()
 {
-    return this->server->runServer(*this->req, this->res);
+    this->server->runServer(*this->req, this->res);
 }

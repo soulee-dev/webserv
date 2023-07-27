@@ -18,7 +18,7 @@ public:
     Client();
     Client(RequestMessage* req, Server* server);
     ~Client();
-    int runServer(void);
+    void runServer(void);
     void setReq(RequestMessage* req);
     void setServer(Server* server);
     RespondMessage* getRes(void);
