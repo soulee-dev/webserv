@@ -56,7 +56,7 @@ class Server
 		void		ServeDynamic(Request& req);
 		void		ServeAutoIndex(Request& req);
 		void		ClientError(int fd, std::string cause, std::string error_num, std::string short_msg, std::string long_msg);
-		void		ProcessTraffic(struct kevent* curr_event, std::vector<struct kevent> &change_list, int clientfd, int serverfd);
+		void		ProcessTraffic(int clientfd);
 		void		ParseURI(std::string uri, Request &req);
 		void		disconnectfd(int client_fd, std::map<int, std::string>& clients);
 
