@@ -12,7 +12,7 @@ Server::~Server()
 {
 }
 
-int Server::runServer(RequestMessage& req, RespondMessage& res)
+int Server::runServer(RequestMessage& req, ResponseMessage& res)
 {
     return 1;
 }

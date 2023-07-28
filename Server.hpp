@@ -2,7 +2,7 @@
 
 #include "Location.hpp"
 #include "RequestMessage.hpp"
-#include "RespondMessage.hpp"
+#include "ResponseMessage.hpp"
 #include <map>
 #include <string>
 class Server
@@ -13,7 +13,7 @@ public:
     bool fillServer(std::map<std::string, Location>& mapLocations, std::map<std::string, std::string>& mapSentence);
     int getListen() const;
     std::string getServerName() const;
-    int runServer(RequestMessage& req, RespondMessage& res);
+    int runServer(RequestMessage& req, ResponseMessage& res);
     void DebugPrint();
 
 private:
