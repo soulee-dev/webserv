@@ -1,4 +1,5 @@
 #pragma once
+#include "Client.hpp"
 #include "Server.hpp"
 #include <fcntl.h>
 #include <netdb.h>
@@ -24,12 +25,16 @@ public:
     std::map<PORT, std::vector<Server> > servers;               // init when config parsing
     std::map<PORT, std::vector<serverName> > serverNamesByPort; // init when init_server
     std::map<SOCKET, PORT> server_sockets;                      // init when config parsing
+    std::map<SOCKET, Client> clientsBySocket;
 
     std::vector<struct kevent> change_list;
     struct kevent event_list[8];
     void init_server();
     void start_server();
     int getKq();
+    Server* getClientServer(SOCKET ident);
+    void insertClient(SOCKET ident);
+    Client& getClient(SOCKET ident);
 
 private:
     ServerManager();
