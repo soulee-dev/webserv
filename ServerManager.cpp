@@ -1,9 +1,10 @@
 #include "ServerManager.hpp"
-#include "RespondMessageWriter.hpp"
 #include "RequestMessageReader.hpp"
+#include "RespondMessageWriter.hpp"
 #include "algorithm"
 #include <iostream>
 #include <sstream>
+#include <utility>
 
 ServerManager::ServerManager()
 {
@@ -38,6 +39,44 @@ void ServerManager::disconnect_client(int client_fd)
 }
 
 int ServerManager::getKq() { return this->kq; }
+
+Server* ServerManager::getClientServer(SOCKET ident)
+{
+    // informations
+    Client& currClient = clientsBySocket[ident];
+    PORT myPort = currClient.getPort();
+    std::string host = currClient.getReq()->headers["host"];
+    // find_servers
+    Server* ret;
+    std::string ServerName;
+    std::vector<Server>::iterator iter = servers[myPort].begin();
+    if (iter == servers[myPort].end())
+        return NULL;
+    ret = &servers[myPort][0];
+    int i = 0;
+    while (iter != servers[myPort].end())
+    {
+        if (iter->getServerName().compare(host) == 0)
+        {
+            ret = &servers[myPort][i];
+            ServerName = iter->getServerName();
+        }
+        i++;
+        iter++;
+    }
+    return ret;
+}
+
+void ServerManager::insertClient(SOCKET ident)
+{
+    clientsBySocket.insert(
+        std::pair<SOCKET, Client>(ident, Client()));
+}
+
+Client& ServerManager::getClient(SOCKET ident)
+{
+    return clientsBySocket[ident];
+}
 
 void ServerManager::init_server()
 {
@@ -150,8 +189,8 @@ void ServerManager::start_server()
             {
                 if (server_sockets.find(curr_event->ident) != server_sockets.end())
                 {
-                    int client_socket;
-                    if ((client_socket = accept(curr_event->ident, NULL, NULL)) == -1)
+                    const int client_socket = accept(curr_event->ident, NULL, NULL);
+                    if (client_socket == -1)
                     {
                         std::cout << "accept error" << std::endl;
                         continue;
@@ -166,6 +205,8 @@ void ServerManager::start_server()
                     messageReader.readBuffer.insert(
                         std::pair<int, std::vector<unsigned char> >(
                             client_socket, std::vector<unsigned char>()));
+                    insertClient(client_socket);
+                    getClient(client_socket).setPort(server_sockets[curr_event->ident]);
                 }
                 else if (messageReader.messageBuffer.find(curr_event->ident) !=
                          messageReader.messageBuffer.end())
@@ -217,8 +258,6 @@ void ServerManager::start_server()
                             ;
                             std::string a(currRequest.body.begin(), currRequest.body.end());
                             std::cout << a.c_str() << std::endl;
-                            messageReader.ParseState[curr_event->ident] = METHOD;
-                            messageReader.messageBuffer[curr_event->ident].clear();
 
                             // change_events(curr_event->ident, EVFILT_WRITE, EV_ADD |
                             // EV_ENABLE, 0, 0, NULL);
@@ -244,15 +283,24 @@ void ServerManager::start_server()
                         {
                             // 에러처리 함
                             std::cout << "BAD REQUEST!!" << std::endl;
+                        }
+
+                        if (messageReader.ParseState[curr_event->ident] == ERROR || messageReader.ParseState[curr_event->ident] == DONE)
+                        {
+                            // client에 request 넣고
+                            Client& currClient = getClient(curr_event->ident);
+                            currClient.setReq(&messageReader.messageBuffer[curr_event->ident]);
+                            // client에 서버 넣고,
+                            std::cout << ">>>>>>> servername : " << getClientServer(curr_event->ident)->getServerName() << std::endl;
+                            // currClient.setServer(getClientServer(curr_event->ident));
+                            // client의 server run 하고,
+                            // server가 response를 뱉음
+                            // 뱉은 response를 kevent (WRITE) 로 던짐
+                            //
+                            //
                             messageReader.ParseState[curr_event->ident] = METHOD;
                             messageReader.messageBuffer[curr_event->ident].clear();
-                            continue;
                         }
-                        // client에 request 넣고
-                        // client에 서버 넣고,
-                        // client의 server run 하고,
-                        // server가 response를 뱉음
-                        // 뱉은 response를 kevent (WRITE) 로 던짐
                     }
                 }
             }

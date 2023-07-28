@@ -12,6 +12,11 @@ Server::~Server()
 {
 }
 
+int Server::runServer(RequestMessage& req, RespondMessage& res)
+{
+    return 1;
+}
+
 bool Server::fillServer(std::map<std::string, Location>& mapLocations, std::map<std::string, std::string>& mapSentence)
 {
     std::map<std::string, std::string>::iterator it = mapSentence.begin();
