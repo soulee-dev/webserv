@@ -1,5 +1,5 @@
 #include "../includes/Server.hpp"
-#include "../includes/color.hpp"
+#include "../includes/Color.hpp"
 
 std::string getFileType(std::string file_name);
 

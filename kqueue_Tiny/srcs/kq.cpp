@@ -1,5 +1,5 @@
 #include "../includes/Server.hpp"
-#include "../includes/color.hpp"
+#include "../includes/Color.hpp"
 
 void exitWithPerror(const std::string &msg)
 {
