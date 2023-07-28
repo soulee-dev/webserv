@@ -64,6 +64,7 @@ Server* ServerManager::getClientServer(SOCKET ident)
         if (iter->getServerName().compare(clientHost))
         {
             res = &(*iter);
+            break ;
         }
         iter++;
     }
