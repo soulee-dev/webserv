@@ -279,53 +279,7 @@ void Server::ClientError(int fd, std::string cause, std::string error_num, std::
 	if (sent_bytes == (unsigned int)message.size())
 		std::cout << "Successfully send message" << std::endl;
 	else
-		std::cout << "Error" << std::endl;
-}
-
-std::string getFileType(std::string file_name)
-{
-	std::string file_type;
-
-	if (file_name.find(".html") != std::string::npos || file_name.find(".htm") != std::string::npos)
-		file_type = "text/html";
-	else if (file_name.find(".gif") != std::string::npos)
-		file_type = "image/gif";
-	else if (file_name.find(".png") != std::string::npos)
-		file_type = "image/png";
-	else if (file_name.find(".jpg") != std::string::npos)
-		file_type = "image/jpeg";
-	else if (file_name.find(".mpg") != std::string::npos)
-		file_type = "video/mpg";
-	else if (file_name.find(".mp4") != std::string::npos)
-		file_type = "video/mp4";
-	else
-		file_type = "text/plain";
-	return (file_type);
-}
-
-void Server::ServeStatic(Request &req)
-{
-	std::string file_type = getFileType(req.file_name);
-	ssize_t sent_bytes;
-	std::vector<char> buffer;
-	std::string header;
-	std::ifstream file(req.file_name, std::ios::binary);
-
-	// get length of file:
-	file.seekg(0, file.end);
-	int length = file.tellg();
-	file.seekg(0, file.beg);
-	buffer.resize(length);
-	file.read(&buffer[0], length);
-	header = BuildHeader("200 OK", length, file_type, cookies);
-	std::vector<char> response(header.begin(), header.end());
-	response.insert(response.end(), buffer.begin(), buffer.end());
-	if ((sent_bytes = send(req.fd, &response[0], response.size(), 0)) < 0)
-		throw std::runtime_error("Send failed");
-	if (sent_bytes == (unsigned int)response.size())
-		std::cout << "Successfully send message" << std::endl;
-	else
-		std::cout << "Error" << std::endl;
+		std::cout << "Client Error Error" << std::endl;
 }
 
 extern char **environ;
@@ -401,7 +355,7 @@ void Server::ServeAutoIndex(Request &req)
 	if (sent_bytes == message.size())
 		std::cout << "Successfully send message" << std::endl;
 	else
-		std::cout << "Error" << std::endl;
+		std::cout << "Serve Autoindex Error" << std::endl;
 }
 
 void Server::ParseURI(std::string uri, Request &req)
