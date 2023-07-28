@@ -6,7 +6,6 @@ std::string getFileType(std::string file_name);
 void Server::ServeStatic(Request &req)
 {
     std::string file_type = getFileType(req.file_name);
-    ssize_t sent_bytes;
     std::vector<char> buffer;
     std::string header;
     std::ifstream file(req.file_name, std::ios::binary);
@@ -35,25 +34,15 @@ void Server::ServeStatic(Request &req)
     while (sent_bytes_total < response.size())
     {
         ssize_t bytes_sent = send(req.fd, &response[sent_bytes_total], bytes_to_send, 0);
-
         if (bytes_sent < 0)
         {
-            if (errno == EAGAIN || errno == EWOULDBLOCK)
-            {
-                // 리소스가 일시적으로 부족한 경우, 잠시 기다렸다가 다시 시도
+            if (errno == EAGAIN || errno == EWOULDBLOCK) // 리소스가 일시적으로 부족할 수 있는데, 이때 잠시 기다렸다가 다시 시도해야함
                 continue;
-            }
             else
-            {
-                // 다른 오류가 발생한 경우, 에러 처리
-                throw std::runtime_error("Send failed");
-            }
+                throw std::runtime_error("Send failed"); // 다른 오류가 발생한 경우, 에러 처리
         }
-        else if (bytes_sent == 0)
-        {
-            // 클라이언트 연결이 끊어진 경우
+        else if (bytes_sent == 0) // 클라이언트 연결이 끊어진 경우
             break;
-        }
 
         sent_bytes_total += bytes_sent;
         bytes_to_send -= bytes_sent;
