@@ -14,11 +14,11 @@ enum METHOD
 };
 
 class Location;
-// class Server;
+class Server;
 class ConfigParser
 {
 	public:
-		static ConfigParser &getinstance()
+		static ConfigParser &getInstance()
 		{
 			static ConfigParser instance;
 			return instance;
@@ -27,6 +27,7 @@ class ConfigParser
 		void parseConfig(std::string const &configFileName);
 		void DebugPrint();
 		~ConfigParser() {};
+	
 	private:
 		ConfigParser() {};
 		typedef std::string str;

@@ -1,6 +1,7 @@
 #pragma once
 
-// #include "Location.hpp"
+# include "Location.hpp"
+# include "Request.hpp"
 # include <map>
 # include <string>
 
@@ -9,10 +10,10 @@ class Server
 	public:
 		Server();
 		~Server();
-		bool fillServer(std::map<std::string, location> &mapLocations, std::map<std::string, std::string> &mapSentence);
+		bool fillServer(std::map<std::string, Location> &mapLocations, std::map<std::string, std::string> &mapSentence);
 		int getListen() const;
 		std::string getServerName() const;
-		// int runServer(RequestMessage& req, RespondMessage& res);
+		int runServer(Request &req);
 		void DebugPrint();
 
 	private:

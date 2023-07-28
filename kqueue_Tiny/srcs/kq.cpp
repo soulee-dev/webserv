@@ -205,15 +205,15 @@ std::string escapeControlChars(const std::string &input)
 	{
 		switch (c)
 		{
-		case '\n':
-			result += "\\n";
-			break;
-		case '\r':
-			result += "\\r";
-			break;
-		default:
-			result += c;
-			break;
+			case '\n':
+				result += "\\n";
+				break;
+			case '\r':
+				result += "\\r";
+				break;
+			default:
+				result += c;
+				break;
 		}
 	}
 	return result;

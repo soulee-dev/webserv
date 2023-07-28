@@ -1,4 +1,5 @@
-#include "Server.hpp"
+#include "../includes/Server.hpp"
+#include "../includes/Location.hpp"
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -9,7 +10,7 @@ Server::Server()
 
 Server::~Server() {}
 
-// int Server::runServer(RequestMessage& req, RespondMessage& res) { return 1; }
+int Server::runServer(Request& req) { return 1; }
 
 bool Server::fillServer(std::map<std::string, Location>& mapLocations, std::map<std::string, std::string>& mapSentence)
 {
@@ -41,7 +42,8 @@ bool Server::fillServer(std::map<std::string, Location>& mapLocations, std::map<
 		else
 			return true;
 		it++;
-	}	
+	}
+	return false;
 }
 
 int Server::getListen() const

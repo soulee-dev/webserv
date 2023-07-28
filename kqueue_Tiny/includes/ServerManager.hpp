@@ -36,7 +36,7 @@ class ServerManager
 		unsigned int server_sockaddrlen;
 		int kq;
 
-		std::map<std::string, std::map<std::string, std::string>> sessions;
+		std::map<std::string, std::map<std::string, std::string> > sessions;
 
 		// REMOVE BEFORE FLIGHT
 		std::map<std::string, std::string> _config;

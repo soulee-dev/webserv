@@ -1,4 +1,5 @@
 #include "../includes/Config.hpp"
+#include "../includes/Color.hpp"
 #include <fstream>
 
 void ConfigParser::parseConfig(std::string const &configFileName)
@@ -49,6 +50,7 @@ void ConfigParser::parseConfig(std::string const &configFileName)
         }
 		if (prev_state == 2 && state == 4)
 		{
+			// std::cout<< BOLDRED <<"state : " << state <<'\n';
 			tmpSentence = mapSentence;
 			mapSentence.clear();
 		}
@@ -61,10 +63,10 @@ void ConfigParser::parseConfig(std::string const &configFileName)
 	}
 	if (state != 0)
 	{
-		std::cout << "Config Parse Error" << std::endl;
+		std::cout << BOLDRED << "-- Config Parse Error --" << RESET << std::endl;
 		exit(1);
 	}
-	std::cout << "Config Parse Success!" << std::endl;
+	std::cout << BOLDGREEN << "-- Config Parse Success! --" << RESET << std::endl;
 
 	#ifdef DEBUG
 		this->DebugPrint();

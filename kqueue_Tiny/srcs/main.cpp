@@ -17,11 +17,13 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	// if (argv == 2)
-	// {
-	// 	ConfigParser configparser = ConfigParser::getInstance();
-	// 	configParser.parseConfig(argv[1]);
-	// }
+	ConfigParser configParser = ConfigParser::getInstance();
+	std::string const conf = "default.conf";
+
+	if (argc == 1)
+		configParser.parseConfig(conf);
+	else
+		configParser.parseConfig(argv[1]);
 
 	ServerManager tiny("0.0.0.0", 8080);
 
@@ -29,4 +31,4 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-// config file 파싱, 서버 블록 여러 개 들어올 때 서버가 여러 개 열리도록 처리해야 함
+// config file 파싱
