@@ -1,4 +1,4 @@
-#include "../includes/Server.hpp"
+#include "../includes/ServerManager.hpp"
 #include "../includes/Color.hpp"
 
 void exitWithPerror(const std::string &msg)
@@ -17,7 +17,7 @@ void changeEvents(std::vector<struct kevent> &change_list, uintptr_t ident,
 	change_list.push_back(_temp_event);
 }
 
-void Server::disconnectfd(int client_fd, std::map<int, std::string> &clients)
+void ServerManager::disconnectfd(int client_fd, std::map<int, std::string> &clients)
 {
 	std::cout << "client disconnected" << '\n';
 	std::cout << "client fd: " << client_fd << std::endl;
@@ -29,7 +29,7 @@ void Server::disconnectfd(int client_fd, std::map<int, std::string> &clients)
 // std::vector<struct kevent> change_list;
 // struct kevent event_list[8];
 
-void Server::ProcessTraffic(int clientfd)
+void ServerManager::ProcessTraffic(int clientfd)
 {
 	std::cout << BOLDMAGENTA << "reading" << RESET << std::endl;
 	char buf[8192];
@@ -115,7 +115,7 @@ void Server::ProcessTraffic(int clientfd)
 	}
 }
 
-void Server::run(void)
+void ServerManager::run(void)
 {
 	if (listen(server_socket, 20))
 		throw std::runtime_error("Cannot listen socket");
@@ -219,7 +219,7 @@ std::string escapeControlChars(const std::string &input)
 	return result;
 }
 
-std::string Server::BuildHeader(std::string status_code, int file_size, std::string file_type)
+std::string ServerManager::BuildHeader(std::string status_code, int file_size, std::string file_type)
 {
 	std::ostringstream header;
 
@@ -247,7 +247,7 @@ std::string Server::BuildHeader(std::string status_code, int file_size, std::str
 // 	const size_t
 // }
 
-std::string Server::BuildHeader(std::string status_code, int file_size, std::string file_type, std::map<std::string, std::string> cookies)
+std::string ServerManager::BuildHeader(std::string status_code, int file_size, std::string file_type, std::map<std::string, std::string> cookies)
 {
 	std::ostringstream header;
 
@@ -264,7 +264,7 @@ std::string Server::BuildHeader(std::string status_code, int file_size, std::str
 	return (header.str());
 }
 
-void Server::ClientError(int fd, std::string cause, std::string error_num, std::string short_msg, std::string long_msg)
+void ServerManager::ClientError(int fd, std::string cause, std::string error_num, std::string short_msg, std::string long_msg)
 {
 	std::string htmlFile = "<html><title>Tiny Error</title><body bgcolor="
 						   "ffffff"
@@ -284,7 +284,7 @@ void Server::ClientError(int fd, std::string cause, std::string error_num, std::
 
 extern char **environ;
 
-void Server::ServeDynamic(Request &req)
+void ServerManager::ServeDynamic(Request &req)
 {
 	pid_t pid;
 	std::ostringstream header;
@@ -313,7 +313,7 @@ void Server::ServeDynamic(Request &req)
 	wait(NULL);
 }
 
-void Server::ServeAutoIndex(Request &req)
+void ServerManager::ServeAutoIndex(Request &req)
 {
 	DIR *dir = opendir(req.file_name.c_str());
 	std::stringstream html_file;
@@ -358,7 +358,7 @@ void Server::ServeAutoIndex(Request &req)
 		std::cout << "Serve Autoindex Error" << std::endl;
 }
 
-void Server::ParseURI(std::string uri, Request &req)
+void ServerManager::ParseURI(std::string uri, Request &req)
 {
 	if (uri.find("cgi-bin") == std::string::npos)
 	{

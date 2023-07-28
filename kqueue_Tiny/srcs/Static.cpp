@@ -1,9 +1,9 @@
-#include "../includes/Server.hpp"
+#include "../includes/ServerManager.hpp"
 #include "../includes/Color.hpp"
 
 std::string getFileType(std::string file_name);
 
-void Server::ServeStatic(Request &req)
+void ServerManager::ServeStatic(Request &req)
 {
     std::string file_type = getFileType(req.file_name);
     std::vector<char> buffer;

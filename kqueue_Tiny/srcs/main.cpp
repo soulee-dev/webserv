@@ -1,5 +1,7 @@
-#include "../includes/Server.hpp"
+#include "../includes/ServerManager.hpp"
 #include "../includes/csapp.h"
+#include "../includes/Config.hpp"
+#include "../includes/Color.hpp"
 
 int main(int argc, char **argv)
 {
@@ -11,11 +13,17 @@ int main(int argc, char **argv)
 
 	if (argc > 2)
 	{
-		std::cout << "please input config file" << std::endl;
+		std::cout << BOLDRED << "Please input Config file" << RESET << std::endl;
 		exit(1);
 	}
 
-	Server tiny("0.0.0.0", 8080);
+	// if (argv == 2)
+	// {
+	// 	ConfigParser configparser = ConfigParser::getInstance();
+	// 	configParser.parseConfig(argv[1]);
+	// }
+
+	ServerManager tiny("0.0.0.0", 8080);
 
 	tiny.run();
 	return 0;
