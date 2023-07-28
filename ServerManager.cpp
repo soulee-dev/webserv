@@ -61,7 +61,7 @@ Server* ServerManager::getClientServer(SOCKET ident)
     res = &servers[currPort][0];
     while (iter != servers[currPort].end())
     {
-        if (iter->getServerName().compare(clientHost))
+        if (iter->getServerName().compare(clientHost) == 0)
         {
             res = &(*iter);
             break ;
