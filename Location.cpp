@@ -114,7 +114,7 @@ bool Location::setAllowMethod(std::string& sentence)
     sstream << sentence;
     while (sstream >> token)
         tokens.push_back(token);
-    for (int i = 1; i < tokens.size(); i++)
+    for (size_t i = 1; i < tokens.size(); i++)
     {
         if (tokens[i] == "GET")
             allowMethod |= GET;

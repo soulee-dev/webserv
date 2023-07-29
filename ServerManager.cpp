@@ -183,6 +183,7 @@ void ServerManager::readEventProcess(SOCKET ident)
 
 void ServerManager::writeEventProcess(SOCKET ident)
 {
+    static_cast<void>(ident);
 }
 
 void ServerManager::timerEventProcess(SOCKET ident)

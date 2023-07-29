@@ -101,7 +101,7 @@ void RequestMessageReader::readHeader(const char *buffer, int client_fd)
 			ParseState[client_fd] = ERROR;
 			return ;
 		}
-		for (int i = 0; i < key.size(); i++)
+		for (size_t i = 0; i < key.size(); i++)
 		{
 			if (isspace(key[i]))
 			{
@@ -119,7 +119,7 @@ void RequestMessageReader::readHeader(const char *buffer, int client_fd)
 		// value의 처음 ifs들을 지움 근데 하나가 아닐 수 있음
 		while (value[0] == ' ')
 			value.erase(value.begin());
-		for (int i = 0; i < key.size(); i++)
+		for (size_t i = 0; i < key.size(); i++)
 			key[i] = tolower(key[i]);
 		currMessage.headers[key] = value;
 	}
@@ -154,7 +154,7 @@ void RequestMessageReader::readMethod(const char *buffer, int client_fd)
 	std::vector<unsigned char>::iterator pos;
 
 	// 첫줄에 개행만 들어온 경우 무시
-	if (strcmp(buffer, "\n") == 0 | strcmp(buffer, "\r\n") == 0)
+	if (strcmp(buffer, "\n") == 0 || strcmp(buffer, "\r\n") == 0)
 		return ;
 	// 입력버퍼벡터 뒤에 방금읽은 버퍼를 덧붙임
 	currReadBuffer.insert(currReadBuffer.end(), buffer, buffer + strlen(buffer));

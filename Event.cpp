@@ -11,9 +11,12 @@ Event::~Event()
 }
 Event::Event(const Event& ref)
 {
+    static_cast<void>(ref);
 }
 Event& Event::operator=(const Event& ref)
 {
+    static_cast<void>(ref);
+    return *this;
 }
 
 struct kevent& Event::operator[](int idx)

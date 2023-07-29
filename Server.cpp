@@ -10,6 +10,8 @@ Server::~Server() {}
 
 int Server::runServer(RequestMessage& req, ResponseMessage& res)
 {
+    static_cast<void>(req);
+    static_cast<void>(res);
     return 1;
 }
 
