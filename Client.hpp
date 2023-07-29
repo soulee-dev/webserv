@@ -4,6 +4,7 @@
 #include "Location.hpp"
 #include "RequestMessage.hpp"
 #include "ResponseMessage.hpp"
+
 class Client
 {
 private:

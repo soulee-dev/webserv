@@ -62,7 +62,6 @@ bool RequestMessageReader::readMessage(int client_fd)
 	return false;
 }
 
-
 void RequestMessageReader::readHeader(const char *buffer, int client_fd)
 {
 	std::stringstream headerSstream;
@@ -120,6 +119,7 @@ void RequestMessageReader::readHeader(const char *buffer, int client_fd)
 		while (value[0] == ' ')
 			value.erase(value.begin());
 		for (size_t i = 0; i < key.size(); i++)
+
 			key[i] = tolower(key[i]);
 		currMessage.headers[key] = value;
 	}
