@@ -216,8 +216,6 @@ void ServerManager::acceptClient(SOCKET serverSocket)
 void ServerManager::runServerManager(void)
 {
     int newEvent;
-    messageReader = &RequestMessageReader::getInstance();
-    messageWriter = &ResponseMessageWriter::getInstance();
 
     while (1)
     {
