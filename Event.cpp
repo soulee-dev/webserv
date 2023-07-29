@@ -40,16 +40,6 @@ int Event::getKq(void)
     return kq;
 }
 
-void Event::setKq(void)
-{
-    kq = kqueue();
-    if (kq == -1)
-    {
-        std::cout << "kqueue() error" << std::endl;
-        exit(1);
-    }
-}
-
 int Event::newEvents(void)
 {
     int res;

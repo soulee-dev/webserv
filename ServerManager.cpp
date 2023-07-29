@@ -160,6 +160,37 @@ void ServerManager::errorEventProcess(SOCKET ident)
     }
 }
 
+void ServerManager::readEventProcess(SOCKET ident)
+{
+    if (isRespondToServer(ident))
+        acceptClient(ident);
+    else
+    {
+        events.changeEvents(ident, EVFILT_TIMER, EV_EOF, NOTE_SECONDS, 1000, NULL);
+        if (messageReader->readMessage(ident))
+            disconnectClient(ident);
+        else if (messageReader->ParseState[ident] == DONE \
+            || messageReader->ParseState[ident] == ERROR)
+        {
+            // 메시지 처리하여 버퍼에 입력해야함.
+            // events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
+            std::cout << "메시지 잘 받았습니다^^" << std::endl;
+            messageReader->ParseState[ident] = METHOD;
+            messageReader->messageBuffer[ident].clear();
+        }
+    }
+}
+
+void ServerManager::writeEventProcess(SOCKET ident)
+{
+}
+
+void ServerManager::timerEventProcess(SOCKET ident)
+{
+    events.changeEvents(ident, EVFILT_TIMER, EV_DELETE, 0, 0, NULL);
+    disconnectClient(ident);
+}
+
 bool ServerManager::isRespondToServer(SOCKET serverSocket)
 {
     return portByServerSocket.find(serverSocket) != portByServerSocket.end();
@@ -185,8 +216,8 @@ void ServerManager::acceptClient(SOCKET serverSocket)
 void ServerManager::runServerManager(void)
 {
     int newEvent;
-    RequestMessageReader &messageReader = RequestMessageReader::getInstance();
-    ResponseMessageWriter &messageWriter = ResponseMessageWriter::getInstance();
+    messageReader = &RequestMessageReader::getInstance();
+    messageWriter = &ResponseMessageWriter::getInstance();
 
     while (1)
     {
@@ -201,33 +232,11 @@ void ServerManager::runServerManager(void)
             if (currEvent.flags & EV_ERROR)
                 errorEventProcess(currEvent.ident);
             else if (currEvent.filter == EVFILT_READ)
-            {
-                if (isRespondToServer(currEvent.ident))
-                    acceptClient(currEvent.ident);
-                else
-                {
-                    events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_EOF, NOTE_SECONDS, 1000, NULL);
-                    if (messageReader.readMessage(currEvent.ident))
-                        disconnectClient(currEvent.ident);
-                    else if (messageReader.ParseState[currEvent.ident] == DONE \
-                     || messageReader.ParseState[currEvent.ident] == ERROR)
-                    {
-                       // 메시지 처리하여 버퍼에 입력해야함.
-                        // events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
-                        std::cout << "메시지 잘 받았습니다^^" << std::endl;
-                        messageReader.ParseState[currEvent.ident] = METHOD;
-                        messageReader.messageBuffer[currEvent.ident].clear();
-                    }
-                }
-            }
+                readEventProcess(currEvent.ident);
             else if (currEvent.filter == EVFILT_WRITE)
-            {
-            }
+                writeEventProcess(currEvent.ident);
             else if (currEvent.filter == EVFILT_TIMER)
-            {
-                events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_DELETE, 0, 0, NULL);
-                disconnectClient(currEvent.ident);
-            }
+                timerEventProcess(currEvent.ident);
         }
     }
 }

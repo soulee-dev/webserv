@@ -51,9 +51,9 @@ private:
     void disconnectClient(int client_fd);
 
     void errorEventProcess(SOCKET ident);
-    void readEventProcess(void);
-    void writeEventProcess(void);
-    void timerEventProcess(void);
+    void readEventProcess(SOCKET ident);
+    void writeEventProcess(SOCKET ident);
+    void timerEventProcess(SOCKET ident);
 
     bool isRespondToServer(SOCKET server_fd);
     void acceptClient(SOCKET server_fd);

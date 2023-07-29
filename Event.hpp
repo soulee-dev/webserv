@@ -21,5 +21,4 @@ public:
     int newEvents(void);
     void clearChangeEventList(void);
     int getKq(void);
-    void setKq(void);
 };
