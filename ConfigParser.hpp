@@ -18,11 +18,7 @@ class Server;
 class ConfigParser
 {
 public:
-    static ConfigParser& getInstance()
-    {
-        static ConfigParser instance;
-        return instance;
-    }
+    static ConfigParser& getInstance();
     std::map<int, std::vector<Server> > server;
     void parseConfig(std::string const& configFileName);
     void DebugPrint();
@@ -30,18 +26,27 @@ public:
 
 private:
     ConfigParser();
-    typedef std::string str;
     typedef std::map<int, std::vector<Server> > mapPortServer;
     typedef std::map<std::string, Location> mapStrLocation;
     typedef std::vector<std::string> vecStr;
     typedef std::map<std::string, std::string> mapStrStr;
 
-    static int parse_action_0(str& input, mapPortServer& servers, mapStrLocation& locations, str& LocationDir, vecStr& stack, mapStrStr& sentence);
-    static int parse_action_1(str& input, mapPortServer& servers, mapStrLocation& locations, str& LocationDir, vecStr& stack, mapStrStr& sentence);
-    static int parse_action_2(str& input, mapPortServer& servers, mapStrLocation& locations, str& LocationDir, vecStr& stack, mapStrStr& sentence);
-    static int parse_action_3(str& input, mapPortServer& servers, mapStrLocation& locations, str& LocationDir, vecStr& stack, mapStrStr& sentence);
-    static int parse_action_4(str& input, mapPortServer& servers, mapStrLocation& locations, str& LocationDir, vecStr& stack, mapStrStr& sentence);
-    static int parse_action_5(str& input, mapPortServer& servers, mapStrLocation& locations, str& LocationDir, vecStr& stack, mapStrStr& sentence);
-    static int parse_action_6(str& input, mapPortServer& servers, mapStrLocation& locations, str& LocationDir, vecStr& stack, mapStrStr& sentence);
-    static int parse_action_7(str& input, mapPortServer& servers, mapStrLocation& locations, str& LocationDir, vecStr& stack, mapStrStr& sentence);
+    struct s_info
+    {
+        std::string inputToken;
+        std::map<std::string, Location> locations;
+        std::string locationDir;
+        std::vector<std::string> vecInput;
+        std::map<std::string, std::string> mapSentence;
+    };
+
+    static int parse_action_0(struct s_info& parse_info, mapPortServer& servers);
+    static int parse_action_1(struct s_info& parse_info, mapPortServer& servers);
+    static int parse_action_2(struct s_info& parse_info, mapPortServer& servers);
+    static int parse_action_3(struct s_info& parse_info, mapPortServer& servers);
+    static int parse_action_4(struct s_info& parse_info, mapPortServer& servers);
+    static int parse_action_5(struct s_info& parse_info, mapPortServer& servers);
+    static int parse_action_6(struct s_info& parse_info, mapPortServer& servers);
+    static int parse_action_7(struct s_info& parse_info, mapPortServer& servers);
+
 };

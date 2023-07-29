@@ -3,16 +3,19 @@
 #include "Server.hpp"
 #include <fstream>
 
-ConfigParser::ConfigParser()
+ConfigParser::ConfigParser() {}
+
+ConfigParser::~ConfigParser() {}
+
+ConfigParser& ConfigParser::getInstance()
 {
+    static ConfigParser instance;
+    return instance;
 }
 
-ConfigParser::~ConfigParser()
-{
-}
 void ConfigParser::parseConfig(std::string const& configFileName)
 {
-    int (*action[8])(str&, mapPortServer&, mapStrLocation&, str&, vecStr&, mapStrStr&) = {
+    int (*action[8])(struct s_info&, mapPortServer&) = {
         parse_action_0,
         parse_action_1,
         parse_action_2,
@@ -23,16 +26,12 @@ void ConfigParser::parseConfig(std::string const& configFileName)
         parse_action_7};
     std::fstream fileStream;
     std::stringstream sstream;
-    std::string inputToken;
-    std::vector<std::string> vecInput;
     char c;
     int state;
-    std::map<std::string, std::string> mapSentence;
     std::map<std::string, std::string> tmpSentence;
-    std::map<std::string, Location> locations;
-    std::string locationDir;
     int prev_state;
     std::string prev_token;
+    struct s_info parse_info;
 
     fileStream.open(configFileName.c_str(), std::ios::in);
     if (fileStream.fail())
@@ -43,10 +42,10 @@ void ConfigParser::parseConfig(std::string const& configFileName)
     while (fileStream.get(c))
         sstream << c;
     state = 0;
-    while (sstream >> inputToken)
+    while (sstream >> parse_info.inputToken)
     {
         prev_state = state;
-        state = action[state](inputToken, this->server, locations, locationDir, vecInput, mapSentence);
+        state = action[state](parse_info, this->server);
         if (state == CONFIG_ERROR)
         {
             std::cout << "error in token : " << prev_token << std::endl;
@@ -54,15 +53,15 @@ void ConfigParser::parseConfig(std::string const& configFileName)
         }
         if (prev_state == 2 && state == 4)
         {
-            tmpSentence = mapSentence;
-            mapSentence.clear();
+            tmpSentence = parse_info.mapSentence;
+            parse_info.mapSentence.clear();
         }
         else if (prev_state == 6 && state == 2)
         {
-            mapSentence = tmpSentence;
+            parse_info.mapSentence = tmpSentence;
             tmpSentence.clear();
         }
-        prev_token = inputToken;
+        prev_token = parse_info.inputToken;
     }
     if (state != 0)
     {

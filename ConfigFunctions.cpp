@@ -2,26 +2,33 @@
 #include "Location.hpp"
 #include "Server.hpp"
 
-int ConfigParser::parse_action_0(str& input, mapPortServer& servers, mapStrLocation& locations,
-                                 str& locationDir, vecStr& vecInput, mapStrStr& mapSentence)
+int ConfigParser::parse_action_0(struct s_info& parse_info, mapPortServer& servers)
 {
+    std::string &input = parse_info.inputToken;
+
+    static_cast<void>(servers);
     if (input == "server")
         return 1;
     return CONFIG_ERROR;
 }
 
-int ConfigParser::parse_action_1(str& input, mapPortServer& servers, mapStrLocation& locations,
-                                 str& locationDir, vecStr& vecInput, mapStrStr& mapSentence)
+int ConfigParser::parse_action_1(struct s_info& parse_info, mapPortServer& servers)
 {
+    std::string &input = parse_info.inputToken;
+
+    static_cast<void>(servers);
     if (input == "{")
         return 2;
     else
         return CONFIG_ERROR;
 }
 
-int ConfigParser::parse_action_2(str& input, mapPortServer& servers, mapStrLocation& locations,
-                                 str& locationDir, vecStr& vecInput, mapStrStr& mapSentence)
+int ConfigParser::parse_action_2(struct s_info& parse_info, mapPortServer& servers)
 {
+    std::string &input = parse_info.inputToken;
+    std::vector<std::string> &vecInput = parse_info.vecInput;
+    std::map<std::string, std::string> &mapSentence = parse_info.mapSentence;
+    std::map<std::string, Location> &locations = parse_info.locations;
     Server server;
 
     if (input == "}")
@@ -54,12 +61,15 @@ int ConfigParser::parse_action_2(str& input, mapPortServer& servers, mapStrLocat
     }
 }
 
-int ConfigParser::parse_action_3(str& input, mapPortServer& servers, mapStrLocation& locations,
-                                 str& locationDir, vecStr& vecInput, mapStrStr& mapSentence)
+int ConfigParser::parse_action_3(struct s_info& parse_info, mapPortServer& servers)
 {
+    std::string &input = parse_info.inputToken;
+    std::vector<std::string> &vecInput = parse_info.vecInput;
+    std::map<std::string, std::string> &mapSentence = parse_info.mapSentence;
     std::string concatTokens;
     int vecInputSize = vecInput.size();
 
+    static_cast<void>(servers);
     if (input == ";")
     {
         if (vecInputSize < 2)
@@ -95,9 +105,12 @@ int ConfigParser::parse_action_3(str& input, mapPortServer& servers, mapStrLocat
     }
 }
 
-int ConfigParser::parse_action_4(str& input, mapPortServer& servers, mapStrLocation& locations,
-                                 str& locationDir, vecStr& vecInput, mapStrStr& mapSentence)
+int ConfigParser::parse_action_4(struct s_info& parse_info, mapPortServer& servers)
 {
+    std::string &input = parse_info.inputToken;
+    std::string &locationDir = parse_info.locationDir;
+
+    static_cast<void>(servers);
     if (input == "{" || input == "}" || input == ";")
         return CONFIG_ERROR;
     else
@@ -107,20 +120,27 @@ int ConfigParser::parse_action_4(str& input, mapPortServer& servers, mapStrLocat
     }
 }
 
-int ConfigParser::parse_action_5(str& input, mapPortServer& servers, mapStrLocation& locations,
-                                 str& locationDir, vecStr& vecInput, mapStrStr& mapSentence)
+int ConfigParser::parse_action_5(struct s_info& parse_info, mapPortServer& servers)
 {
+    std::string &input = parse_info.inputToken;
+
+    static_cast<void>(servers);
     if (input == "{")
         return 6;
     else
         return CONFIG_ERROR;
 }
 
-int ConfigParser::parse_action_6(str& input, mapPortServer& servers, mapStrLocation& locations,
-                                 str& locationDir, vecStr& vecInput, mapStrStr& mapSentence)
+int ConfigParser::parse_action_6(struct s_info& parse_info, mapPortServer& servers)
 {
+    std::string &input = parse_info.inputToken;
+    std::vector<std::string> &vecInput = parse_info.vecInput;
+    std::map<std::string, std::string> &mapSentence = parse_info.mapSentence;
+    std::string &locationDir = parse_info.locationDir;
+    std::map<std::string, Location> &locations = parse_info.locations;
     Location locationBlock;
 
+    static_cast<void>(servers);
     if (input == "}")
     {
         if (vecInput.size() != 0)
@@ -140,12 +160,15 @@ int ConfigParser::parse_action_6(str& input, mapPortServer& servers, mapStrLocat
     }
 }
 
-int ConfigParser::parse_action_7(str& input, mapPortServer& servers, mapStrLocation& locations,
-                                 str& locationDir, vecStr& vecInput, mapStrStr& mapSentence)
+int ConfigParser::parse_action_7(struct s_info& parse_info, mapPortServer& servers)
 {
+    std::string &input = parse_info.inputToken;
+    std::vector<std::string> &vecInput = parse_info.vecInput;
+    std::map<std::string, std::string> &mapSentence = parse_info.mapSentence;
     std::string concatTokens;
     int vecInputSize = vecInput.size();
 
+    static_cast<void>(servers);
     if (input == ";")
     {
         if (vecInputSize < 2)
