@@ -4,7 +4,7 @@
 #include <map>
 #include <sstream>
 #include <vector>
-
+# define CONFIG_ERROR -1
 enum METHOD
 {
     GET = 0,

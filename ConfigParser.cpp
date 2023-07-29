@@ -47,11 +47,10 @@ void ConfigParser::parseConfig(std::string const& configFileName)
     {
         prev_state = state;
         state = action[state](inputToken, this->server, locations, locationDir, vecInput, mapSentence);
-        if (state == -1)
+        if (state == CONFIG_ERROR)
         {
-            std::cout << "Error in token : " << prev_token << std::endl;
-            std::cout << "config parse error" << std::endl;
-            exit(1);
+            std::cout << "error in token : " << prev_token << std::endl;
+            break ;
         }
         if (prev_state == 2 && state == 4)
         {

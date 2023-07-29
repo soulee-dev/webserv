@@ -5,9 +5,9 @@
 int ConfigParser::parse_action_0(str& input, mapPortServer& servers, mapStrLocation& locations,
                                  str& locationDir, vecStr& vecInput, mapStrStr& mapSentence)
 {
-    if (input != "server")
-        return -1;
-    return 1;
+    if (input == "server")
+        return 1;
+    return CONFIG_ERROR;
 }
 
 int ConfigParser::parse_action_1(str& input, mapPortServer& servers, mapStrLocation& locations,
@@ -16,7 +16,7 @@ int ConfigParser::parse_action_1(str& input, mapPortServer& servers, mapStrLocat
     if (input == "{")
         return 2;
     else
-        return -1;
+        return CONFIG_ERROR;
 }
 
 int ConfigParser::parse_action_2(str& input, mapPortServer& servers, mapStrLocation& locations,
@@ -46,7 +46,7 @@ int ConfigParser::parse_action_2(str& input, mapPortServer& servers, mapStrLocat
     else if (input == "location")
         return 4;
     else if (input == ";")
-        return -1;
+        return CONFIG_ERROR;
     else
     {
         vecInput.push_back(input);
@@ -63,11 +63,11 @@ int ConfigParser::parse_action_3(str& input, mapPortServer& servers, mapStrLocat
     if (input == ";")
     {
         if (vecInputSize < 2)
-            return -1;
+            return CONFIG_ERROR;
         else if (vecInputSize == 2)
         {
             if (vecInput[0] == "return" || vecInput[0] == "error_page")
-                return -1;
+                return CONFIG_ERROR;
             mapSentence.insert(std::pair<std::string, std::string>(vecInput[0], vecInput[1]));
             vecInput.clear();
             return 2;
@@ -75,7 +75,7 @@ int ConfigParser::parse_action_3(str& input, mapPortServer& servers, mapStrLocat
         else // vecInput.size() > 2
         {
             if (vecInput[0] != "error_page" && vecInput[0] != "return" && vecInput[0] != "allow_method" && vecInput[0] != "index")
-                return -1;
+                return CONFIG_ERROR;
             concatTokens = "";
             for (int i = 1; i < vecInputSize; i++)
             {
@@ -87,7 +87,7 @@ int ConfigParser::parse_action_3(str& input, mapPortServer& servers, mapStrLocat
         }
     }
     else if (input == "{" || input == "}")
-        return -1;
+        return CONFIG_ERROR;
     else
     {
         vecInput.push_back(input);
@@ -99,7 +99,7 @@ int ConfigParser::parse_action_4(str& input, mapPortServer& servers, mapStrLocat
                                  str& locationDir, vecStr& vecInput, mapStrStr& mapSentence)
 {
     if (input == "{" || input == "}" || input == ";")
-        return -1;
+        return CONFIG_ERROR;
     else
     {
         locationDir = input;
@@ -113,7 +113,7 @@ int ConfigParser::parse_action_5(str& input, mapPortServer& servers, mapStrLocat
     if (input == "{")
         return 6;
     else
-        return -1;
+        return CONFIG_ERROR;
 }
 
 int ConfigParser::parse_action_6(str& input, mapPortServer& servers, mapStrLocation& locations,
@@ -124,15 +124,15 @@ int ConfigParser::parse_action_6(str& input, mapPortServer& servers, mapStrLocat
     if (input == "}")
     {
         if (vecInput.size() != 0)
-            return -1;
+            return CONFIG_ERROR;
         if (locationBlock.fillLocationBlock(mapSentence))
-            return -1;
+            return CONFIG_ERROR;
         mapSentence.clear();
         locations.insert(std::pair<std::string, Location>(locationDir, locationBlock));
         return 2;
     }
     else if (input == ";" || input == "{")
-        return -1;
+        return CONFIG_ERROR;
     else
     {
         vecInput.push_back(input);
@@ -149,11 +149,11 @@ int ConfigParser::parse_action_7(str& input, mapPortServer& servers, mapStrLocat
     if (input == ";")
     {
         if (vecInputSize < 2)
-            return -1;
+            return CONFIG_ERROR;
         else if (vecInputSize == 2)
         {
             if (vecInput[0] == "return " || vecInput[0] == "error_page")
-                return -1;
+                return CONFIG_ERROR;
             mapSentence.insert(std::pair<std::string, std::string>(vecInput[0], vecInput[1]));
             vecInput.clear();
             return 6;
@@ -161,7 +161,7 @@ int ConfigParser::parse_action_7(str& input, mapPortServer& servers, mapStrLocat
         else // vecInput.size() > 2
         {
             if (vecInput[0] != "error_page" && vecInput[0] != "return" && vecInput[0] != "allow_method" && vecInput[0] != "index")
-                return -1;
+                return CONFIG_ERROR;
             concatTokens = "";
             for (int i = 1; i < vecInputSize; i++)
             {
@@ -173,7 +173,7 @@ int ConfigParser::parse_action_7(str& input, mapPortServer& servers, mapStrLocat
         }
     }
     else if (input == "{" || input == "}")
-        return -1;
+        return CONFIG_ERROR;
     else
     {
         vecInput.push_back(input);
