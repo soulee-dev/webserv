@@ -3,14 +3,15 @@
 
 #include "Location.hpp"
 #include "RequestMessage.hpp"
-#include "RespondMessage.hpp"
+#include "ResponseMessage.hpp"
+
 class Client
 {
 private:
     int port;
     Server* server;
     RequestMessage* req;
-    RespondMessage res;
+    ResponseMessage res;
 
     Client& operator=(const Client& ref);
 
@@ -23,7 +24,7 @@ public:
     void setPort(int port);
     void setReq(RequestMessage* req);
     void setServer(Server* server);
-    RespondMessage* getRes(void);
+    ResponseMessage* getRes(void);
     RequestMessage* getReq(void);
     int getPort(void);
 };
