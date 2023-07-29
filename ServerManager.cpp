@@ -230,13 +230,22 @@ void ServerManager::runServerManager(void)
             struct kevent& currEvent = events[i];
 
             if (currEvent.flags & EV_ERROR)
+            {
                 errorEventProcess(currEvent.ident);
-            else if (currEvent.filter == EVFILT_READ)
+                continue;
+            }
+            switch (currEvent.filter)
+            {
+            case EVFILT_READ :
                 readEventProcess(currEvent.ident);
-            else if (currEvent.filter == EVFILT_WRITE)
+                break;
+            case EVFILT_WRITE :
                 writeEventProcess(currEvent.ident);
-            else if (currEvent.filter == EVFILT_TIMER)
+                break;
+            case EVFILT_TIMER :
                 timerEventProcess(currEvent.ident);
+                break;
+            }
         }
     }
 }
