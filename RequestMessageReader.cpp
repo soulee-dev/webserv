@@ -149,19 +149,24 @@ void RequestMessageReader::readBody(const char *buffer, int client_fd)
 }
 void RequestMessageReader::readMethod(const char *buffer, int client_fd)
 {
-	RequestMessage &currMessage = static_cast<RequestMessage&>(messageBuffer[client_fd]);
+	RequestMessage &currMessage = messageBuffer[client_fd];
 	std::vector<unsigned char> &currReadBuffer = readBuffer[client_fd];
 	std::vector<unsigned char>::iterator pos;
 
+	// 첫줄에 개행만 들어온 경우 무시
 	if (strcmp(buffer, "\n") == 0 | strcmp(buffer, "\r\n") == 0)
 		return ;
+	// 입력버퍼벡터 뒤에 방금읽은 버퍼를 덧붙임
 	currReadBuffer.insert(currReadBuffer.end(), buffer, buffer + strlen(buffer));
+	// 입력버퍼벡터에서 공백을 찾음
 	if ((pos = std::search(currReadBuffer.begin(), currReadBuffer.end(), " ", &" "[1])) != currReadBuffer.end())
 	{
 		currMessage.method = std::string(currReadBuffer.begin(), pos);
 		currMessage.startLine = currMessage.method;
 		currReadBuffer.erase(currReadBuffer.begin(), pos + 1);
 		ParseState[client_fd] = REQUEST_TARGET;
+		// 또 다른 공백을 찾은 경우 다음 파싱으로 넘어감.
+		// 이때 공백이 연속해서 들어오는 경우를 생각해 볼 수 있는데 이런 경우 에러처리로 됨.
 		if ((pos = std::search(currReadBuffer.begin(), currReadBuffer.end(), " ", &" "[1])) != currReadBuffer.end())
 			readRequestTarget("", client_fd);
 		else if ((pos = std::search(currReadBuffer.begin(), currReadBuffer.end(), "\r\n", &"\r\n"[2])) != currReadBuffer.end())
@@ -169,6 +174,7 @@ void RequestMessageReader::readMethod(const char *buffer, int client_fd)
 			ParseState[client_fd] = ERROR;
 		}
 	}
+	// 공백이 아닌 개행을 읽은 경우 파싱이 완료되지 못하기 때문에 에러
 	else if ((pos = std::search(currReadBuffer.begin(), currReadBuffer.end(), "\r\n", &"\r\n"[2])) != currReadBuffer.end())
 	{
 		ParseState[client_fd] = ERROR;
@@ -178,7 +184,7 @@ void RequestMessageReader::readMethod(const char *buffer, int client_fd)
 
 void RequestMessageReader::readRequestTarget(const char *buffer, int client_fd)
 {
-	RequestMessage &currMessage = static_cast<RequestMessage&>(messageBuffer[client_fd]);
+	RequestMessage &currMessage = messageBuffer[client_fd];
 	std::vector<unsigned char> &currReadBuffer = readBuffer[client_fd];
 	std::vector<unsigned char>::iterator pos;
 
@@ -206,7 +212,7 @@ void RequestMessageReader::readRequestTarget(const char *buffer, int client_fd)
 
 void RequestMessageReader::readHttpVersion(const char *buffer, int client_fd)
 {
-	RequestMessage &currMessage = static_cast<RequestMessage&>(messageBuffer[client_fd]);
+	RequestMessage &currMessage = messageBuffer[client_fd];
 	std::vector<unsigned char> &currReadBuffer = readBuffer[client_fd];
 	std::vector<unsigned char>::iterator pos;
 
@@ -217,11 +223,6 @@ void RequestMessageReader::readHttpVersion(const char *buffer, int client_fd)
 		currMessage.httpVersion = std::string(currReadBuffer.begin(), pos);
 		currReadBuffer.erase(currReadBuffer.begin(), pos + 2);
 		if (currMessage.httpVersion != "HTTP/1.1" && currMessage.httpVersion != "HTTP/1.0")
-		{
-			ParseState[client_fd] = ERROR;
-			return ;
-		}
-		else if (currMessage.method != "GET" && currMessage.method != "POST" && currMessage.method != "PUT" && currMessage.method != "DELETE")
 		{
 			ParseState[client_fd] = ERROR;
 			return ;
