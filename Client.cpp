@@ -21,7 +21,7 @@ void Client::setServer(Server* server)
     this->server = server;
 }
 
-RespondMessage* Client::getRes(void)
+ResponseMessage* Client::getRes(void)
 {
     return &this->res;
 }

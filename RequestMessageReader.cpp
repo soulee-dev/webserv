@@ -1,6 +1,67 @@
 #include "RequestMessageReader.hpp"
 #include <sstream>
+#include <iostream>
+#include <unistd.h>
 #include <algorithm>
+
+RequestMessageReader& RequestMessageReader::getInstance()
+{
+	static RequestMessageReader instance;
+	return instance;
+}
+
+void RequestMessageReader::insertNewClient(int client_fd)
+{
+	this->messageBuffer[client_fd] = RequestMessage();
+	this->readBuffer[client_fd] = std::vector<unsigned char>();
+	this->ParseState[client_fd] = METHOD;
+}
+
+
+void RequestMessageReader::deleteClient(int client_fd)
+{
+	this->messageBuffer.erase(client_fd);
+	this->readBuffer.erase(client_fd);
+	this->ParseState.erase(client_fd);
+}
+
+bool RequestMessageReader::readMessage(int client_fd)
+{
+	const size_t BUFFER_SIZE = 1024;
+	char buffer[BUFFER_SIZE];
+	int readSize = read(client_fd, buffer, BUFFER_SIZE);
+
+	if (readSize <= 0)
+	{
+		if (readSize == -1)
+			std::cout << "read() error" << std::endl;
+		return true;
+	}
+	buffer[readSize] = '\0';
+
+	switch (ParseState[client_fd])
+	{
+	case METHOD:
+		readMethod(buffer, client_fd);
+		break;
+	case REQUEST_TARGET:
+		readRequestTarget(buffer, client_fd);
+		break;
+	case HTTP_VERSION:
+		readHttpVersion(buffer, client_fd);
+		break;
+	case HEADER:
+		readHeader(buffer, client_fd);
+		break;
+	case BODY:
+		readBody(buffer, client_fd);
+		break;
+	default:
+		break;
+	}
+	return false;
+}
+
 
 void RequestMessageReader::readHeader(const char *buffer, int client_fd)
 {

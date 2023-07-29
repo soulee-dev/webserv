@@ -6,15 +6,13 @@
 class ResponseMessageWriter
 {
 public:
-    static ResponseMessageWriter& getInstance()
-    {
-        static ResponseMessageWriter instance;
-        return instance;
-    }
-    ~ResponseMessageWriter(){};
-    std::map<int, std::vector<unsigned char> > readBuffer;
-    std::map<int, ResponseMessage> messageBuffer;
+    static ResponseMessageWriter& getInstance();
+    ~ResponseMessageWriter();
+    std::map<int, std::vector<unsigned char> > writeBuffer;
+
+    void insertNewClient(int client_fd);
+    void deleteClient(int client_fd);
 
 private:
-    ResponseMessageWriter(){};
+    ResponseMessageWriter();
 };

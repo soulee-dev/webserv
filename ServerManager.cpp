@@ -9,13 +9,18 @@
 #include <sys/socket.h>
 #include <vector>
 
+void ServerManager::setServers(std::map<PORT, std::vector<Server> > &servers)
+{
+    this->servers = servers;
+}
+
 void ServerManager::exitWebServer(std::string str)
 {
     std::cout << str << std::endl;
     exit(1);
 }
 
-ServerManager ServerManager::getInstance()
+ServerManager& ServerManager::getInstance()
 {
     static ServerManager instance;
     return instance;
@@ -24,7 +29,6 @@ ServerManager ServerManager::getInstance()
 ServerManager::ServerManager()
     : LISTENCAPACITY(5)
 {
-    events.setKq();
     messageReader = &RequestMessageReader::getInstance();
     messageWriter = &ResponseMessageWriter::getInstance();
 }
@@ -37,11 +41,14 @@ ServerManager::~ServerManager()
 void ServerManager::disconnectServer(int serverFd)
 {
     std::cout << "Server disconnected: " << serverFd << std::endl;
+    events.changeEvents(serverFd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
     close(serverFd);
 }
 
 void ServerManager::disconnectClient(int clientFd)
 {
+    messageReader->deleteClient(clientFd);
+    messageWriter->deleteClient(clientFd);
     std::cout << "Server disconnected: " << clientFd << std::endl;
     close(clientFd);
 }
@@ -153,9 +160,33 @@ void ServerManager::errorEventProcess(SOCKET ident)
     }
 }
 
+bool ServerManager::isRespondToServer(SOCKET serverSocket)
+{
+    return portByServerSocket.find(serverSocket) != portByServerSocket.end();
+}
+
+void ServerManager::acceptClient(SOCKET serverSocket)
+{
+    const int clientSocket = accept(serverSocket, NULL, NULL);
+    if (clientSocket == -1)
+    {
+        std::cout << "accept() error" << std::endl;
+        return ;
+    }
+    fcntl(clientSocket, F_SETFL, O_NONBLOCK);
+    events.changeEvents(clientSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+    events.changeEvents(clientSocket, EVFILT_TIMER, EV_ADD | EV_ENABLE,  NOTE_SECONDS, 1000, NULL);
+    events.changeEvents(clientSocket, EVFILT_WRITE, EV_ADD | EV_DISABLE, 0, 0, NULL);
+    messageReader->insertNewClient(clientSocket);
+    messageWriter->insertNewClient(clientSocket);
+    insertClient(clientSocket);
+}
+
 void ServerManager::runServerManager(void)
 {
     int newEvent;
+    RequestMessageReader &messageReader = RequestMessageReader::getInstance();
+    ResponseMessageWriter &messageWriter = ResponseMessageWriter::getInstance();
 
     while (1)
     {
@@ -171,12 +202,31 @@ void ServerManager::runServerManager(void)
                 errorEventProcess(currEvent.ident);
             else if (currEvent.filter == EVFILT_READ)
             {
+                if (isRespondToServer(currEvent.ident))
+                    acceptClient(currEvent.ident);
+                else
+                {
+                    events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_EOF, NOTE_SECONDS, 1000, NULL);
+                    if (messageReader.readMessage(currEvent.ident))
+                        disconnectClient(currEvent.ident);
+                    else if (messageReader.ParseState[currEvent.ident] == DONE \
+                     || messageReader.ParseState[currEvent.ident] == ERROR)
+                    {
+                       // 메시지 처리하여 버퍼에 입력해야함.
+                        // events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
+                        std::cout << "메시지 잘 받았습니다^^" << std::endl;
+                        messageReader.ParseState[currEvent.ident] = METHOD;
+                        messageReader.messageBuffer[currEvent.ident].clear();
+                    }
+                }
             }
             else if (currEvent.filter == EVFILT_WRITE)
             {
             }
             else if (currEvent.filter == EVFILT_TIMER)
             {
+                events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_DELETE, 0, 0, NULL);
+                disconnectClient(currEvent.ident);
             }
         }
     }

@@ -16,11 +16,11 @@ NAME = Server
 
 # Cmd & Options
 CXX			= c++
-CXXFLAGS	= #-fsanitize=address -g#-Wall -Werror -Wextra -std=c++98 -g3
+CXXFLAGS	= -fsanitize=address -g#-Wall -Werror -Wextra -std=c++98 -g3
 RM 			= rm
 RMFLAGS		= -f
 OUT_DIR		= objs
-FILE		= main ConfigParser ConfigFunctions Location Server Client config action ServerManager RequestMessageReader Event
+FILE		= main ConfigParser ConfigFunctions Location Server Client ServerManager RequestMessageReader ResponseMessageWriter Event 
 OBJECTS		= $(addprefix $(OUT_DIR)/, $(addsuffix .o, $(FILE)))
 
 # Compile rules

@@ -21,11 +21,11 @@ public:
     typedef int PORT;
     typedef std::string serverName; //???
 
-    static ServerManager getInstance();
+    static ServerManager &getInstance();
     ~ServerManager();
 
     void initServers();
-    void start_server();
+    void start_server(); // not used. instead use runServerManager
     void exitWebServer(std::string str);
 
     int openPort(ServerManager::PORT port, Server& firstServer);
@@ -35,6 +35,8 @@ public:
     void insertClient(SOCKET ident);
     Client& getClient(SOCKET ident);
     Server* getClientServer(SOCKET ident);
+
+    void setServers(std::map<PORT, std::vector<Server> > &servers);
 
 private:
     Event events;
@@ -52,4 +54,8 @@ private:
     void readEventProcess(void);
     void writeEventProcess(void);
     void timerEventProcess(void);
+
+    bool isRespondToServer(SOCKET server_fd);
+    void acceptClient(SOCKET server_fd);
+    bool readClient(SOCKET client_fd);
 };

@@ -3,6 +3,7 @@
 
 Event::Event()
 {
+    kq = kqueue();
 }
 
 Event::~Event()
