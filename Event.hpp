@@ -22,4 +22,5 @@ public:
     int newEvents(void);
     void clearChangeEventList(void);
     int getKq(void);
+    bool Event::initKqueue(void);
 };

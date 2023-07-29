@@ -132,6 +132,11 @@ void ServerManager::initServers(void)
 {
     std::map<PORT, std::vector<Server> >::iterator portIter = servers.begin();
 
+    if (events.initKqueue())
+    {
+        std::cout << "kqueue() error" << std::endl;
+        exit(1);
+    }
     while (portIter != servers.end())
     {
         // std::vector<Server>::iterator serverIter = portIter->second.begin();

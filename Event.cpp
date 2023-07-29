@@ -1,14 +1,10 @@
 #include "Event.hpp"
 #include <iostream>
 
-Event::Event()
-{
-    kq = kqueue();
-}
+Event::Event() : kq(0) {}
 
-Event::~Event()
-{
-}
+Event::~Event() {}
+
 Event::Event(const Event& ref)
 {
     static_cast<void>(ref);
@@ -41,6 +37,19 @@ void Event::changeEvents(int socket, int16_t filter, uint16_t flags, uint32_t ff
 int Event::getKq(void)
 {
     return kq;
+}
+
+bool Event::initKqueue(void)
+{
+    if (kq != 0)
+    {
+        std::cout << "kqueue already initialized" << std::endl;
+        return true;
+    }
+    this->kq = kqueue();
+    if (this->kq == -1)
+        return true;
+    return false;
 }
 
 int Event::newEvents(void)
