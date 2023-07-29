@@ -4,13 +4,10 @@
 #include <sstream>
 
 Location::Location()
-    : root("/"), allowMethod(0), autoIndex(false), clientBodySize(10240)
-{
-}
+    : root("/"), allowMethod(0), autoIndex(false), clientBodySize(10240) {}
 
-Location::~Location()
-{
-}
+Location::~Location() {}
+
 bool Location::fillLocationBlock(std::map<std::string, std::string>& mapSentence)
 {
     std::map<std::string, std::string>::iterator it = mapSentence.begin();

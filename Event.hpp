@@ -1,6 +1,7 @@
 
 #pragma once
 #include <vector>
+#define EVENTLIST_SIZE 8
 
 #include <sys/event.h>
 class Event
@@ -8,7 +9,7 @@ class Event
 private:
     int kq;
     std::vector<struct kevent> changeList;
-    struct kevent eventList[8];
+    struct kevent eventList[EVENTLIST_SIZE];
     Event(const Event& ref);
     Event& operator=(const Event& ref);
 

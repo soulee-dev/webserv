@@ -4,13 +4,9 @@
 #include <vector>
 
 Server::Server()
-    : listen(80), serverName(""), root("/"), autoIndex(false), clientBodySize(10240)
-{
-}
+    : listen(80), serverName(""), root("/"), autoIndex(false), clientBodySize(10240) {}
 
-Server::~Server()
-{
-}
+Server::~Server() {}
 
 int Server::runServer(RequestMessage& req, ResponseMessage& res)
 {

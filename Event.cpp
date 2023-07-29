@@ -18,7 +18,7 @@ Event& Event::operator=(const Event& ref)
 
 struct kevent& Event::operator[](int idx)
 {
-    if (0 <= idx && idx < 8)
+    if (0 <= idx && idx < EVENTLIST_SIZE)
         return eventList[idx];
     else
     {
@@ -44,7 +44,7 @@ int Event::newEvents(void)
 {
     int res;
 
-    res = kevent(kq, &changeList[0], changeList.size(), eventList, 8, NULL);
+    res = kevent(kq, &changeList[0], changeList.size(), eventList, EVENTLIST_SIZE, NULL);
     return res;
 }
 
