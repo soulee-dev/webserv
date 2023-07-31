@@ -3,16 +3,16 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: jinam <jinam@student.42seoul.kr>           +#+  +:+       +#+         #
+#    By: soulee <soulee@student.42seoul.kr>         +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/06/02 11:11:51 by jinam             #+#    #+#              #
-#    Updated: 2023/07/28 21:10:30 by jinam            ###   ########.fr        #
+#    Updated: 2023/07/31 10:53:05 by soulee           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 
 # Target
-NAME = Server
+NAME = webserv
 
 # Cmd & Options
 CXX			= c++
