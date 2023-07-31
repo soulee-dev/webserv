@@ -7,9 +7,10 @@
 #include <netinet/in.h>
 #include <sstream>
 #include <sys/socket.h>
+#include <unistd.h>
 #include <vector>
 
-void ServerManager::setServers(std::map<PORT, std::vector<Server> > &servers)
+void ServerManager::setServers(std::map<PORT, std::vector<Server> >& servers)
 {
     this->servers = servers;
 }
@@ -71,7 +72,7 @@ Server* ServerManager::getClientServer(SOCKET ident)
         if (iter->getServerName().compare(clientHost) == 0)
         {
             res = &(*iter);
-            break ;
+            break;
         }
         iter++;
     }
@@ -98,6 +99,7 @@ int ServerManager::openPort(ServerManager::PORT port, Server& firstServer)
     struct addrinfo* info;
     struct addrinfo hint;
     struct sockaddr_in socketaddr;
+    int opt = 1;
 
     memset(&hint, 0, sizeof(struct addrinfo));
     memset(&socketaddr, 0, sizeof(struct sockaddr_in));
@@ -118,7 +120,7 @@ int ServerManager::openPort(ServerManager::PORT port, Server& firstServer)
     SOCKET serverSocket = socket(info->ai_family, info->ai_socktype, info->ai_protocol);
     if (serverSocket == -1)
         exitWebServer("socket() error");
-
+    setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
     errorCode = bind(serverSocket, reinterpret_cast<struct sockaddr*>(&socketaddr), sizeof(socketaddr));
     if (errorCode)
         exitWebServer("bind() error");
@@ -174,12 +176,22 @@ void ServerManager::readEventProcess(SOCKET ident)
         events.changeEvents(ident, EVFILT_TIMER, EV_EOF, NOTE_SECONDS, 1000, NULL);
         if (messageReader->readMessage(ident))
             disconnectClient(ident);
-        else if (messageReader->ParseState[ident] == DONE \
-            || messageReader->ParseState[ident] == ERROR)
+        else if (messageReader->ParseState[ident] == DONE || messageReader->ParseState[ident] == ERROR)
         {
             // 메시지 처리하여 버퍼에 입력해야함.
             // events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
             std::cout << "메시지 잘 받았습니다^^" << std::endl;
+
+            messageWriter->writeBuffer[ident].insert(messageWriter->writeBuffer[ident].end(),
+                                                     "HTTP/1.1 404 Not Found\r\nServer: nginx/1.25.1\r\nDate: Fri, 28 Jul 2023 12:42:57 GMT\r\n\
+                        Content-Type: text/html\r\nContent-Length: 153\r\nConnection: keep-alive\r\n\r\n<html>\r\n\
+                        <head><title>404 Not Found</title></head>\r\n<body>\r\n<center><h1>Hello my name is jj!!</h1></center>\r\n\
+                        <hr><center>webserv 0.1</center>\r\n</body>\r\n</html>",
+                                                     &"HTTP/1.1 404 Not Found\r\nServer: nginx/1.25.1\r\nDate: Fri, 28 Jul 2023 12:42:57 GMT\r\n\
+                        Content-Type: text/html\r\nContent-Length: 153\r\nConnection: keep-alive\r\n\r\n<html>\r\n\
+                        <head><title>404 Not Found</title></head>\r\n<body>\r\n<center><h1>Hello my name is jj!!</h1></center>\r\n\
+                        <hr><center>webserv 0.1</center>\r\n</body>\r\n</html>"[386]);
+            events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
             messageReader->ParseState[ident] = METHOD;
             messageReader->messageBuffer[ident].clear();
         }
@@ -188,7 +200,9 @@ void ServerManager::readEventProcess(SOCKET ident)
 
 void ServerManager::writeEventProcess(SOCKET ident)
 {
-    static_cast<void>(ident);
+    size_t n;
+    n = write(ident, &*messageWriter->writeBuffer[ident].begin(), messageWriter->writeBuffer[ident].size());
+    events.changeEvents(ident, EVFILT_WRITE, EV_DISABLE, 0, 0, NULL);
 }
 
 void ServerManager::timerEventProcess(SOCKET ident)
@@ -208,11 +222,11 @@ void ServerManager::acceptClient(SOCKET serverSocket)
     if (clientSocket == -1)
     {
         std::cout << "accept() error" << std::endl;
-        return ;
+        return;
     }
     fcntl(clientSocket, F_SETFL, O_NONBLOCK);
     events.changeEvents(clientSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-    events.changeEvents(clientSocket, EVFILT_TIMER, EV_ADD | EV_ENABLE,  NOTE_SECONDS, 1000, NULL);
+    events.changeEvents(clientSocket, EVFILT_TIMER, EV_ADD | EV_ENABLE, NOTE_SECONDS, 1000, NULL);
     events.changeEvents(clientSocket, EVFILT_WRITE, EV_ADD | EV_DISABLE, 0, 0, NULL);
     messageReader->insertNewClient(clientSocket);
     messageWriter->insertNewClient(clientSocket);
@@ -240,13 +254,13 @@ void ServerManager::runServerManager(void)
             }
             switch (currEvent.filter)
             {
-            case EVFILT_READ :
+            case EVFILT_READ:
                 readEventProcess(currEvent.ident);
                 break;
-            case EVFILT_WRITE :
+            case EVFILT_WRITE:
                 writeEventProcess(currEvent.ident);
                 break;
-            case EVFILT_TIMER :
+            case EVFILT_TIMER:
                 timerEventProcess(currEvent.ident);
                 break;
             }
