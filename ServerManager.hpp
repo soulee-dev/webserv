@@ -9,7 +9,11 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <fstream>
 #include <vector>
+
+# define SERVER_NAME "Tiny Web Server"
+# define CRLF "\r\n"
 
 class ServerManager
 {

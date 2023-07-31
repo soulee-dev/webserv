@@ -167,6 +167,20 @@ void ServerManager::errorEventProcess(SOCKET ident)
     }
 }
 
+std::string BuildHeader(std::string status_code, int file_size, std::string file_type)
+{
+    std::ostringstream	header;
+
+	header << "HTTP/1.1 " << status_code << CRLF;
+	header << "Server: " << SERVER_NAME << CRLF;
+	header << "Connection: close" << CRLF;
+	header << "Content-length: " << file_size << CRLF;
+	header << "Content-type: " << file_type << CRLF;
+	header << CRLF;
+
+	return (header.str());
+}
+
 void ServerManager::readEventProcess(SOCKET ident)
 {
     if (isRespondToServer(ident))
@@ -182,15 +196,27 @@ void ServerManager::readEventProcess(SOCKET ident)
             // events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
             std::cout << "메시지 잘 받았습니다^^" << std::endl;
 
-            messageWriter->writeBuffer[ident].insert(messageWriter->writeBuffer[ident].end(),
-                                                     "HTTP/1.1 404 Not Found\r\nServer: nginx/1.25.1\r\nDate: Fri, 28 Jul 2023 12:42:57 GMT\r\n\
-                        Content-Type: text/html\r\nContent-Length: 153\r\nConnection: keep-alive\r\n\r\n<html>\r\n\
-                        <head><title>404 Not Found</title></head>\r\n<body>\r\n<center><h1>Hello my name is jj!!</h1></center>\r\n\
-                        <hr><center>webserv 0.1</center>\r\n</body>\r\n</html>",
-                                                     &"HTTP/1.1 404 Not Found\r\nServer: nginx/1.25.1\r\nDate: Fri, 28 Jul 2023 12:42:57 GMT\r\n\
-                        Content-Type: text/html\r\nContent-Length: 153\r\nConnection: keep-alive\r\n\r\n<html>\r\n\
-                        <head><title>404 Not Found</title></head>\r\n<body>\r\n<center><h1>Hello my name is jj!!</h1></center>\r\n\
-                        <hr><center>webserv 0.1</center>\r\n</body>\r\n</html>"[386]);
+            RequestMessage  req = messageReader->getInstance().messageBuffer[ident];
+
+            std::string     file_type = "text/html";
+	        std::vector<char>   buffer;
+            std::string     header;
+            std::ifstream   file("." + req.requestTarget + "index.html", std::ios::binary);
+
+            file.seekg(0, file.end);
+            int length = file.tellg();
+            file.seekg(0, file.beg);
+            buffer.resize(length);
+            file.read(&buffer[0], length);
+            header = BuildHeader("200 OK", length, file_type);
+	        std::vector<char> response(header.begin(), header.end());
+	        response.insert(response.end(), buffer.begin(), buffer.end());
+            for (std::vector<char>::iterator it = response.begin(); it != response.end(); ++it)
+            {
+                std::cout << *it;
+            }
+            std::cout << std::endl;
+            messageWriter->writeBuffer[ident].insert(messageWriter->writeBuffer[ident].end(), response.begin(), response.end());
             events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
             messageReader->ParseState[ident] = METHOD;
             messageReader->messageBuffer[ident].clear();
