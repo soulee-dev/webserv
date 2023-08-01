@@ -5,7 +5,7 @@
 
 int main(int argc, char **argv)
 {
-	struct addrinfo *info;
+	struct addrinfo	*info;
 	struct addrinfo hint;
 	struct sockaddr_in socketaddr;
 	int errorcode;

@@ -15,6 +15,7 @@ void ConfigParser::parseConfig(std::string const &configFileName)
 		parse_action_6,
 		parse_action_7
 	};
+
 	std::fstream filestream;
 	std::stringstream sstream;
 	std::string inputToken;
@@ -35,32 +36,42 @@ void ConfigParser::parseConfig(std::string const &configFileName)
 		std::cout << "failed to open config file" << std::endl;
 		exit(1);
 	}
+
 	while (filestream.get(c)) // fstream.get(), 한글자씩 순회하면서 파일을 읽음
 		sstream << c; // while 문을 돌면서 EOF까지 get하여 sstream에 저장
 	state = 0;
+
 	while (sstream >> inputToken) // string inputToken에 공백, 개행을 기준으로 읽음
 	{
 		prev_state = state;
+		std::cout << "Input Token : " << inputToken << '\n';
 		state = action[state](inputToken, this->server, locations, locationDir, vecInput, mapSentence);
+		// int (*action[8])(str &, mapPortServer &, mapStrLocation &, str &, vecStr &, mapStrStr &)
+		std::cout << "Prev state : " << prev_state << '\n';
+		std::cout << "state : " << state << "\n\n";
+
 		if (state == -1)
         {
             std::cout << "Error in token : " << prev_token << std::endl;
             std::cout << "config parse error" << std::endl;
             exit(1);
         }
-		if (prev_state == 2 && state == 4)
+
+		if (prev_state == 2 && state == 4) // inputToken이 location인 경우, 이 블록으로 들어오게 된다. 
 		{
-			// std::cout<< BOLDRED <<"state : " << state <<'\n';
 			tmpSentence = mapSentence;
 			mapSentence.clear();
 		}
-		else if (prev_state == 6 && state == 2)
+
+		else if (prev_state == 6 && state == 2) // location 블록의 마지막 "}"가 inputToken인 경우, 이 블록으로 들어오게 된다.
 		{
 			mapSentence = tmpSentence;
 			tmpSentence.clear();
 		}
+
 		prev_token = inputToken;
 	}
+
 	if (state != 0)
 	{
 		std::cout << BOLDRED << "-- Config Parse Error --" << RESET << std::endl;

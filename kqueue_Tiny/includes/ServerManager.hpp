@@ -49,6 +49,9 @@ class ServerManager
 		std::vector<struct kevent> change_list;
 		struct kevent event_list[8];
 
+		// ---- MERGING WITH PARSED BLOCK ---- //
+
+
 		// Functions
 		std::string BuildHeader(std::string status_code, int file_size, std::string file_type, std::map<std::string, std::string> cookies);
 		std::string BuildHeader(std::string status_code, int file_size, std::string file_type);

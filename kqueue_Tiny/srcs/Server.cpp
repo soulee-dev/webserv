@@ -15,6 +15,8 @@ int Server::runServer(Request& req) { return 1; }
 bool Server::fillServer(std::map<std::string, Location>& mapLocations, std::map<std::string, std::string>& mapSentence)
 {
 	std::map<std::string, std::string>::iterator it = mapSentence.begin();
+	std::map<std::string, Location>::iterator lo = mapLocations.begin();
+	std::cout << "mapLocation : " << lo->first << '\n';
 
 	this->locations = mapLocations;
 	while (it != mapSentence.end())
