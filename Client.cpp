@@ -3,40 +3,42 @@
 
 Client::Client() {}
 Client::~Client() {}
-Client::Client(const Client& ref)
-    : port(ref.port), server(ref.server), req(ref.req), res(ref.res)
-{
-}
-void Client::setPort(int port)
-{
-    this->port = port;
-}
+// void Client::setPort(int port)
+// {
+//     this->port = port;
+// }
 
-void Client::setReq(RequestMessage* req)
-{
-    this->req = req;
-}
 void Client::setServer(Server* server)
 {
     this->server = server;
 }
 
-ResponseMessage* Client::getRes(void)
+ResponseMessage& Client::getRes(void)
 {
-    return &this->res;
+    return this->res;
 }
 
-RequestMessage* Client::getReq(void)
+RequestMessage& Client::getReq(void)
 {
     return this->req;
 }
 
-int Client::getPort(void)
+// int Client::getPort(void)
+// {
+//     return this->port;
+// }
+
+void Client::setFd(int fd)
 {
-    return this->port;
+    this->client_fd = fd;
 }
 
 void Client::runServer()
 {
-    this->server->runServer(*this->req, this->res);
+    this->server->runServer(this->req, this->res);
+}
+
+Server* Client::getServer(void)
+{
+    return this->server;
 }

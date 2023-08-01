@@ -34,10 +34,10 @@ void Event::changeEvents(int socket, int16_t filter, uint16_t flags, uint32_t ff
     changeList.push_back(event);
 }
 
-int Event::getKq(void)
-{
-    return kq;
-}
+// int Event::getKq(void)
+// {
+//     return kq;
+// }
 
 bool Event::initKqueue(void)
 {

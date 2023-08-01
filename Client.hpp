@@ -1,32 +1,36 @@
-#ifndef CLIENT_HPP
-#define CLIENT_HPP
-
-#include "Location.hpp"
+#pragma once
 #include "RequestMessage.hpp"
 #include "ResponseMessage.hpp"
+#include "Location.hpp"
 
 class Client
 {
 private:
-    int port;
+    // int port;
+    int client_fd;
     Server* server;
-    RequestMessage* req;
+
+    RequestMessage req;
     ResponseMessage res;
 
-    Client& operator=(const Client& ref);
+    std::vector<unsigned char> readBuffer;
+    std::vector<unsigned char> sendBuffer;
 
 public:
+    typedef int PORT;
+    typedef int SOCKET;
     Client();
-    Client(RequestMessage* req, Server* server);
-    Client(const Client& ref);
+    // Client(const Client& ref);
+    // Client& operator=(const Client& ref);
     ~Client();
     void runServer(void);
-    void setPort(int port);
-    void setReq(RequestMessage* req);
+    // void setPort(int port);
+    void setFd(int fd);
     void setServer(Server* server);
-    ResponseMessage* getRes(void);
-    RequestMessage* getReq(void);
-    int getPort(void);
-};
+    ResponseMessage& getRes(void);
+    RequestMessage& getReq(void);
+    Server* getServer(void);
+    // PORT getPort(void);
+    SOCKET getClientFd(void);
 
-#endif
+};

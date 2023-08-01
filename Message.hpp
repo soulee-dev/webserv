@@ -6,8 +6,10 @@
 class Message
 {
 public:
-	Message() {};
-	~Message() {};
+	Message();
+	~Message();
+	Message(Message const& other);
+	Message& operator=(Message const& rhs);
 	std::vector<unsigned char> raw;
 	std::string startLine;
 	std::string httpVersion;

@@ -133,3 +133,15 @@ void Server::setClientBodySize(std::string& input)
 {
     this->clientBodySize = std::strtod(input.c_str(), NULL);
 }
+
+
+Server::Server(Server const& other)
+{
+    static_cast<void>(other);
+}
+
+Server& Server::operator=(Server const& rhs)
+{
+    static_cast<void>(rhs);
+    return *this;
+}

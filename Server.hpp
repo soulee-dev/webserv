@@ -7,15 +7,6 @@
 #include <string>
 class Server
 {
-public:
-    Server();
-    ~Server();
-    bool fillServer(std::map<std::string, Location>& mapLocations, std::map<std::string, std::string>& mapSentence);
-    int getListen() const;
-    std::string getServerName() const;
-    int runServer(RequestMessage& req, ResponseMessage& res);
-    void DebugPrint();
-
 private:
     int listen;
     std::string serverName;
@@ -26,6 +17,9 @@ private:
     size_t clientBodySize;
     std::map<std::string, Location> locations;
 
+    Server(Server const& other);
+    Server& operator=(Server const& rhs);
+
     void setListen(std::string& input);
     void setServerName(std::string& input);
     void setRoot(std::string& input);
@@ -33,4 +27,12 @@ private:
     bool setRedirection(std::string const& sentence);
     void setAutoIndex(std::string& input);
     void setClientBodySize(std::string& input);
+public:
+    Server();
+    ~Server();
+    bool fillServer(std::map<std::string, Location>& mapLocations, std::map<std::string, std::string>& mapSentence);
+    int getListen() const;
+    std::string getServerName() const;
+    int runServer(RequestMessage& req, ResponseMessage& res);
+    void DebugPrint();
 };

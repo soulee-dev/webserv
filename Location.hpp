@@ -3,15 +3,8 @@
 #include <string>
 #include <vector>
 
-class Server;
 class Location
 {
-public:
-    Location();
-    ~Location();
-    bool fillLocationBlock(std::map<std::string, std::string>& mapSentence);
-    void DebugPrint();
-
 private:
     std::string root;
     std::map<std::vector<int>, std::string> errorPage;
@@ -21,6 +14,9 @@ private:
     bool autoIndex;
     size_t clientBodySize;
 
+    Location(Location const& other);
+    Location& operator=(Location const& rhs);
+
     void setRoot(std::string& input);
     bool setErrorPage(std::string const& sentence);
     bool setRedirection(std::string const& sentence);
@@ -28,4 +24,10 @@ private:
     void setClientBodySize(std::string& input);
     bool setAllowMethod(std::string& sentence);
     void setIndex(std::string& sentence);
+public:
+    Location();
+    ~Location();
+    bool fillLocationBlock(std::map<std::string, std::string>& mapSentence);
+    void DebugPrint();
+
 };

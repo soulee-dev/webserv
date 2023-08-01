@@ -30,6 +30,9 @@ private:
     typedef std::vector<std::string> vecStr;
     typedef std::map<std::string, std::string> mapStrStr;
 
+    ConfigParser(ConfigParser const& other);
+    ConfigParser& operator=(ConfigParser const& rhs);
+
     struct s_info
     {
         std::string inputToken;

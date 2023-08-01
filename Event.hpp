@@ -1,9 +1,8 @@
-
 #pragma once
 #include <vector>
+#include <sys/event.h>
 #define EVENTLIST_SIZE 8
 
-#include <sys/event.h>
 class Event
 {
 private:
@@ -21,6 +20,5 @@ public:
     void changeEvents(int socket, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void* udata);
     int newEvents(void);
     void clearChangeEventList(void);
-    int getKq(void);
     bool initKqueue(void);
 };

@@ -8,6 +8,17 @@ Location::Location()
 
 Location::~Location() {}
 
+Location::Location(Location const& other)
+{
+    static_cast<void>(other);
+}
+
+Location& Location::operator=(Location const& rhs)
+{
+    static_cast<void>(rhs);
+    return *this;
+}
+
 bool Location::fillLocationBlock(std::map<std::string, std::string>& mapSentence)
 {
     std::map<std::string, std::string>::iterator it = mapSentence.begin();

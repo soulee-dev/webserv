@@ -3,9 +3,12 @@
 
 class ResponseMessage : public Message
 {
+private:
+    ResponseMessage(ResponseMessage const& other);
+    ResponseMessage& operator=(ResponseMessage const& rhs);
 public:
-    ResponseMessage(){};
-    ~ResponseMessage(){};
+    ResponseMessage();
+    ~ResponseMessage();
     std::string statusCode;
     std::string reasonPhrase;
 };

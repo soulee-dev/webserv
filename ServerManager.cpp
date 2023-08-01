@@ -1,100 +1,36 @@
 #include "ServerManager.hpp"
-#include "ResponseMessageWriter.hpp"
-#include "Server.hpp"
-#include <cstdlib>
-#include <iostream>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <sstream>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <vector>
 
-void ServerManager::setServers(std::map<PORT, std::vector<Server> >& servers)
+ServerManager::~ServerManager(void) {}
+ServerManager::ServerManager(void) {}
+
+void ServerManager::initServers(void)
 {
-    this->servers = servers;
-}
+    std::map<PORT, Server>::iterator portIter = servers.begin();
 
-void ServerManager::exitWebServer(std::string str)
-{
-    std::cout << str << std::endl;
-    exit(1);
-}
-
-ServerManager& ServerManager::getInstance()
-{
-    static ServerManager instance;
-    return instance;
-}
-
-ServerManager::ServerManager()
-    : LISTENCAPACITY(5)
-{
-    messageReader = &RequestMessageReader::getInstance();
-    messageWriter = &ResponseMessageWriter::getInstance();
-}
-
-ServerManager::~ServerManager()
-{
-    close(events.getKq());
-}
-
-void ServerManager::disconnectServer(int serverFd)
-{
-    std::cout << "Server disconnected: " << serverFd << std::endl;
-    events.changeEvents(serverFd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-    close(serverFd);
-}
-
-void ServerManager::disconnectClient(int clientFd)
-{
-    messageReader->deleteClient(clientFd);
-    messageWriter->deleteClient(clientFd);
-    std::cout << "Server disconnected: " << clientFd << std::endl;
-    close(clientFd);
-}
-
-Server* ServerManager::getClientServer(SOCKET ident)
-{
-    Server* res = NULL;
-
-    Client& currClient = clientsBySocket[ident];
-    PORT currPort = currClient.getPort();
-    serverName clientHost = currClient.getReq()->headers["host"];
-
-    std::vector<Server>::iterator iter = servers[currPort].begin();
-
-    if (iter == servers[currPort].end())
-        return res;
-    res = &servers[currPort][0];
-    while (iter != servers[currPort].end())
+    if (events.initKqueue())
     {
-        if (iter->getServerName().compare(clientHost) == 0)
-        {
-            res = &(*iter);
-            break;
-        }
-        iter++;
+        std::cout << "kqueue() error" << std::endl;
+        exit(1);
     }
-    return res;
+    while (portIter != servers.end())
+    {
+        Server& server = portIter->second;
+        SOCKET serversSocket = openPort(portIter->first, server);
+        fcntl(serversSocket, F_SETFL, O_NONBLOCK);
+
+        portByServerSocket[serversSocket] = portIter->first;
+        events.changeEvents(serversSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &portIter->second);
+        portIter++;
+    } 
 }
 
-void ServerManager::insertClient(SOCKET ident)
+static std::string intToString(int number)
 {
-    clientsBySocket.insert(std::pair<SOCKET, Client>(ident, Client()));
+    std::stringstream sstream(number);
+    return sstream.str();
 }
 
-static std::string intToString(int n)
-{
-    std::string res;
-    std::stringstream sstream;
-
-    sstream << n;
-    sstream >> res;
-    return res;
-}
-
-int ServerManager::openPort(ServerManager::PORT port, Server& firstServer)
+int ServerManager::openPort(ServerManager::PORT port, Server& server)
 {
     struct addrinfo* info;
     struct addrinfo hint;
@@ -113,7 +49,7 @@ int ServerManager::openPort(ServerManager::PORT port, Server& firstServer)
     hint.ai_socktype = SOCK_STREAM;
 
     std::string strPortNumber = intToString(port);
-    int errorCode = getaddrinfo(firstServer.getServerName().c_str(), strPortNumber.c_str(), &hint, &info);
+    int errorCode = getaddrinfo(server.getServerName().c_str(), strPortNumber.c_str(), &hint, &info);
     if (errorCode == -1)
         exitWebServer(gai_strerror(errorCode));
 
@@ -130,107 +66,10 @@ int ServerManager::openPort(ServerManager::PORT port, Server& firstServer)
     return serverSocket;
 }
 
-void ServerManager::initServers(void)
+void ServerManager::exitWebServer(std::string msg)
 {
-    std::map<PORT, std::vector<Server> >::iterator portIter = servers.begin();
-
-    if (events.initKqueue())
-    {
-        std::cout << "kqueue() error" << std::endl;
-        exit(1);
-    }
-    while (portIter != servers.end())
-    {
-        // std::vector<Server>::iterator serverIter = portIter->second.begin();
-        Server& firstServer = portIter->second.front();
-        SOCKET serversSocket = openPort(portIter->first, firstServer);
-        fcntl(serversSocket, F_SETFL, O_NONBLOCK);
-
-        portByServerSocket[serversSocket] = portIter->first;
-        events.changeEvents(serversSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-        // udata 에 portIter->second 넣어도 될듯?
-        portIter++;
-    }
-}
-
-void ServerManager::errorEventProcess(SOCKET ident)
-{
-    if (portByServerSocket.find(ident) != portByServerSocket.end())
-    {
-        std::cout << "Server socket error" << std::endl;
-        disconnectServer(ident);
-    }
-    else
-    {
-        std::cout << "Client socket error" << std::endl;
-        disconnectClient(ident);
-    }
-}
-
-void ServerManager::readEventProcess(SOCKET ident)
-{
-    if (isRespondToServer(ident))
-        acceptClient(ident);
-    else
-    {
-        events.changeEvents(ident, EVFILT_TIMER, EV_EOF, NOTE_SECONDS, 1000, NULL);
-        if (messageReader->readMessage(ident))
-            disconnectClient(ident);
-        else if (messageReader->ParseState[ident] == DONE || messageReader->ParseState[ident] == ERROR)
-        {
-            // 메시지 처리하여 버퍼에 입력해야함.
-            // events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
-            std::cout << "메시지 잘 받았습니다^^" << std::endl;
-
-            messageWriter->writeBuffer[ident].insert(messageWriter->writeBuffer[ident].end(),
-                                                     "HTTP/1.1 404 Not Found\r\nServer: nginx/1.25.1\r\nDate: Fri, 28 Jul 2023 12:42:57 GMT\r\n\
-                        Content-Type: text/html\r\nContent-Length: 153\r\nConnection: keep-alive\r\n\r\n<html>\r\n\
-                        <head><title>404 Not Found</title></head>\r\n<body>\r\n<center><h1>Hello my name is jj!!</h1></center>\r\n\
-                        <hr><center>webserv 0.1</center>\r\n</body>\r\n</html>",
-                                                     &"HTTP/1.1 404 Not Found\r\nServer: nginx/1.25.1\r\nDate: Fri, 28 Jul 2023 12:42:57 GMT\r\n\
-                        Content-Type: text/html\r\nContent-Length: 153\r\nConnection: keep-alive\r\n\r\n<html>\r\n\
-                        <head><title>404 Not Found</title></head>\r\n<body>\r\n<center><h1>Hello my name is jj!!</h1></center>\r\n\
-                        <hr><center>webserv 0.1</center>\r\n</body>\r\n</html>"[386]);
-            events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
-            messageReader->ParseState[ident] = METHOD;
-            messageReader->messageBuffer[ident].clear();
-        }
-    }
-}
-
-void ServerManager::writeEventProcess(SOCKET ident)
-{
-    size_t n;
-    n = write(ident, &*messageWriter->writeBuffer[ident].begin(), messageWriter->writeBuffer[ident].size());
-    events.changeEvents(ident, EVFILT_WRITE, EV_DISABLE, 0, 0, NULL);
-}
-
-void ServerManager::timerEventProcess(SOCKET ident)
-{
-    events.changeEvents(ident, EVFILT_TIMER, EV_DELETE, 0, 0, NULL);
-    disconnectClient(ident);
-}
-
-bool ServerManager::isRespondToServer(SOCKET serverSocket)
-{
-    return portByServerSocket.find(serverSocket) != portByServerSocket.end();
-}
-
-void ServerManager::acceptClient(SOCKET serverSocket)
-{
-    const int clientSocket = accept(serverSocket, NULL, NULL);
-    if (clientSocket == -1)
-    {
-        std::cout << "accept() error" << std::endl;
-        return;
-    }
-    fcntl(clientSocket, F_SETFL, O_NONBLOCK);
-    events.changeEvents(clientSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-    events.changeEvents(clientSocket, EVFILT_TIMER, EV_ADD | EV_ENABLE, NOTE_SECONDS, 1000, NULL);
-    events.changeEvents(clientSocket, EVFILT_WRITE, EV_ADD | EV_DISABLE, 0, 0, NULL);
-    messageReader->insertNewClient(clientSocket);
-    messageWriter->insertNewClient(clientSocket);
-    insertClient(clientSocket);
+    std::cout << msg << std::endl;
+    exit(1);
 }
 
 void ServerManager::runServerManager(void)
@@ -249,21 +88,58 @@ void ServerManager::runServerManager(void)
 
             if (currEvent.flags & EV_ERROR)
             {
-                errorEventProcess(currEvent.ident);
+                // errorEventProcess(currEvent.ident);
                 continue;
             }
             switch (currEvent.filter)
             {
             case EVFILT_READ:
-                readEventProcess(currEvent.ident);
+                // readEventProcess(currEvent.ident);
                 break;
             case EVFILT_WRITE:
-                writeEventProcess(currEvent.ident);
+                // writeEventProcess(currEvent.ident);
                 break;
             case EVFILT_TIMER:
-                timerEventProcess(currEvent.ident);
+                // timerEventProcess(currEvent.ident);
                 break;
             }
         }
     }
+}
+
+int ServerManager::acceptClient(SOCKET server_fd)
+{
+    const int client_fd = accept(server_fd, NULL, NULL);
+    const int serverPort = portByServerSocket[server_fd];
+    if (client_fd == -1)
+        return -1;
+    clientManager.addNewClient(server_fd, &servers[serverPort]);
+    events.changeEvents(client_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &clientManager.getClient(client_fd));
+    return client_fd;
+}
+
+Client& ServerManager::getClient(SOCKET client_fd)
+{
+    return clientManager.getClient(client_fd);
+}
+
+Server* ServerManager::getClientServer(SOCKET client_fd)
+{
+    return clientManager.getClient(client_fd).getServer();
+}
+
+void ServerManager::setServers(std::map<PORT, Server> &servers)
+{
+    this->servers = servers;
+}
+
+ServerManager::ServerManager(ServerManager const& other)
+{
+    static_cast<void>(other);
+}
+
+ServerManager& ServerManager::operator=(ServerManager const &rhs)
+{
+    static_cast<void>(rhs);
+    return *this;
 }

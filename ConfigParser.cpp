@@ -7,6 +7,11 @@ ConfigParser::ConfigParser() {}
 
 ConfigParser::~ConfigParser() {}
 
+ConfigParser::ConfigParser(ConfigParser const& other)
+{
+    static_cast<void>(other);
+}
+
 void ConfigParser::parseConfig(std::string const& configFileName)
 {
     int (*action[8])(struct s_info&, mapPortServer&) = {

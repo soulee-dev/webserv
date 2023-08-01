@@ -10,8 +10,8 @@ int main(int argc, char **argv)
 		std::cout << "please input one config file" << std::endl;
 		exit(1);
 	}
-	ConfigParser &configParser = ConfigParser::getInstance();
-	ServerManager &serverManager = ServerManager::getInstance();
+	ConfigParser configParser;
+	ServerManager serverManager;
 
 	configParser.parseConfig(argv[1]);
 	serverManager.setServers(configParser.server);
