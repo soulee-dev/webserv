@@ -18,15 +18,14 @@ class Server;
 class ConfigParser
 {
 public:
-    static ConfigParser& getInstance();
-    std::map<int, std::vector<Server> > server;
+    std::map<int, Server> server;
     void parseConfig(std::string const& configFileName);
     void DebugPrint();
     ~ConfigParser();
+    ConfigParser();
 
 private:
-    ConfigParser();
-    typedef std::map<int, std::vector<Server> > mapPortServer;
+    typedef std::map<int, Server> mapPortServer;
     typedef std::map<std::string, Location> mapStrLocation;
     typedef std::vector<std::string> vecStr;
     typedef std::map<std::string, std::string> mapStrStr;

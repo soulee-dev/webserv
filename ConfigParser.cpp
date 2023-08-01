@@ -7,12 +7,6 @@ ConfigParser::ConfigParser() {}
 
 ConfigParser::~ConfigParser() {}
 
-ConfigParser& ConfigParser::getInstance()
-{
-    static ConfigParser instance;
-    return instance;
-}
-
 void ConfigParser::parseConfig(std::string const& configFileName)
 {
     int (*action[8])(struct s_info&, mapPortServer&) = {

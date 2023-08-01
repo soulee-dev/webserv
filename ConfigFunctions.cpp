@@ -41,14 +41,11 @@ int ConfigParser::parse_action_2(struct s_info& parse_info, mapPortServer& serve
         mapSentence.clear();
         if (servers.find(server.getListen()) == servers.end())
         {
-            std::vector<Server> vecServer;
-            vecServer.push_back(server);
-            servers.insert(std::pair<int, std::vector<Server> >(server.getListen(), vecServer));
+            servers[server.getListen()] = server;
+            return 0;
         }
         else
-            servers[server.getListen()].push_back(server);
-
-        return 0;
+            return -1;
     }
     else if (input == "location")
         return 4;
