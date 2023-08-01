@@ -228,10 +228,17 @@ void	MakeDynamicResponse(RequestMessage& request, std::vector<char>& response)
 	if (pid == 0)
 	{
 		// Child process
-		setenv("QUERY_STRING", "fnum=1&snum=2", 1);
-		setenv("REQUEST_METHOD", "GET", 1);
 		close(pipe_fd[0]);
 		dup2(pipe_fd[1], STDOUT_FILENO);
+		// 헉 나는 잘 모르겠다.
+		// 우선 Body의 데이터는 STDIN으로 자식한테 보내줘야 하고
+		// 결과값는 부모한테 보내줘야 함..
+		// setenv("QUERY_STRING", "fnum=1&snum=2", 1);
+		setenv("REQUEST_METHOD", "POST", 1);
+		// CONTENT_LENGTH should be size of body
+		
+		setenv("CONTENT_LENGTH", 10, 1);
+
 		close(pipe_fd[1]);
 
 		if (execve("./cgi-bin/py_adder", empty_list, environ) == -1)
@@ -244,7 +251,7 @@ void	MakeDynamicResponse(RequestMessage& request, std::vector<char>& response)
 	{
 		// Parent process
 		close(pipe_fd[1]);
-        char read_buffer[128];
+        char read_buffer[1024];
         ssize_t bytes_read;
         while ((bytes_read = read(pipe_fd[0], read_buffer, sizeof(read_buffer))) > 0) {
             buffer.insert(buffer.end(), read_buffer, read_buffer + bytes_read);
@@ -253,8 +260,8 @@ void	MakeDynamicResponse(RequestMessage& request, std::vector<char>& response)
 		for (std::vector<char>::const_iterator it = buffer.begin(); it != buffer.end(); ++it) {
             std::cout << *it;
         }
-		int status;
-        waitpid(pid, &status, 0);
+		// int status;
+        // waitpid(pid, &status, 0);
 	}
 	static_cast<void>(request);
 	header << "HTTP/1.1 200 OK" << CRLF;
