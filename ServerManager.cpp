@@ -233,14 +233,9 @@ void	MakeDynamicResponse(RequestMessage& request, std::vector<char>& response)
 	if (pid == 0) // 자식 코드
 	{
 		// Child process
-		close(pipe_fd[0]);
-		dup2(pipe_fd[1], STDOUT_FILENO);
+		close(pipe_fd[1]);
 		dup2(pipe_fd[0], STDIN_FILENO); // stdin을 pipe_fd[0]로 복제
-		write(STDIN_FILENO, body.c_str(), body.size());
-		// 헉 나는 잘 모르겠다.
-		// 우선 Body의 데이터는 STDIN으로 자식한테 보내줘야 하고
-		// 결과값는 부모한테 보내줘야 함..
-		// setenv("QUERY_STRING", "fnum=1&snum=2", 1);
+
 		int size = body.size();
 		std::string size_str = std::to_string(size);
 		const char *size_cstr = size_str.c_str();
@@ -248,8 +243,7 @@ void	MakeDynamicResponse(RequestMessage& request, std::vector<char>& response)
 		setenv("REQUEST_METHOD", "POST", 1);
 		setenv("CONTENT_LENGTH", size_cstr, 1);
 		
-		close(pipe_fd[1]);
-		close(STDIN_FILENO);
+		close(pipe_fd[0]);
 
 		if (execve("./cgi-bin/post_echo", empty_list, environ) == -1)
 		{
@@ -260,6 +254,9 @@ void	MakeDynamicResponse(RequestMessage& request, std::vector<char>& response)
 	else
 	{
 		// Parent process
+		close(pipe_fd[0]); // Close unused read end
+        write(pipe_fd[1], body.c_str(), body.size()); // Write body to pipe
+
 		close(pipe_fd[1]);
         char read_buffer[1024];
         ssize_t bytes_read;
