@@ -214,9 +214,12 @@ void	MakeDynamicResponse(RequestMessage& request, std::vector<char>& response)
 	int	pipe_fd[2];
 	char	*empty_list[] = {NULL};
 
-	// std::string body(request.body.begin(), request.body.end());
-	std::string	body = "hello world!";
-	std::cout << BOLDGREEN << "BODY : \n" << body << RESET << '\n';
+	std::cout << BOLDYELLOW << "Requested METHOD : " \
+				<< BOLDCYAN << request.method << RESET << '\n';
+
+	std::string body(request.body.begin(), request.body.end());
+	// std::string	body = "hello world!";
+	std::cout << BOLDGREEN << "BODY : " << body << RESET << '\n';
 
 	if (pipe(pipe_fd) == -1)
 	{
@@ -243,7 +246,7 @@ void	MakeDynamicResponse(RequestMessage& request, std::vector<char>& response)
 		setenv("REQUEST_METHOD", "POST", 1);
 		setenv("CONTENT_LENGTH", size_cstr, 1);
 		
-		close(pipe_fd[0]);
+		// close(pipe_fd[0]);
 
 		if (execve("./cgi-bin/post_echo", empty_list, environ) == -1)
 		{
@@ -256,20 +259,19 @@ void	MakeDynamicResponse(RequestMessage& request, std::vector<char>& response)
 		// Parent process
 		close(pipe_fd[0]); // Close unused read end
         write(pipe_fd[1], body.c_str(), body.size()); // Write body to pipe
-
 		close(pipe_fd[1]);
         char read_buffer[1024];
         ssize_t bytes_read;
         while ((bytes_read = read(pipe_fd[0], read_buffer, sizeof(read_buffer))) > 0) {
             buffer.insert(buffer.end(), read_buffer, read_buffer + bytes_read);
         }
-		close(pipe_fd[0]);
+		// close(pipe_fd[0]);
 		for (std::vector<char>::const_iterator it = buffer.begin(); it != buffer.end(); ++it) {
             std::cout << *it;
         }
-
-		int status;
-        waitpid(pid, &status, 0);
+		wait(NULL);
+		// int status;
+        // waitpid(pid, &status, 0);
 	}
 	static_cast<void>(request);
 	header << "HTTP/1.1 200 OK" << CRLF;
@@ -285,11 +287,16 @@ void ServerManager::readEventProcess(SOCKET ident)
 		acceptClient(ident);
 	else
 	{
+		std::cout << "else!!!!!!!\n";
 		events.changeEvents(ident, EVFILT_TIMER, EV_EOF, NOTE_SECONDS, 1000, NULL);
 		if (messageReader->readMessage(ident))
+		{
+			std::cout << BOLDRED << "Ended Process, disconnect with Client\n" << RESET;
 			disconnectClient(ident);
+		}
 		else if (messageReader->ParseState[ident] == DONE || messageReader->ParseState[ident] == ERROR)
 		{
+			std::cout << BOLDCYAN << "Still processing\n" << RESET;
 			// 메시지 처리하여 버퍼에 입력해야함.
 			// events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
 			std::cout << "메시지 잘 받았습니다^^" << std::endl;

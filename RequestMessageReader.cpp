@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
+#include "Color.hpp"
 
 RequestMessageReader& RequestMessageReader::getInstance()
 {
@@ -29,7 +30,7 @@ bool RequestMessageReader::readMessage(int client_fd)
     const size_t BUFFER_SIZE = 1024;
     char buffer[BUFFER_SIZE + 1];
     int readSize = read(client_fd, buffer, BUFFER_SIZE);
-
+    std::cout << BOLDRED << "read size : " << readSize << RESET << '\n';
     if (readSize <= 0)
     {
         if (readSize == -1)
