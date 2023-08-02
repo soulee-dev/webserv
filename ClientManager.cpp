@@ -31,6 +31,7 @@ void ClientManager::disconnectClient(SOCKET client_fd)
 
 bool ClientManager::readEventProcess(struct kevent& currEvent)
 {
+    // 이거 근데 ident 로 바로 찾아와서 쓸수 있지 않은지
     Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
     if (currClient->readMessage()) // read에서 에러나면 true를 반환
         disconnectClient(currEvent.ident);

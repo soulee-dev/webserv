@@ -8,8 +8,8 @@
 #include <map>
 #include <netdb.h>
 #include <sstream>
-#include <vector>
 #include <unistd.h>
+#include <vector>
 
 class ServerManager
 {
@@ -41,6 +41,7 @@ public:
     void setServers(std::map<PORT, Server>& servers);
 
     // functions
+    void runEventProcess(struct kevent& currEvent);
     void errorEventProcess(struct kevent& currEvent);
     bool isResponseToServer(struct kevent& currEvent);
     void serverDisconnect(struct kevent& currEvent);

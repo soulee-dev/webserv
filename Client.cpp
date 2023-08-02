@@ -5,7 +5,7 @@
 #include <unistd.h>
 
 // constructors
-Client::Client() :parseState(METHOD) {}
+Client::Client() : parseState(METHOD) {}
 // destructor
 Client::~Client() {}
 // copy constructors
@@ -72,11 +72,11 @@ bool Client::readEventProcess(void)
         std::cout << "메시지 잘 받았습니다^^" << std::endl;
 
         sendBuffer.insert(sendBuffer.end(),
-                                                    "HTTP/1.1 404 Not Found\r\nServer: nginx/1.25.1\r\nDate: Fri, 28 Jul 2023 12:42:57 GMT\r\n\
+                          "HTTP/1.1 404 Not Found\r\nServer: nginx/1.25.1\r\nDate: Fri, 28 Jul 2023 12:42:57 GMT\r\n\
                     Content-Type: text/html\r\nContent-Length: 153\r\nConnection: keep-alive\r\n\r\n<html>\r\n\
                     <head><title>404 Not Found</title></head>\r\n<body>\r\n<center><h1>Hello my name is jj!!</h1></center>\r\n\
                     <hr><center>webserv 0.1</center>\r\n</body>\r\n</html>",
-                                                    &"HTTP/1.1 404 Not Found\r\nServer: nginx/1.25.1\r\nDate: Fri, 28 Jul 2023 12:42:57 GMT\r\n\
+                          &"HTTP/1.1 404 Not Found\r\nServer: nginx/1.25.1\r\nDate: Fri, 28 Jul 2023 12:42:57 GMT\r\n\
                     Content-Type: text/html\r\nContent-Length: 153\r\nConnection: keep-alive\r\n\r\n<html>\r\n\
                     <head><title>404 Not Found</title></head>\r\n<body>\r\n<center><h1>Hello my name is jj!!</h1></center>\r\n\
                     <hr><center>webserv 0.1</center>\r\n</body>\r\n</html>"[374]);
@@ -113,6 +113,7 @@ bool Client::readMessage(void)
     }
     buffer[readSize] = '\0';
 
+    // 함수 포인터 배열 사용해보는것도?
     switch (parseState)
     {
     case METHOD:
@@ -135,7 +136,7 @@ bool Client::readMessage(void)
     }
     return false;
 }
-
+// client 안에 readMsg 와 writeMsg handle 할 각각의 클래스를 넣어두고 써보는 것도 ..?
 void Client::readHeader(const char* buffer)
 {
     std::stringstream headerSstream;
@@ -196,7 +197,6 @@ void Client::readHeader(const char* buffer)
         req.headers[key] = value;
     }
 }
-
 
 void Client::readBody(const char* buffer)
 {

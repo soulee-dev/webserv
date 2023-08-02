@@ -24,6 +24,7 @@ void ServerManager::initServers(void)
         SOCKET serversSocket = openPort(portIter->first, server);
         fcntl(serversSocket, F_SETFL, O_NONBLOCK);
 
+        // 이제 더이상 server 를 map 으로 찾을 필요가 없다면, server_socket 을 담아두는 intvector 로 담아서 써도 될듯?
         portByServerSocket[serversSocket] = portIter->first;
         events.changeEvents(serversSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &portIter->second);
         portIter++;
@@ -35,7 +36,7 @@ static std::string intToString(int number)
     std::stringstream sstream(number);
     return sstream.str();
 }
-
+// 이함수는 레알 진짜 격하게 고치고 싶다 ㅠ
 int ServerManager::openPort(ServerManager::PORT port, Server& server)
 {
     struct addrinfo* info;
@@ -43,11 +44,12 @@ int ServerManager::openPort(ServerManager::PORT port, Server& server)
     struct sockaddr_in socketaddr;
     int opt = 1;
 
-    memset(&hint, 0, sizeof(struct addrinfo));
-    memset(&socketaddr, 0, sizeof(struct sockaddr_in));
-    socketaddr.sin_family = AF_INET;
     std::cout << "Port number : " << port << std::endl;
 
+    memset(&hint, 0, sizeof(struct addrinfo));
+    memset(&socketaddr, 0, sizeof(struct sockaddr_in));
+
+    socketaddr.sin_family = AF_INET;
     socketaddr.sin_port = htons(port);
     socketaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
@@ -55,6 +57,7 @@ int ServerManager::openPort(ServerManager::PORT port, Server& server)
     hint.ai_socktype = SOCK_STREAM;
 
     std::string strPortNumber = intToString(port);
+
     int errorCode = getaddrinfo(server.getServerName().c_str(), strPortNumber.c_str(), &hint, &info);
     if (errorCode == -1)
         exitWebServer(gai_strerror(errorCode));
@@ -78,6 +81,27 @@ void ServerManager::exitWebServer(std::string msg)
     exit(1);
 }
 
+void ServerManager::runEventProcess(struct kevent& currEvent)
+{
+    if (currEvent.flags & EV_ERROR)
+    {
+        errorEventProcess(currEvent);
+        return;
+    }
+    switch (currEvent.filter)
+    {
+    case EVFILT_READ:
+        readEventProcess(currEvent);
+        break;
+    case EVFILT_WRITE:
+        writeEventProcess(currEvent);
+        break;
+    case EVFILT_TIMER:
+        timerEventProcess(currEvent);
+        break;
+    }
+}
+
 void ServerManager::runServerManager(void)
 {
     int newEvent;
@@ -90,25 +114,7 @@ void ServerManager::runServerManager(void)
         events.clearChangeEventList();
         for (int i = 0; i != newEvent; i++)
         {
-            struct kevent& currEvent = events[i];
-
-            if (currEvent.flags & EV_ERROR)
-            {
-                errorEventProcess(currEvent);
-                continue;
-            }
-            switch (currEvent.filter)
-            {
-            case EVFILT_READ:
-                readEventProcess(currEvent);
-                break;
-            case EVFILT_WRITE:
-                writeEventProcess(currEvent);
-                break;
-            case EVFILT_TIMER:
-                timerEventProcess(currEvent);
-                break;
-            }
+            runEventProcess(events[i]);
         }
     }
 }
