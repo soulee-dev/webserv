@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <vector>
+#include "Color.hpp"
 
 void ServerManager::setServers(std::map<PORT, std::vector<Server> >& servers)
 {
@@ -213,6 +214,10 @@ void	MakeDynamicResponse(RequestMessage& request, std::vector<char>& response)
 	int	pipe_fd[2];
 	char	*empty_list[] = {NULL};
 
+	// std::string body(request.body.begin(), request.body.end());
+	std::string	body = "hello world!";
+	std::cout << BOLDGREEN << "BODY : \n" << body << RESET << '\n';
+
 	if (pipe(pipe_fd) == -1)
 	{
 		std::cerr << "Pipe error" << std::endl;
@@ -225,23 +230,28 @@ void	MakeDynamicResponse(RequestMessage& request, std::vector<char>& response)
 		std::cerr << "Fork error" << std::endl;
 		return ;
 	}
-	if (pid == 0)
+	if (pid == 0) // 자식 코드
 	{
 		// Child process
 		close(pipe_fd[0]);
 		dup2(pipe_fd[1], STDOUT_FILENO);
+		dup2(pipe_fd[0], STDIN_FILENO); // stdin을 pipe_fd[0]로 복제
+		write(STDIN_FILENO, body.c_str(), body.size());
 		// 헉 나는 잘 모르겠다.
 		// 우선 Body의 데이터는 STDIN으로 자식한테 보내줘야 하고
 		// 결과값는 부모한테 보내줘야 함..
 		// setenv("QUERY_STRING", "fnum=1&snum=2", 1);
+		int size = body.size();
+		std::string size_str = std::to_string(size);
+		const char *size_cstr = size_str.c_str();
+
 		setenv("REQUEST_METHOD", "POST", 1);
-		// CONTENT_LENGTH should be size of body
+		setenv("CONTENT_LENGTH", size_cstr, 1);
 		
-		setenv("CONTENT_LENGTH", 10, 1);
-
 		close(pipe_fd[1]);
+		close(STDIN_FILENO);
 
-		if (execve("./cgi-bin/py_adder", empty_list, environ) == -1)
+		if (execve("./cgi-bin/post_echo", empty_list, environ) == -1)
 		{
 			std::cerr << "execve error" << std::endl;
 			return ;
@@ -260,8 +270,9 @@ void	MakeDynamicResponse(RequestMessage& request, std::vector<char>& response)
 		for (std::vector<char>::const_iterator it = buffer.begin(); it != buffer.end(); ++it) {
             std::cout << *it;
         }
-		// int status;
-        // waitpid(pid, &status, 0);
+
+		int status;
+        waitpid(pid, &status, 0);
 	}
 	static_cast<void>(request);
 	header << "HTTP/1.1 200 OK" << CRLF;
