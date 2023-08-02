@@ -3,10 +3,20 @@
 
 Client::Client() {}
 Client::~Client() {}
-// void Client::setPort(int port)
-// {
-//     this->port = port;
-// }
+Client::Client(Client const& other)
+    : client_fd(other.client_fd), server(other.server), req(other.req), res(other.res),
+      readBuffer(other.readBuffer), sendBuffer(other.sendBuffer) {}
+Client& Client::operator=(Client const& rhs)
+{
+    if (this != &rhs)
+    {
+        this->res = rhs.res;
+        this->req = rhs.req;
+        this->client_fd = rhs.client_fd;
+        this->server = rhs.server;
+    }
+    return *this;
+}
 
 void Client::setServer(Server* server)
 {
@@ -22,11 +32,6 @@ RequestMessage& Client::getReq(void)
 {
     return this->req;
 }
-
-// int Client::getPort(void)
-// {
-//     return this->port;
-// }
 
 void Client::setFd(int fd)
 {

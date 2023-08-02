@@ -4,10 +4,12 @@
 class RequestMessage : public Message
 {
 public:
-	RequestMessage();
-	~RequestMessage();
-	std::string method;
-	std::string requestTarget;
+    RequestMessage();
+    ~RequestMessage();
+	RequestMessage(RequestMessage const& other);
+	RequestMessage& operator=(RequestMessage const& rhs);
+    std::string method;
+    std::string requestTarget;
 
-	void clear();
+    void clear();
 };

@@ -48,7 +48,7 @@ void ConfigParser::parseConfig(std::string const& configFileName)
         if (state == CONFIG_ERROR)
         {
             std::cout << "error in token : " << prev_token << std::endl;
-            break ;
+            break;
         }
         if (prev_state == 2 && state == 4)
         {

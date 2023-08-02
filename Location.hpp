@@ -14,8 +14,6 @@ private:
     bool autoIndex;
     size_t clientBodySize;
 
-    Location(Location const& other);
-    Location& operator=(Location const& rhs);
 
     void setRoot(std::string& input);
     bool setErrorPage(std::string const& sentence);
@@ -24,10 +22,12 @@ private:
     void setClientBodySize(std::string& input);
     bool setAllowMethod(std::string& sentence);
     void setIndex(std::string& sentence);
+
 public:
+    Location(Location const& other);
+    Location& operator=(Location const& rhs);
     Location();
     ~Location();
     bool fillLocationBlock(std::map<std::string, std::string>& mapSentence);
     void DebugPrint();
-
 };

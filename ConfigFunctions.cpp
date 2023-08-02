@@ -4,7 +4,7 @@
 
 int ConfigParser::parse_action_0(struct s_info& parse_info, mapPortServer& servers)
 {
-    std::string &input = parse_info.inputToken;
+    std::string& input = parse_info.inputToken;
 
     static_cast<void>(servers);
     if (input == "server")
@@ -14,7 +14,7 @@ int ConfigParser::parse_action_0(struct s_info& parse_info, mapPortServer& serve
 
 int ConfigParser::parse_action_1(struct s_info& parse_info, mapPortServer& servers)
 {
-    std::string &input = parse_info.inputToken;
+    std::string& input = parse_info.inputToken;
 
     static_cast<void>(servers);
     if (input == "{")
@@ -25,10 +25,10 @@ int ConfigParser::parse_action_1(struct s_info& parse_info, mapPortServer& serve
 
 int ConfigParser::parse_action_2(struct s_info& parse_info, mapPortServer& servers)
 {
-    std::string &input = parse_info.inputToken;
-    std::vector<std::string> &vecInput = parse_info.vecInput;
-    std::map<std::string, std::string> &mapSentence = parse_info.mapSentence;
-    std::map<std::string, Location> &locations = parse_info.locations;
+    std::string& input = parse_info.inputToken;
+    std::vector<std::string>& vecInput = parse_info.vecInput;
+    std::map<std::string, std::string>& mapSentence = parse_info.mapSentence;
+    std::map<std::string, Location>& locations = parse_info.locations;
     Server server;
 
     if (input == "}")
@@ -60,9 +60,9 @@ int ConfigParser::parse_action_2(struct s_info& parse_info, mapPortServer& serve
 
 int ConfigParser::parse_action_3(struct s_info& parse_info, mapPortServer& servers)
 {
-    std::string &input = parse_info.inputToken;
-    std::vector<std::string> &vecInput = parse_info.vecInput;
-    std::map<std::string, std::string> &mapSentence = parse_info.mapSentence;
+    std::string& input = parse_info.inputToken;
+    std::vector<std::string>& vecInput = parse_info.vecInput;
+    std::map<std::string, std::string>& mapSentence = parse_info.mapSentence;
     std::string concatTokens;
     int vecInputSize = vecInput.size();
 
@@ -104,8 +104,8 @@ int ConfigParser::parse_action_3(struct s_info& parse_info, mapPortServer& serve
 
 int ConfigParser::parse_action_4(struct s_info& parse_info, mapPortServer& servers)
 {
-    std::string &input = parse_info.inputToken;
-    std::string &locationDir = parse_info.locationDir;
+    std::string& input = parse_info.inputToken;
+    std::string& locationDir = parse_info.locationDir;
 
     static_cast<void>(servers);
     if (input == "{" || input == "}" || input == ";")
@@ -119,7 +119,7 @@ int ConfigParser::parse_action_4(struct s_info& parse_info, mapPortServer& serve
 
 int ConfigParser::parse_action_5(struct s_info& parse_info, mapPortServer& servers)
 {
-    std::string &input = parse_info.inputToken;
+    std::string& input = parse_info.inputToken;
 
     static_cast<void>(servers);
     if (input == "{")
@@ -130,11 +130,11 @@ int ConfigParser::parse_action_5(struct s_info& parse_info, mapPortServer& serve
 
 int ConfigParser::parse_action_6(struct s_info& parse_info, mapPortServer& servers)
 {
-    std::string &input = parse_info.inputToken;
-    std::vector<std::string> &vecInput = parse_info.vecInput;
-    std::map<std::string, std::string> &mapSentence = parse_info.mapSentence;
-    std::string &locationDir = parse_info.locationDir;
-    std::map<std::string, Location> &locations = parse_info.locations;
+    std::string& input = parse_info.inputToken;
+    std::vector<std::string>& vecInput = parse_info.vecInput;
+    std::map<std::string, std::string>& mapSentence = parse_info.mapSentence;
+    std::string& locationDir = parse_info.locationDir;
+    std::map<std::string, Location>& locations = parse_info.locations;
     Location locationBlock;
 
     static_cast<void>(servers);
@@ -159,9 +159,9 @@ int ConfigParser::parse_action_6(struct s_info& parse_info, mapPortServer& serve
 
 int ConfigParser::parse_action_7(struct s_info& parse_info, mapPortServer& servers)
 {
-    std::string &input = parse_info.inputToken;
-    std::vector<std::string> &vecInput = parse_info.vecInput;
-    std::map<std::string, std::string> &mapSentence = parse_info.mapSentence;
+    std::string& input = parse_info.inputToken;
+    std::vector<std::string>& vecInput = parse_info.vecInput;
+    std::map<std::string, std::string>& mapSentence = parse_info.mapSentence;
     std::string concatTokens;
     int vecInputSize = vecInput.size();
 

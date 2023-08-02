@@ -20,7 +20,7 @@ CXXFLAGS	= -Wall -Werror -Wextra -std=c++98 -g3
 RM 			= rm
 RMFLAGS		= -f
 OUT_DIR		= objs
-FILE		= main ConfigParser ConfigFunctions Location Server Client ClientManager ServerManager Event RequestMessage
+FILE		= main ConfigParser ConfigFunctions Location Server Client ClientManager ServerManager Event RequestMessage ResponseMessage Message
 OBJECTS		= $(addprefix $(OUT_DIR)/, $(addsuffix .o, $(FILE)))
 
 # Compile rules

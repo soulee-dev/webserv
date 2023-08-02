@@ -1,7 +1,7 @@
 #include "ClientManager.hpp"
 
-ClientManager::ClientManager() {};
-ClientManager::~ClientManager() {};
+ClientManager::ClientManager(){};
+ClientManager::~ClientManager(){};
 
 ClientManager::SOCKET ClientManager::addNewClient(SOCKET server_fd, Server* server)
 {

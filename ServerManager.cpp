@@ -21,7 +21,7 @@ void ServerManager::initServers(void)
         portByServerSocket[serversSocket] = portIter->first;
         events.changeEvents(serversSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &portIter->second);
         portIter++;
-    } 
+    }
 }
 
 static std::string intToString(int number)
@@ -128,7 +128,7 @@ Server* ServerManager::getClientServer(SOCKET client_fd)
     return clientManager.getClient(client_fd).getServer();
 }
 
-void ServerManager::setServers(std::map<PORT, Server> &servers)
+void ServerManager::setServers(std::map<PORT, Server>& servers)
 {
     this->servers = servers;
 }
@@ -138,7 +138,7 @@ ServerManager::ServerManager(ServerManager const& other)
     static_cast<void>(other);
 }
 
-ServerManager& ServerManager::operator=(ServerManager const &rhs)
+ServerManager& ServerManager::operator=(ServerManager const& rhs)
 {
     static_cast<void>(rhs);
     return *this;

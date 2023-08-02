@@ -17,8 +17,6 @@ private:
     size_t clientBodySize;
     std::map<std::string, Location> locations;
 
-    Server(Server const& other);
-    Server& operator=(Server const& rhs);
 
     void setListen(std::string& input);
     void setServerName(std::string& input);
@@ -27,9 +25,12 @@ private:
     bool setRedirection(std::string const& sentence);
     void setAutoIndex(std::string& input);
     void setClientBodySize(std::string& input);
+
 public:
     Server();
     ~Server();
+    Server(Server const& other);
+    Server& operator=(Server const& rhs);
     bool fillServer(std::map<std::string, Location>& mapLocations, std::map<std::string, std::string>& mapSentence);
     int getListen() const;
     std::string getServerName() const;

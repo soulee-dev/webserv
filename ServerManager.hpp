@@ -1,14 +1,14 @@
 #pragma once
+#include "ClientManager.hpp"
 #include "Event.hpp"
 #include "Server.hpp"
-#include "ClientManager.hpp"
-#include <map>
-#include <vector>
-#include <iostream>
-#include <fcntl.h>
-#include <netdb.h>
 #include <cstdlib>
+#include <fcntl.h>
+#include <iostream>
+#include <map>
+#include <netdb.h>
 #include <sstream>
+#include <vector>
 
 class ServerManager
 {
@@ -26,11 +26,11 @@ public:
     Client& getClient(SOCKET client_fd);
     Server* getClientServer(SOCKET client_fd);
 
-    void setServers(std::map<PORT, Server> &servers);
+    void setServers(std::map<PORT, Server>& servers);
 
 private:
     ServerManager(ServerManager const& other);
-    ServerManager &operator=(ServerManager const &rhs);
+    ServerManager& operator=(ServerManager const& rhs);
     Event events;
     ClientManager clientManager;
     std::map<PORT, Server> servers;

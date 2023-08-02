@@ -12,4 +12,8 @@ ResponseMessage::ResponseMessage(ResponseMessage const& other) : Message(other)
 
 ResponseMessage& ResponseMessage::operator=(ResponseMessage const& rhs)
 {
+    statusCode = rhs.statusCode;
+    reasonPhrase = rhs.reasonPhrase;
+    Message::operator=(rhs);
+    return *this;
 }

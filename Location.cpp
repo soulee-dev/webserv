@@ -9,13 +9,22 @@ Location::Location()
 Location::~Location() {}
 
 Location::Location(Location const& other)
-{
-    static_cast<void>(other);
-}
+    : root(other.root), errorPage(other.errorPage), redirection(other.redirection),
+      allowMethod(other.allowMethod), index(other.index), autoIndex(other.autoIndex),
+      clientBodySize(other.clientBodySize) {}
 
 Location& Location::operator=(Location const& rhs)
 {
-    static_cast<void>(rhs);
+    if (this != &rhs)
+    {
+        this->root = rhs.root;
+        this->errorPage = rhs.errorPage;
+        this->redirection = rhs.redirection;
+        this->allowMethod = rhs.allowMethod;
+        this->index = rhs.index;
+        this->autoIndex = rhs.autoIndex;
+        this->clientBodySize = rhs.clientBodySize;
+    }
     return *this;
 }
 

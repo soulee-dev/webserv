@@ -1,8 +1,9 @@
 #pragma once
+#include "Location.hpp"
 #include "RequestMessage.hpp"
 #include "ResponseMessage.hpp"
-#include "Location.hpp"
 
+#include "Server.hpp"
 class Client
 {
 private:
@@ -20,8 +21,8 @@ public:
     typedef int PORT;
     typedef int SOCKET;
     Client();
-    // Client(const Client& ref);
-    // Client& operator=(const Client& ref);
+    Client(const Client& ref);
+    Client& operator=(const Client& ref);
     ~Client();
     void runServer(void);
     // void setPort(int port);
@@ -32,5 +33,4 @@ public:
     Server* getServer(void);
     // PORT getPort(void);
     SOCKET getClientFd(void);
-
 };

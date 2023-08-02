@@ -134,14 +134,19 @@ void Server::setClientBodySize(std::string& input)
     this->clientBodySize = std::strtod(input.c_str(), NULL);
 }
 
-
-Server::Server(Server const& other)
-{
-    static_cast<void>(other);
-}
+Server::Server(Server const& other) : listen(other.listen), serverName(other.serverName),
+                                      root(other.root), errorPage(other.errorPage), redirection(other.redirection),
+                                      autoIndex(other.autoIndex), clientBodySize(other.clientBodySize), locations(other.locations) {}
 
 Server& Server::operator=(Server const& rhs)
 {
-    static_cast<void>(rhs);
+    listen = rhs.listen;
+    serverName = rhs.serverName;
+    root = rhs.root;
+    errorPage = rhs.errorPage;
+    redirection = rhs.redirection;
+    autoIndex = rhs.autoIndex;
+    clientBodySize = rhs.clientBodySize;
+    locations = rhs.locations;
     return *this;
 }

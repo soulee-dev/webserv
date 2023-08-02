@@ -3,6 +3,7 @@
 #include <map>
 #include <sys/socket.h>
 
+class Server;
 class ClientManager
 {
 private:
@@ -14,7 +15,7 @@ private:
 public:
     ClientManager();
     ~ClientManager();
-    SOCKET addNewClient(SOCKET server_fd, Server *server);
+    SOCKET addNewClient(SOCKET server_fd, Server* server);
     void disconnectClient(SOCKET client_fd);
     Client& getClient(SOCKET client_fd);
 };
