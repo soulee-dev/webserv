@@ -3,10 +3,72 @@
 #include <sstream>
 #include <vector>
 
+// constructors
 Server::Server()
     : listen(80), serverName(""), root("/"), autoIndex(false), clientBodySize(10240) {}
-
+// destructor
 Server::~Server() {}
+// copy constructors
+
+Server::Server(Server const& other) : listen(other.listen), serverName(other.serverName),
+                                      root(other.root), errorPage(other.errorPage), redirection(other.redirection),
+                                      autoIndex(other.autoIndex), clientBodySize(other.clientBodySize), locations(other.locations) {}
+// operators
+Server& Server::operator=(Server const& rhs)
+{
+    listen = rhs.listen;
+    serverName = rhs.serverName;
+    root = rhs.root;
+    errorPage = rhs.errorPage;
+    redirection = rhs.redirection;
+    autoIndex = rhs.autoIndex;
+    clientBodySize = rhs.clientBodySize;
+    locations = rhs.locations;
+    return *this;
+}
+
+// getter
+int Server::getListen() const
+{
+    return this->listen;
+}
+
+std::map<std::string, Location> Server::getLocations(void) const
+{
+    return this->locations;
+}
+
+std::string Server::getServerName(void) const
+{
+    return this->serverName;
+}
+
+std::string Server::getRoot(void) const
+{
+    return this->root;
+}
+
+std::map<std::vector<int>, std::string> Server::getErrorPage(void) const
+{
+    return this->errorPage;
+}
+
+std::map<std::string, int> Server::getRedirection(void) const
+{
+    return this->redirection;
+}
+
+bool Server::getAutoIndex(void) const
+{
+    return this->autoIndex;
+}
+
+unsigned int Server::getClientBodySize(void) const
+{
+    return this->clientBodySize;
+}
+
+// setter
 
 int Server::runServer(RequestMessage& req, ResponseMessage& res)
 {
@@ -47,16 +109,6 @@ bool Server::fillServer(std::map<std::string, Location>& mapLocations, std::map<
         it++;
     }
     return false;
-}
-
-int Server::getListen() const
-{
-    return this->listen;
-}
-
-std::string Server::getServerName() const
-{
-    return this->serverName;
 }
 
 void Server::setListen(std::string& input)
@@ -132,21 +184,4 @@ void Server::setAutoIndex(std::string& input)
 void Server::setClientBodySize(std::string& input)
 {
     this->clientBodySize = std::strtod(input.c_str(), NULL);
-}
-
-Server::Server(Server const& other) : listen(other.listen), serverName(other.serverName),
-                                      root(other.root), errorPage(other.errorPage), redirection(other.redirection),
-                                      autoIndex(other.autoIndex), clientBodySize(other.clientBodySize), locations(other.locations) {}
-
-Server& Server::operator=(Server const& rhs)
-{
-    listen = rhs.listen;
-    serverName = rhs.serverName;
-    root = rhs.root;
-    errorPage = rhs.errorPage;
-    redirection = rhs.redirection;
-    autoIndex = rhs.autoIndex;
-    clientBodySize = rhs.clientBodySize;
-    locations = rhs.locations;
-    return *this;
 }

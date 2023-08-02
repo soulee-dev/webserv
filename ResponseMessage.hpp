@@ -4,7 +4,6 @@
 class ResponseMessage : public Message
 {
 private:
-
 public:
     ResponseMessage();
     ~ResponseMessage();

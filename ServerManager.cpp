@@ -1,8 +1,14 @@
 #include "ServerManager.hpp"
 
+// constructors
 ServerManager::~ServerManager(void) {}
+// destructor
 ServerManager::ServerManager(void) {}
-
+// copy constructors
+// operators
+// getter
+// setter
+// functions
 void ServerManager::initServers(void)
 {
     std::map<PORT, Server>::iterator portIter = servers.begin();
@@ -88,19 +94,19 @@ void ServerManager::runServerManager(void)
 
             if (currEvent.flags & EV_ERROR)
             {
-                // errorEventProcess(currEvent.ident);
+                errorEventProcess(currEvent);
                 continue;
             }
             switch (currEvent.filter)
             {
             case EVFILT_READ:
-                // readEventProcess(currEvent.ident);
+                readEventProcess(currEvent);
                 break;
             case EVFILT_WRITE:
-                // writeEventProcess(currEvent.ident);
+                writeEventProcess(currEvent);
                 break;
             case EVFILT_TIMER:
-                // timerEventProcess(currEvent.ident);
+                timerEventProcess(currEvent);
                 break;
             }
         }
@@ -112,9 +118,16 @@ int ServerManager::acceptClient(SOCKET server_fd)
     const int client_fd = accept(server_fd, NULL, NULL);
     const int serverPort = portByServerSocket[server_fd];
     if (client_fd == -1)
+    {
+        std::cout << "accept() error" << std::endl;
         return -1;
-    clientManager.addNewClient(server_fd, &servers[serverPort]);
+    }
+    fcntl(client_fd, F_SETFL, O_NONBLOCK);
+    clientManager.addNewClient(client_fd, &servers[serverPort]);
     events.changeEvents(client_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &clientManager.getClient(client_fd));
+    events.changeEvents(client_fd, EVFILT_WRITE, EV_ADD | EV_DISABLE, 0, 0, &clientManager.getClient(client_fd));
+    events.changeEvents(client_fd, EVFILT_TIMER, EV_ADD | EV_ENABLE, NOTE_SECONDS, 100, &clientManager.getClient(client_fd));
+
     return client_fd;
 }
 
@@ -142,4 +155,63 @@ ServerManager& ServerManager::operator=(ServerManager const& rhs)
 {
     static_cast<void>(rhs);
     return *this;
+}
+
+void ServerManager::errorEventProcess(struct kevent& currEvent)
+{
+    if (isResponseToServer(currEvent))
+    {
+        serverDisconnect(currEvent);
+        std::cout << currEvent.ident << " server disconnected" << std::endl;
+    }
+    else
+    {
+        clientManager.disconnectClient(currEvent.ident);
+        std::cout << currEvent.ident << " client disconnected" << std::endl;
+    }
+}
+
+bool ServerManager::isResponseToServer(struct kevent& currEvent)
+{
+    return portByServerSocket.find(currEvent.ident) != portByServerSocket.end();
+}
+
+void ServerManager::readEventProcess(struct kevent& currEvent)
+{
+    if (isResponseToServer(currEvent))
+        acceptClient(currEvent.ident);
+    else
+    {
+        events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_EOF, NOTE_SECONDS, 100, currEvent.udata);
+        if (clientManager.readEventProcess(currEvent))
+        {
+            // events.changeEvents(currEvent.ident, EVFILT_READ, EV_DISABLE, 0, 0, currEvent.udata);
+            events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_ENABLE, 0, 0, currEvent.udata);
+        }
+    }
+}
+
+void ServerManager::writeEventProcess(struct kevent& currEvent)
+{
+    if (isResponseToServer(currEvent) == false)
+    {
+        clientManager.writeEventProcess(currEvent); // 더이상 보낼게 없을때 true 반환
+        events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata);
+    }
+    else
+    {
+        std::cout << "wrong way" << std::endl;
+    }
+}
+
+void ServerManager::timerEventProcess(struct kevent& currEvent)
+{
+    events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_DELETE, 0, 0, currEvent.udata);
+    clientManager.disconnectClient(currEvent.ident);
+}
+
+void ServerManager::serverDisconnect(struct kevent& currEvent)
+{
+    close(currEvent.ident);
+    servers.erase(portByServerSocket[currEvent.ident]);
 }

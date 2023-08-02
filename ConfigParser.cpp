@@ -3,15 +3,25 @@
 #include "Server.hpp"
 #include <fstream>
 
+// constructors
 ConfigParser::ConfigParser() {}
-
+// destructor
 ConfigParser::~ConfigParser() {}
-
+// copy constructors
 ConfigParser::ConfigParser(ConfigParser const& other)
 {
     static_cast<void>(other);
 }
+// operators
+ConfigParser& ConfigParser::operator=(ConfigParser const& rhs)
+{
+    static_cast<void>(rhs);
+    return *this;
+}
 
+// getter
+// setter
+// functions
 void ConfigParser::parseConfig(std::string const& configFileName)
 {
     int (*action[8])(struct s_info&, mapPortServer&) = {
