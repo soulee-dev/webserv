@@ -36,5 +36,5 @@ int main() {
     // Free the buffer
     free(post_data);
 
-    return 0;
+    exit(0);
 }
