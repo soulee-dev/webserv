@@ -202,7 +202,7 @@ void	MakeDynamicResponse(RequestMessage& request, std::vector<char>& response)
 	char	*empty_list[] = {NULL};
 
 	std::string body(request.body.begin(), request.body.end());
-	std::cout << request.method;
+	std::cout << BOLDCYAN << request.method << RESET << '\n';
 	std::cout << BOLDGREEN << "BODY : " << body << RESET << '\n';
 
 	if (pipe(pipe_fd) == -1 || pipe(pipe_fd_back) == -1)
@@ -270,7 +270,6 @@ void ServerManager::readEventProcess(SOCKET ident)
 		acceptClient(ident);
 	else
 	{
-		std::cout << "else!!!!!!!\n";
 		events.changeEvents(ident, EVFILT_TIMER, EV_EOF, NOTE_SECONDS, 1000, NULL);
 		if (messageReader->readMessage(ident))
 		{
