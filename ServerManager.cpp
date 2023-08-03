@@ -29,8 +29,10 @@ ServerManager& ServerManager::getInstance()
 	return instance;
 }
 
+
+// Maximum
 ServerManager::ServerManager()
-	: LISTENCAPACITY(5)
+	: LISTENCAPACITY(10)
 {
 	messageReader = &RequestMessageReader::getInstance();
 	messageWriter = &ResponseMessageWriter::getInstance();
@@ -336,6 +338,7 @@ void ServerManager::acceptClient(SOCKET serverSocket)
 	messageReader->insertNewClient(clientSocket);
 	messageWriter->insertNewClient(clientSocket);
 	insertClient(clientSocket);
+	clientsBySocket[clientSocket].setServer(getClientServer(clientSocket));
 }
 
 void ServerManager::runServerManager(void)
