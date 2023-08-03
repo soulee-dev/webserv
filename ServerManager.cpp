@@ -169,12 +169,36 @@ void ServerManager::errorEventProcess(SOCKET ident)
 	}
 }
 
+std::string	getFileType(std::string file_name)
+{
+	std::string	file_type;
+
+	if (file_name.find(".html") != std::string::npos || file_name.find(".htm") != std::string::npos)
+		file_type = "text/html";
+	else if (file_name.find(".gif") != std::string::npos)
+		file_type = "image/gif";
+	else if (file_name.find(".png") != std::string::npos)
+		file_type = "image/png";
+	else if (file_name.find(".jpg") != std::string::npos)
+		file_type = "image/jpeg";
+	else if (file_name.find(".mpg") != std::string::npos)
+		file_type = "video/mpg";
+	else if (file_name.find(".mp4") != std::string::npos)
+		file_type = "video/mp4";
+	else
+		file_type = "text/plain";
+	return (file_type);
+}
+
 void	MakeStaticResponse(RequestMessage& req, std::vector<char>& response)
 {
-	std::string	file_type = "text/html";
+	std::cout << BOLDGREEN << "filename : " << req.fileName << RESET << '\n';
+
+	std::string	file_type = getFileType(req.fileName);
+	// std::string	file_type = "text/html";
 	std::vector<char>   buffer;
 	std::string     header;
-	std::ifstream   file("." + req.requestTarget + "index.html", std::ios::binary);
+	std::ifstream   file(req.fileName, std::ios::binary);
 
 	file.seekg(0, file.end);
 	int length = file.tellg();
@@ -264,6 +288,26 @@ void	MakeDynamicResponse(RequestMessage& request, std::vector<char>& response)
 	response.insert(response.end(), buffer.begin(), buffer.end());
 }
 
+int	ParseURI(std::string uri, RequestMessage &req)
+{
+	if (req.requestTarget.find("cgi-bin") == std::string::npos)
+	{
+		uri = req.requestTarget;
+		req.fileName = "./" + uri;
+		if (uri[uri.length() - 1] == '/')
+			req.is_directory = true;
+		return 0; // this means file is STATIC;
+	}
+	else
+	{
+		size_t lc = uri.find('?');
+		if (lc != std::string::npos)
+			req.cgi_args = uri.substr(lc + 1);
+		req.fileName = "." + uri.substr(0, lc);
+		return 1; // this means file is DYNAMIC;
+	}
+}
+
 void ServerManager::readEventProcess(SOCKET ident)
 {
 	if (isRespondToServer(ident))
@@ -286,7 +330,7 @@ void ServerManager::readEventProcess(SOCKET ident)
 			RequestMessage  request = messageReader->getInstance().messageBuffer[ident];
 
 			std::vector<char>   response;
-			if (request.requestTarget.find("cgi-bin") == std::string::npos)
+			if (!ParseURI(request.requestTarget, request))
 			{
 				MakeStaticResponse(request, response);
 			}

@@ -8,6 +8,12 @@ public:
 	~RequestMessage();
 	std::string method;
 	std::string requestTarget;
+	
+	// --- gyopark ADDED --- //
+	std::string	fileName;
+	int	is_directory;
+	std::string	cgi_args;
+	// --------------------- //
 
 	void clear();
 };
