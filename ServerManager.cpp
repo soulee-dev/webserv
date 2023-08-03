@@ -233,10 +233,11 @@ void	MakeDynamicResponse(RequestMessage& request, std::vector<char>& response)
 
 		setenv("REQUEST_METHOD", "POST", 1);
 		setenv("CONTENT_LENGTH", size_cstr, 1);
+		setenv("QUERY_STRING", "fnum=123123123&snum=2147483647", 1);
 		
 		close(pipe_fd[0]);
 
-		if (execve("./cgi-bin/post_echo", empty_list, environ) == -1)
+		if (execve("./cgi-bin/py_adder", empty_list, environ) == -1)
 		{
 			std::cerr << "execve error" << std::endl;
 			return ;
@@ -282,6 +283,7 @@ void ServerManager::readEventProcess(SOCKET ident)
 			std::cout << "메시지 잘 받았습니다^^" << std::endl;
 
 			RequestMessage  request = messageReader->getInstance().messageBuffer[ident];
+			// clientsBySocket[ident].setServer(getClientServer(ident));
 
 			std::vector<char>   response;
 			if (request.requestTarget.find("cgi-bin") == std::string::npos)
@@ -338,7 +340,7 @@ void ServerManager::acceptClient(SOCKET serverSocket)
 	messageReader->insertNewClient(clientSocket);
 	messageWriter->insertNewClient(clientSocket);
 	insertClient(clientSocket);
-	clientsBySocket[clientSocket].setServer(getClientServer(clientSocket));
+
 }
 
 void ServerManager::runServerManager(void)
