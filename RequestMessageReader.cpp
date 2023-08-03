@@ -133,19 +133,30 @@ void RequestMessageReader::readBody(const char* buffer, int client_fd)
     std::vector<unsigned char>& currReadBuffer = readBuffer[client_fd];
     std::vector<unsigned char>::iterator pos;
 
-    if (currMessage.method == "GET" || currMessage.method == "DELETE")
-    {
-        ParseState[client_fd] = DONE;
-        return;
-    }
     currReadBuffer.insert(currReadBuffer.end(), buffer, buffer + strlen(buffer));
-    std::string a;
-    if ((pos = std::search(currReadBuffer.begin(), currReadBuffer.end(), "\r\n\r\n", &"\r\n\r\n"[4])) != currReadBuffer.end())
+    if (currMessage.headers.find("content-length") != currMessage.headers.end())
     {
-        currMessage.body = std::vector<unsigned char>(currReadBuffer.begin(), pos);
+        size_t lengthToRead = atoi(currMessage.headers["content-length"].c_str()) - currMessage.body.size();
+        if (lengthToRead > currReadBuffer.size())
+        {
+            currMessage.body.insert(currMessage.body.end(), currReadBuffer.begin(), currReadBuffer.end());
+            currReadBuffer.clear();
+        }
+        else
+        {
+            currMessage.body.insert(currMessage.body.end(), currReadBuffer.begin(), currReadBuffer.begin() + lengthToRead);
+            currReadBuffer.erase(currReadBuffer.begin(), currReadBuffer.begin() + lengthToRead);
+            ParseState[client_fd] = DONE;
+        }
+    }
+    else if ((pos = std::search(currReadBuffer.begin(), currReadBuffer.end(), "\r\n\r\n", &"\r\n\r\n"[4])) != currReadBuffer.end())
+    {
+        currMessage.body.insert(currMessage.body.end(), currReadBuffer.begin(), pos);
         currReadBuffer.erase(currReadBuffer.begin(), pos + 4);
         ParseState[client_fd] = DONE;
     }
+    // else
+    //     ParseState[client_fd] = DONE;
 }
 void RequestMessageReader::readMethod(const char* buffer, int client_fd)
 {
