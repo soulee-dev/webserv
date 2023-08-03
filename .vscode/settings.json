@@ -60,6 +60,7 @@
 		"unordered_map": "cpp",
 		"utility": "cpp",
 		"vector": "cpp",
+<<<<<<< HEAD
 		"__tree": "cpp",
 		"deque": "cpp",
 		"fstream": "cpp",
@@ -68,4 +69,13 @@
 		"stack": "cpp"
 	},
 	"editor.formatOnSave": false
+=======
+		"deque": "cpp",
+		"map": "cpp",
+		"__tree": "cpp",
+		"fstream": "cpp",
+		"iomanip": "cpp",
+		"stack": "cpp"
+	}
+>>>>>>> 882fb4b93a53ef1f7fac2cac0351d6134f6bc222
 }
