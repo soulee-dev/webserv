@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <vector>
+#include "utils.hpp"
 #include "Color.hpp"
 
 void ServerManager::setServers(std::map<PORT, std::vector<Server> >& servers)
@@ -168,20 +169,6 @@ void ServerManager::errorEventProcess(SOCKET ident)
 	}
 }
 
-std::string BuildHeader(std::string status_code, int file_size, std::string file_type)
-{
-	std::ostringstream	header;
-
-	header << "HTTP/1.1 " << status_code << CRLF;
-	header << "Server: " << SERVER_NAME << CRLF;
-	header << "Connection: close" << CRLF;
-	header << "Content-length: " << file_size << CRLF;
-	header << "Content-type: " << file_type << CRLF;
-	header << CRLF;
-
-	return (header.str());
-}
-
 void	MakeStaticResponse(RequestMessage& req, std::vector<char>& response)
 {
 	std::string	file_type = "text/html";
@@ -198,7 +185,7 @@ void	MakeStaticResponse(RequestMessage& req, std::vector<char>& response)
 	file.seekg(0, file.beg);
 	buffer.resize(length);
 	file.read(&buffer[0], length);
-	header = BuildHeader("200 OK", length, file_type);
+	header = utils::build_header("200 OK", length, file_type);
 	response.insert(response.end(), header.begin(), header.end());
 	response.insert(response.end(), buffer.begin(), buffer.end());
 }

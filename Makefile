@@ -6,7 +6,7 @@
 #    By: soulee <soulee@student.42seoul.kr>         +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/06/02 11:11:51 by jinam             #+#    #+#              #
-#    Updated: 2023/07/31 10:53:05 by soulee           ###   ########.fr        #
+#    Updated: 2023/08/03 17:19:57 by soulee           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,7 +20,7 @@ CXXFLAGS	= -Wall -Werror -Wextra -std=c++98 -g3
 RM 			= rm
 RMFLAGS		= -f
 OUT_DIR		= objs
-FILE		= main ConfigParser ConfigFunctions Location Server Client ServerManager RequestMessageReader ResponseMessageWriter Event RequestMessage
+FILE		= main ConfigParser ConfigFunctions Location Server Client ServerManager RequestMessageReader ResponseMessageWriter Event RequestMessage utils
 OBJECTS		= $(addprefix $(OUT_DIR)/, $(addsuffix .o, $(FILE)))
 
 # Compile rules
