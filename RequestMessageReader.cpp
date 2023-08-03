@@ -87,6 +87,12 @@ void RequestMessageReader::readHeader(const char* buffer, int client_fd)
                 ParseState[client_fd] = ERROR;
                 return;
             }
+            else if (currMessage.headers.find("content-length") == currMessage.headers.end() 
+                && (currMessage.method == "GET" || currMessage.method == "DELETE"))
+            {
+                ParseState[client_fd] = DONE;
+                return ;
+            }
             else
             {
                 ParseState[client_fd] = BODY;
@@ -155,8 +161,6 @@ void RequestMessageReader::readBody(const char* buffer, int client_fd)
         currReadBuffer.erase(currReadBuffer.begin(), pos + 4);
         ParseState[client_fd] = DONE;
     }
-    // else
-    //     ParseState[client_fd] = DONE;
 }
 void RequestMessageReader::readMethod(const char* buffer, int client_fd)
 {
