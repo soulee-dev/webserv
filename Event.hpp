@@ -1,7 +1,7 @@
 
 #pragma once
 #include <vector>
-#define EVENTLIST_SIZE 8
+#define EVENTLIST_SIZE 10
 
 #include <sys/event.h>
 class Event

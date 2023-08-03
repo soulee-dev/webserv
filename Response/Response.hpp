@@ -2,16 +2,16 @@
 
 #include <string>
 #include <iostream>
-#include "ResponseMessage.hpp"
+#include "Client.hpp"
 
 class Response
 {
 	private:
 		bool			is_static;
 		bool			is_directory;
-		std::string		
+
 	public:
-		Response(RequestMessage& request);
+		Response(Client& client);
 		virtual void build() = 0;
 		virtual	~Response();
 };
