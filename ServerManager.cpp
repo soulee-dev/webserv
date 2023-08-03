@@ -273,14 +273,10 @@ void ServerManager::readEventProcess(SOCKET ident)
 		events.changeEvents(ident, EVFILT_TIMER, EV_EOF, NOTE_SECONDS, 1000, NULL);
 		if (messageReader->readMessage(ident))
 		{
-			std::cout << BOLDRED << "Ended Process, disconnect with Client\n" << RESET;
 			disconnectClient(ident);
 		}
 		else if (messageReader->ParseState[ident] == DONE || messageReader->ParseState[ident] == ERROR)
 		{
-			std::cout << BOLDCYAN << "Still processing\n" << RESET;
-			// 메시지 처리하여 버퍼에 입력해야함.
-			// events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
 			std::cout << "메시지 잘 받았습니다^^" << std::endl;
 
 			RequestMessage  request = messageReader->getInstance().messageBuffer[ident];
