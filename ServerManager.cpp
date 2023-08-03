@@ -177,7 +177,7 @@ std::string	getFileType(std::string file_name)
 		file_type = "text/html";
 	else if (file_name.find(".gif") != std::string::npos)
 		file_type = "image/gif";
-	else if (file_name.find(".png") != std::string::npos)
+	else if (file_name.find(".png") != std::string::npos || file_name.find(".ico") != std::string::npos)
 		file_type = "image/png";
 	else if (file_name.find(".jpg") != std::string::npos)
 		file_type = "image/jpeg";
@@ -192,8 +192,7 @@ std::string	getFileType(std::string file_name)
 
 void	MakeStaticResponse(RequestMessage& req, std::vector<char>& response)
 {
-	std::cout << BOLDGREEN << "filename : " << req.fileName << RESET << '\n';
-
+	// std::cout << BOLDGREEN << "filename : " << req.fileName << RESET << '\n';
 	std::string	file_type = getFileType(req.fileName);
 	// std::string	file_type = "text/html";
 	std::vector<char>   buffer;
@@ -209,9 +208,11 @@ void	MakeStaticResponse(RequestMessage& req, std::vector<char>& response)
 	file.seekg(0, file.beg);
 	buffer.resize(length);
 	file.read(&buffer[0], length);
+
 	header = utils::build_header("200 OK", length, file_type);
 	response.insert(response.end(), header.begin(), header.end());
 	response.insert(response.end(), buffer.begin(), buffer.end());
+	std::cout << BOLDRED << "Serving file " << req.fileName << ", type: " << file_type << RESET << std::endl;
 }
 
 
@@ -293,9 +294,9 @@ int	ParseURI(std::string uri, RequestMessage &req)
 	if (req.requestTarget.find("cgi-bin") == std::string::npos)
 	{
 		uri = req.requestTarget;
-		req.fileName = "./" + uri;
-		if (uri[uri.length() - 1] == '/')
-			req.is_directory = true;
+		req.fileName = "./html" + uri;
+		// if (uri[uri.length() - 1] == '/') // might be unused
+		// 	req.is_directory = true;
 		return 0; // this means file is STATIC;
 	}
 	else
@@ -317,22 +318,58 @@ void ServerManager::readEventProcess(SOCKET ident)
 		events.changeEvents(ident, EVFILT_TIMER, EV_EOF, NOTE_SECONDS, 1000, NULL);
 		if (messageReader->readMessage(ident))
 		{
-			std::cout << BOLDRED << "Ended Process, disconnect with Client\n" << RESET;
 			disconnectClient(ident);
 		}
 		else if (messageReader->ParseState[ident] == DONE || messageReader->ParseState[ident] == ERROR)
 		{
-			std::cout << BOLDCYAN << "Still processing\n" << RESET;
 			// 메시지 처리하여 버퍼에 입력해야함.
 			// events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
+			struct stat	stat_buf;
+			int	ret_stat;
 			std::cout << "메시지 잘 받았습니다^^" << std::endl;
-
 			RequestMessage  request = messageReader->getInstance().messageBuffer[ident];
-
 			std::vector<char>   response;
+			std::cout << "METHOD : " << request.method << '\n';
 			if (!ParseURI(request.requestTarget, request))
 			{
-				MakeStaticResponse(request, response);
+				std::cout << "request filename : " << request.fileName << '\n';
+				ret_stat = stat(request.fileName.c_str(), &stat_buf);
+				if (S_ISDIR(stat_buf.st_mode))
+				{
+					std::cout << BOLDYELLOW << request.fileName << " is directory" << RESET << std::endl;
+					DIR	*dir = opendir(request.fileName.c_str());
+					if (dir == NULL)
+					{
+						std::cout << "404 File not found\n";
+						return ;
+					}
+					struct dirent* entry;
+					while ((entry = readdir(dir)) != NULL)
+					{
+						std::string	fileName = entry->d_name;
+						// entry 구조체 dname에는 html 디렉토리의 모든 파일이 저장되어있음 (편리)
+						// 모든 파일 네임 확인하려면 아래 주석 풀면 됨
+						// std::cout << "Entry filename : " << fileName << '\n';
+						if (fileName == "index.html" || fileName == "index.htm")
+						{
+							struct stat stat_index;
+							std::string path = request.fileName + "index.html";
+							int indexStat = stat(path.c_str(), &stat_index);
+							if ((indexStat == 0) && S_ISREG(stat_index.st_mode) && (S_IRUSR & stat_index.st_mode))
+							{
+								request.fileName = path;
+								std::cout << BOLDRED << "path : " << path <<RESET << '\n';
+								MakeStaticResponse(request, response);
+							}
+						}
+					}
+					closedir(dir);
+				}
+				else
+				{
+					std::cout << BOLDBLUE << request.fileName << " is NOT directory" << RESET << std::endl;
+					MakeStaticResponse(request, response);
+				}
 			}
 			else
 			{

@@ -9,5 +9,4 @@
 namespace utils
 {
 	std::string	build_header(std::string status_code, int file_size, std::string file_type);
-	
 }

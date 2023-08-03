@@ -12,6 +12,9 @@
 #include <fstream>
 #include <vector>
 
+#include <sys/stat.h> // for struct stat
+#include <dirent.h> // for directory listing
+
 # define SERVER_NAME "Tiny Web Server"
 # define CRLF "\r\n"
 
