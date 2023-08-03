@@ -2,9 +2,6 @@
 #include <stdlib.h>
 
 int main() {
-    // Print the HTTP response header
-    printf("Content-type: text/plain\n\n");
-
     // Read the CONTENT_LENGTH environment variable
     char *content_length_str = getenv("CONTENT_LENGTH");
     if (content_length_str == NULL) {
@@ -13,6 +10,9 @@ int main() {
     }
 
     int content_length = atoi(content_length_str);
+    printf("Connection: close\r\n");
+    printf("Content-length: %d\r\n", content_length);
+    printf("Content-type: text/html\r\n\r\n");
     if (content_length <= 0) {
         printf("Invalid CONTENT_LENGTH.\n");
         return 0;
@@ -30,9 +30,9 @@ int main() {
     post_data[content_length] = '\0'; // Null-terminate the string
 
     // Print the POST data
-    printf("POST data received:\n");
     printf("%s\n", post_data);
 
+    printf("\r\n\r\n");
     // Free the buffer
     free(post_data);
 

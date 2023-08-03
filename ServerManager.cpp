@@ -211,17 +211,14 @@ void	MakeDynamicResponse(RequestMessage& request, std::vector<char>& response)
 	std::vector<char> buffer;
 	std::string	file_type = "text/html";
 	std::ostringstream	header;
-	int	pipe_fd[2];
+	int	pipe_fd[2], pipe_fd_back[2];
 	char	*empty_list[] = {NULL};
 
-	std::cout << BOLDYELLOW << "Requested METHOD : " \
-				<< BOLDCYAN << request.method << RESET << '\n';
-
 	std::string body(request.body.begin(), request.body.end());
-	// std::string	body = "hello world!";
+	std::cout << request.method;
 	std::cout << BOLDGREEN << "BODY : " << body << RESET << '\n';
 
-	if (pipe(pipe_fd) == -1)
+	if (pipe(pipe_fd) == -1 || pipe(pipe_fd_back) == -1)
 	{
 		std::cerr << "Pipe error" << std::endl;
 		return ;
@@ -236,8 +233,10 @@ void	MakeDynamicResponse(RequestMessage& request, std::vector<char>& response)
 	if (pid == 0) // 자식 코드
 	{
 		// Child process
-		close(pipe_fd[1]);
+		close(pipe_fd[1]);  // Close unused write end
+		close(pipe_fd_back[0]); // Close unused read end in child
 		dup2(pipe_fd[0], STDIN_FILENO); // stdin을 pipe_fd[0]로 복제
+		dup2(pipe_fd_back[1], STDOUT_FILENO); // stdout을 pipe_fd_back[1]로 복제
 
 		int size = body.size();
 		std::string size_str = std::to_string(size);
@@ -246,7 +245,7 @@ void	MakeDynamicResponse(RequestMessage& request, std::vector<char>& response)
 		setenv("REQUEST_METHOD", "POST", 1);
 		setenv("CONTENT_LENGTH", size_cstr, 1);
 		
-		// close(pipe_fd[0]);
+		close(pipe_fd[0]);
 
 		if (execve("./cgi-bin/post_echo", empty_list, environ) == -1)
 		{
@@ -258,20 +257,17 @@ void	MakeDynamicResponse(RequestMessage& request, std::vector<char>& response)
 	{
 		// Parent process
 		close(pipe_fd[0]); // Close unused read end
-        write(pipe_fd[1], body.c_str(), body.size()); // Write body to pipe
+		close(pipe_fd_back[1]); // Close unused write end in parent
+		write(pipe_fd[1], body.c_str(), body.size()); // Write body to pipe
 		close(pipe_fd[1]);
-        char read_buffer[1024];
-        ssize_t bytes_read;
-        while ((bytes_read = read(pipe_fd[0], read_buffer, sizeof(read_buffer))) > 0) {
-            buffer.insert(buffer.end(), read_buffer, read_buffer + bytes_read);
-        }
-		// close(pipe_fd[0]);
-		for (std::vector<char>::const_iterator it = buffer.begin(); it != buffer.end(); ++it) {
-            std::cout << *it;
-        }
+
+		char read_buffer[1024];
+		ssize_t bytes_read;
+		while ((bytes_read = read(pipe_fd_back[0], read_buffer, sizeof(read_buffer))) > 0) {
+			buffer.insert(buffer.end(), read_buffer, read_buffer + bytes_read);
+		}
+		close(pipe_fd[0]);
 		wait(NULL);
-		// int status;
-        // waitpid(pid, &status, 0);
 	}
 	static_cast<void>(request);
 	header << "HTTP/1.1 200 OK" << CRLF;
