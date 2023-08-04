@@ -15,10 +15,11 @@ private:
 public:
     ClientManager();
     ~ClientManager();
-    SOCKET addNewClient(SOCKET server_fd, Server* server);
+    SOCKET addNewClient(SOCKET server_fd, Server* server, Event* event);
     void disconnectClient(SOCKET client_fd);
     Client& getClient(SOCKET client_fd);
 
     bool readEventProcess(struct kevent& currEvent);
     bool writeEventProcess(struct kevent& currEvent);
+    bool nonClientWriteEventProcess(struct kevent& currEvent);
 };

@@ -129,7 +129,8 @@ int ServerManager::acceptClient(SOCKET server_fd)
         return -1;
     }
     fcntl(client_fd, F_SETFL, O_NONBLOCK);
-    clientManager.addNewClient(client_fd, &servers[serverPort]);
+    // client에 events 를 넣어야 함,
+    clientManager.addNewClient(client_fd, &servers[serverPort], &events);
     events.changeEvents(client_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &clientManager.getClient(client_fd));
     events.changeEvents(client_fd, EVFILT_WRITE, EV_ADD | EV_DISABLE, 0, 0, &clientManager.getClient(client_fd));
     events.changeEvents(client_fd, EVFILT_TIMER, EV_ADD | EV_ENABLE, NOTE_SECONDS, 100, &clientManager.getClient(client_fd));
@@ -201,8 +202,17 @@ void ServerManager::writeEventProcess(struct kevent& currEvent)
 {
     if (isResponseToServer(currEvent) == false)
     {
-        clientManager.writeEventProcess(currEvent); // 더이상 보낼게 없을때 true 반환
-        events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata);
+        // 현재 로직은 바꿔야 함 -_-; 해당 ident 가 clientFD 가 아니라는 것을 확인 하는 조건으로
+        if (&clientManager.getClient(currEvent.ident) != NULL)
+        {
+            clientManager.writeEventProcess(currEvent); // 더이상 보낼게 없을때 true 반환
+            events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata);
+        }
+        else
+        {
+            clientManager.nonClientWriteEventProcess(currEvent);
+            events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata);
+        }
     }
     else
     {
