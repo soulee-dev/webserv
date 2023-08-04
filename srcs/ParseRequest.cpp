@@ -1,23 +1,6 @@
 #include "ParseRequest.hpp"
 #include "Color.hpp"
 
-void ParseRequest::parseRequest(Client &c, ResponseMessage &r)
-{
-	std::string uri = c.getReq().requestTarget;
-
-	if (uri.find("cgi-bin") == std::string::npos)
-	{
-		processStatic(c, r, uri);
-	}
-	else
-	{
-		size_t lc = uri.find('?');
-		if (lc != std::string::npos)
-			c.getReq().cgi_args = uri.substr(lc + 1);
-		c.getReq().fileName = "." + uri.substr(0, lc);
-	}
-}
-
 std::string	getFileType(std::string file_name)
 {
 	std::string	file_type;
@@ -39,7 +22,26 @@ std::string	getFileType(std::string file_name)
 	return (file_type);
 }
 
+void ParseRequest::parseRequest(Client &c, ResponseMessage &r)
+{
+	std::string uri = c.getReq().requestTarget;
+
+	if (uri.find("cgi-bin") == std::string::npos)
+	{
+		processStatic(c, r, uri);
+	}
+	else
+	{
+		size_t lc = uri.find('?');
+		if (lc != std::string::npos)
+			c.getReq().cgi_args = uri.substr(lc + 1);
+		c.getReq().fileName = "." + uri.substr(0, lc);
+		processDynamic(c, r);
+	}
+}
+
 // --- RIGHT HERE PROCESS STATIC --- //
+
 void	processStatic(Client &c, ResponseMessage &r, std::string uri)
 {
 	struct stat stat_buf;
@@ -85,7 +87,7 @@ void	processDirectory(Client &c)
 	closedir(dir);
 }
 
-void MakeStaticResponse(Client &c, ResponseMessage &r)
+void	MakeStaticResponse(Client &c, ResponseMessage &r)
 {
 	c.getReq().fileType = getFileType(c.getReq().fileName);
 	std::vector<char>	buffer;
@@ -120,6 +122,16 @@ std::string	build_header(std::string status_code, int file_size, std::string fil
 }
 
 // -------------------------- // 
+
+// --- RIGHT HERE PROCESS DYNAMIC --- //
+void	processDynamic(Client &c, ResponseMessage &r, std::string uri)
+{
+	c.getReq().fileType = getFileType(c.getReq().fileName);
+	std::vector<char>	buffer;
+	std::string			header;
+	int	pipe_fd[2], pipe_fd_back[2];
+	char	*empty_list[] = { NULL };
+}
 
 ParseRequest::ParseRequest() {}
 
