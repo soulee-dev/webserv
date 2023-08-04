@@ -10,6 +10,7 @@ public:
     RequestMessage& operator=(RequestMessage const& rhs);
     std::string method;
     std::string requestTarget;
+    int chunkedFd;
 
     void clear();
 };
