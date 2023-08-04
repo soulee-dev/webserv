@@ -35,13 +35,13 @@ public:
 
     // getter
     int getListen() const;
-    std::string getRoot() const;
-    std::map<std::vector<int>, std::string> getErrorPage() const;
-    std::map<std::string, int> getRedirection() const;
+    const std::string& getRoot() const;
+    const std::map<std::vector<int>, std::string>& getErrorPage() const;
+    const std::map<std::string, int>& getRedirection() const;
     bool getAutoIndex() const;
     unsigned int getClientBodySize() const;
-    std::map<std::string, Location> getLocations() const;
-    std::string getServerName() const;
+    const std::map<std::string, Location>& getLocations() const;
+    const std::string& getServerName() const;
 
     // function
     int runServer(RequestMessage& req, ResponseMessage& res);
