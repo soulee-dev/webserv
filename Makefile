@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: soulee <soulee@student.42seoul.kr>         +#+  +:+       +#+         #
+#    By: jinam <jinam@student.42seoul.kr>           +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/06/02 11:11:51 by jinam             #+#    #+#              #
-#    Updated: 2023/08/01 18:07:06 by jaemjeon         ###   ########.fr        #
+#    Updated: 2023/08/02 15:20:52 by jinam            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,15 +16,17 @@ NAME = webserv
 
 # Cmd & Options
 CXX			= c++
-CXXFLAGS	= -Wall -Werror -Wextra -std=c++98 -g3
+#CXXFLAGS	= # -fsanitize=address -g#-Wall -Werror -Wextra -std=c++98 -g3
+CXXFLAGS	=
 RM 			= rm
 RMFLAGS		= -f
 OUT_DIR		= objs
-FILE		= main ConfigParser ConfigFunctions Location Server Client ClientManager ServerManager Event RequestMessage ResponseMessage Message
+SRC_DIR		= srcs
+FILE		= Client ClientManager ConfigFunctions ConfigParser Event Location Message RequestMessage ResponseMessage Server ServerManager main
 OBJECTS		= $(addprefix $(OUT_DIR)/, $(addsuffix .o, $(FILE)))
 
 # Compile rules
-$(OUT_DIR)/%.o	: %.cpp
+$(OUT_DIR)/%.o : $(SRC_DIR)/%.cpp
 	@mkdir -p $(OUT_DIR)
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
@@ -43,4 +45,4 @@ fclean	: clean
 
 re		:
 	@make fclean
-	@make all
+	@make all 
