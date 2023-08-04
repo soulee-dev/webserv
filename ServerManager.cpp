@@ -193,7 +193,7 @@ std::string	getFileType(std::string file_name)
 void	MakeStaticResponse(RequestMessage& req, std::vector<char>& response)
 {
 	// std::cout << BOLDGREEN << "filename : " << req.fileName << RESET << '\n';
-	std::string	file_type = getFileType(req.fileName);
+	req.fileType = getFileType(req.fileName);
 	// std::string	file_type = "text/html";
 	std::vector<char>   buffer;
 	std::string     header;
@@ -208,11 +208,10 @@ void	MakeStaticResponse(RequestMessage& req, std::vector<char>& response)
 	file.seekg(0, file.beg);
 	buffer.resize(length);
 	file.read(&buffer[0], length);
-
-	header = utils::build_header("200 OK", length, file_type);
+	header = utils::build_header("200 OK", length, req.fileType);
 	response.insert(response.end(), header.begin(), header.end());
 	response.insert(response.end(), buffer.begin(), buffer.end());
-	std::cout << BOLDRED << "Serving file " << req.fileName << ", type: " << file_type << RESET << std::endl;
+	std::cout << BOLDGREEN << req.fileName << "'s FILE TYPE : " << req.fileType << RESET << std::endl;
 }
 
 
@@ -329,14 +328,14 @@ void ServerManager::readEventProcess(SOCKET ident)
 			std::cout << "메시지 잘 받았습니다^^" << std::endl;
 			RequestMessage  request = messageReader->getInstance().messageBuffer[ident];
 			std::vector<char>   response;
-			std::cout << "METHOD : " << request.method << '\n';
+			std::cout << BOLDCYAN << "METHOD : " << request.method << RESET << '\n';
 			if (!ParseURI(request.requestTarget, request))
 			{
-				std::cout << "request filename : " << request.fileName << '\n';
+				std::cout << BOLDMAGENTA << "REQUEST FILENAME : " << request.fileName << RESET << '\n';
 				ret_stat = stat(request.fileName.c_str(), &stat_buf);
 				if (S_ISDIR(stat_buf.st_mode))
 				{
-					std::cout << BOLDYELLOW << request.fileName << " is directory" << RESET << std::endl;
+					std::cout << BOLDYELLOW << request.fileName << " is DIRECTORY" << RESET << std::endl;
 					DIR	*dir = opendir(request.fileName.c_str());
 					if (dir == NULL)
 					{
@@ -358,7 +357,7 @@ void ServerManager::readEventProcess(SOCKET ident)
 							if ((indexStat == 0) && S_ISREG(stat_index.st_mode) && (S_IRUSR & stat_index.st_mode))
 							{
 								request.fileName = path;
-								std::cout << BOLDRED << "path : " << path <<RESET << '\n';
+								std::cout << BOLDRED << "PATH : " << path <<RESET << '\n';
 								MakeStaticResponse(request, response);
 							}
 						}
@@ -375,9 +374,19 @@ void ServerManager::readEventProcess(SOCKET ident)
 			{
 				MakeDynamicResponse(request, response);
 			}
-			for (std::vector<char>::iterator it = response.begin(); it != response.end(); ++it)
+			if (request.fileType.find("text") != std::string::npos)
 			{
-				std::cout << *it;
+				for (std::vector<char>::iterator it = response.begin(); it != response.end(); ++it)
+				{
+					std::cout << *it;
+				}
+			}
+			else
+			{
+				std::cout << "----------------------------------------\n";
+				std::cout << "      file type이 " << BOLDGREEN << request.fileType << RESET << " 이에요\n";
+				std::cout << "헤더는 일단 text 파일만 출력하도록 했어요\n";
+				std::cout << "----------------------------------------";
 			}
 			std::cout << std::endl;
 			messageWriter->writeBuffer[ident].insert(messageWriter->writeBuffer[ident].end(), response.begin(), response.end());

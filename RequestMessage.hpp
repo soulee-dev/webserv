@@ -11,8 +11,9 @@ public:
 	
 	// --- gyopark ADDED --- //
 	std::string	fileName;
-	int	is_directory;
+	std::string fileType;
 	std::string	cgi_args;
+	int	is_directory;
 	// --------------------- //
 
 	void clear();
