@@ -246,6 +246,8 @@ void Client::readChunked(const char* buffer)
         // 완전 종료 조건 : 사이즈가 0
             // 이경우 FLAG를 DONE 으로 바꿈,
             // write event 의 filter도변경
+            // readbuffer, flag, 아랫 줄에서 넘기고 난 chunkbuffer 초기화 
+            // events->changeEvents(req.chunkedFd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &chunkedBuffer);
         // 2번째 줄
             // data는 위에서 읽은 사이즈 만큼만 읽기
             // 만약 읽은 사이즈보다 작은 데이터만 남아있으면 에러
@@ -257,10 +259,10 @@ void Client::readChunked(const char* buffer)
 
     // 마지막 \r\n 이후에 남은 데이터가 있다면 readBuffer에 붙임;
 
-    //write 이벤트 등록, fd 로 write 는 nonClientWriteEventProcess 에서 함,
-    //cgi 에 보내는 것도 해당 프로세스가 처리하도록 할 것임
-    //udata에 있는 readBuffer를 write 하도록 함
-    events->changeEvents(req.chunkedFd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &readBuffer);
+    //만약 정상적으로 끝났다면, fd 로 write 는 nonClientWriteEventProcess 에서 함,
+    //cgi 에 보내는 것도 위의 프로세스가 처리하도록 할 것임
+    //udata에 있는 Buffer를 ident로 write 하도록 함
+    
 
 }
 
