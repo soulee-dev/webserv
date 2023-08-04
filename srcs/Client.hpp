@@ -4,6 +4,10 @@
 #include "ResponseMessage.hpp"
 #include "Server.hpp"
 
+#include <sys/stat.h> // for struct stat
+#include <dirent.h> // for directory listing
+
+
 enum RequestMessageParseState
 {
 	METHOD,
