@@ -160,6 +160,12 @@ void Client::readHeader(const char* buffer)
                 parseState = ERROR;
                 return;
             }
+            else if (req.headers.find("content-length") == req.headers.end() 
+                && (req.method == "GET" || req.method == "DELETE"))
+            {
+                parseState = DONE;
+                return ;
+            }
             else
             {
                 parseState = BODY;
@@ -202,16 +208,25 @@ void Client::readBody(const char* buffer)
 {
     std::vector<unsigned char>::iterator pos;
 
-    if (req.method == "GET" || req.method == "DELETE")
-    {
-        parseState = DONE;
-        return;
-    }
     readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
-    std::string a;
-    if ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\r\n\r\n", &"\r\n\r\n"[4])) != readBuffer.end())
+    if (req.headers.find("content-length") != req.headers.end())
     {
-        req.body = std::vector<unsigned char>(readBuffer.begin(), pos);
+        size_t lengthToRead = atoi(req.headers["content-length"].c_str()) - req.body.size();
+        if (lengthToRead > readBuffer.size())
+        {
+            req.body.insert(req.body.end(), readBuffer.begin(), readBuffer.end());
+            readBuffer.clear();
+        }
+        else
+        {
+            req.body.insert(req.body.end(), readBuffer.begin(), readBuffer.begin() + lengthToRead);
+            readBuffer.erase(readBuffer.begin(), readBuffer.begin() + lengthToRead);
+            parseState = DONE;
+        }
+    }
+    else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\r\n\r\n", &"\r\n\r\n"[4])) != readBuffer.end())
+    {
+        req.body.insert(req.body.end(), readBuffer.begin(), pos);
         readBuffer.erase(readBuffer.begin(), pos + 4);
         parseState = DONE;
     }
