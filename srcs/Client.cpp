@@ -168,6 +168,12 @@ void Client::readHeader(const char* buffer)
                 parseState = ERROR;
                 return;
             }
+            else if (req.headers.find("content-length") == req.headers.end()
+                && (req.method == "GET" || req.method == "DELETE"))
+            {
+                parseState = DONE;
+                return ;
+            }
             else
             {
 
@@ -246,7 +252,7 @@ void Client::readChunked(const char* buffer)
         // 완전 종료 조건 : 사이즈가 0
             // 이경우 FLAG를 DONE 으로 바꿈,
             // write event 의 filter도변경
-            // readbuffer, flag, 아랫 줄에서 넘기고 난 chunkbuffer 초기화 
+            // readbuffer, flag, 아랫 줄에서 넘기고 난 chunkbuffer 초기화
             // events->changeEvents(req.chunkedFd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &chunkedBuffer);
         // 2번째 줄
             // data는 위에서 읽은 사이즈 만큼만 읽기
@@ -262,7 +268,7 @@ void Client::readChunked(const char* buffer)
     //만약 정상적으로 끝났다면, fd 로 write 는 nonClientWriteEventProcess 에서 함,
     //cgi 에 보내는 것도 위의 프로세스가 처리하도록 할 것임
     //udata에 있는 Buffer를 ident로 write 하도록 함
-    
+
 
 }
 
@@ -270,16 +276,25 @@ void Client::readBody(const char* buffer)
 {
     std::vector<unsigned char>::iterator pos;
 
-    if (req.method == "GET" || req.method == "DELETE")
-    {
-        parseState = DONE;
-        return;
-    }
     readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
-    //std::string a;
-    if ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\r\n\r\n", &"\r\n\r\n"[4])) != readBuffer.end())
+    if (req.headers.find("content-length") != req.headers.end())
     {
-        req.body = std::vector<unsigned char>(readBuffer.begin(), pos);
+        size_t lengthToRead = atoi(req.headers["content-length"].c_str()) - req.body.size();
+        if (lengthToRead > readBuffer.size())
+        {
+            req.body.insert(req.body.end(), readBuffer.begin(), readBuffer.end());
+            readBuffer.clear();
+        }
+        else
+        {
+            req.body.insert(req.body.end(), readBuffer.begin(), readBuffer.begin() + lengthToRead);
+            readBuffer.erase(readBuffer.begin(), readBuffer.begin() + lengthToRead);
+            parseState = DONE;
+        }
+    }
+    else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\r\n\r\n", &"\r\n\r\n"[4])) != readBuffer.end())
+    {
+        req.body.insert(req.body.end(), readBuffer.begin(), pos);
         readBuffer.erase(readBuffer.begin(), pos + 4);
         parseState = DONE;
     }
