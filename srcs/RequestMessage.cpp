@@ -8,13 +8,13 @@ RequestMessage::~RequestMessage() {}
 RequestMessage::RequestMessage(RequestMessage const& other) : Message(other)
 {
     method = other.method;
-    requestTarget = other.requestTarget;
+    uri = other.uri;
 }
 // operators
 RequestMessage& RequestMessage::operator=(RequestMessage const& rhs)
 {
     method = rhs.method;
-    requestTarget = rhs.requestTarget;
+    uri = rhs.uri;
     Message::operator=(rhs);
     return *this;
 }
@@ -29,5 +29,5 @@ void RequestMessage::clear()
     headers.clear();
     body.clear();
     method.clear();
-    requestTarget.clear();
+    uri.clear();
 }
