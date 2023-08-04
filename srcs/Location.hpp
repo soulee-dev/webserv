@@ -32,11 +32,11 @@ public:
     void DebugPrint();
 
     // getter
-    std::string getRoot(void) const;
-    std::map<std::vector<int>, std::string> getErrorPage(void) const;
-    std::map<std::string, int> getRedirection(void) const;
+    const std::string& getRoot(void) const;
+    const std::map<std::vector<int>, std::string>& getErrorPage(void) const;
+    const std::map<std::string, int>& getRedirection(void) const;
     unsigned int getAllowMethod(void) const;
-    std::vector<std::string> getIndex(void) const;
+    const std::vector<std::string>& getIndex(void) const;
     bool getAutoIndex(void) const;
     size_t getClientBodySize(void) const;
 };
