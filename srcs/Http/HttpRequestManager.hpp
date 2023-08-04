@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include "../Client.hpp"
 #include "HttpParser.hpp"
 #include "Handler/Handler.hpp"
@@ -9,10 +10,11 @@
 class HttpRequestManager
 {
 	private:
+		HttpRequest	request;
 		HttpParser	parser;
 		Handler*	handler;
 	public:
 		HttpRequestManager(Client& client);
-		void	processRequest(void);
+		std::vector<unsigned char>	processRequest(void);
 		~HttpRequestManager();
 };

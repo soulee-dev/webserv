@@ -1,9 +1,10 @@
 #pragma once
 
 #include "../Client.hpp"
+#include "HttpRequest.hpp"
 
 class HttpParser
 {
 	public:
-		void	parse(Client &client);
+		static HttpRequest	parse(Client& client);
 };

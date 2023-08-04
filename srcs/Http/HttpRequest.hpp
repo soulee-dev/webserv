@@ -2,11 +2,12 @@
 
 #include <string>
 
-class HttpReuest
+class HttpRequest
 {
-	bool		is_static;
-	std::string	file_name;
-	std::string	path;
-	off_t		file_size;
-	std::string	cgi_args;
+	public:
+		bool		is_static;
+		std::string	file_name;
+		std::string	path;
+		off_t		file_size;
+		std::string	cgi_args;
 };

@@ -5,5 +5,5 @@
 class StaticHandler : public Handler
 {
 	public:
-		void	handle() const;
+		std::vector<unsigned char>	handle(HttpRequest& request) const;
 };

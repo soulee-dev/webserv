@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
+#include "Http/HttpRequestManager.hpp"
 
 // constructors
 Client::Client() : parseState(METHOD) {}
@@ -71,15 +72,10 @@ bool Client::readEventProcess(void)
         // events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
         std::cout << "메시지 잘 받았습니다^^" << std::endl;
 
-        sendBuffer.insert(sendBuffer.end(),
-                          "HTTP/1.1 404 Not Found\r\nServer: nginx/1.25.1\r\nDate: Fri, 28 Jul 2023 12:42:57 GMT\r\n\
-                    Content-Type: text/html\r\nContent-Length: 153\r\nConnection: keep-alive\r\n\r\n<html>\r\n\
-                    <head><title>404 Not Found</title></head>\r\n<body>\r\n<center><h1>Hello my name is jj!!</h1></center>\r\n\
-                    <hr><center>webserv 0.1</center>\r\n</body>\r\n</html>",
-                          &"HTTP/1.1 404 Not Found\r\nServer: nginx/1.25.1\r\nDate: Fri, 28 Jul 2023 12:42:57 GMT\r\n\
-                    Content-Type: text/html\r\nContent-Length: 153\r\nConnection: keep-alive\r\n\r\n<html>\r\n\
-                    <head><title>404 Not Found</title></head>\r\n<body>\r\n<center><h1>Hello my name is jj!!</h1></center>\r\n\
-                    <hr><center>webserv 0.1</center>\r\n</body>\r\n</html>"[374]);
+
+        HttpRequestManager  requestManager(*this);
+        std::vector<unsigned char>  buffer  = requestManager.processRequest();
+        sendBuffer.insert(sendBuffer.end(), buffer.begin(), buffer.end());
         parseState = METHOD;
         req.clear();
         return true;

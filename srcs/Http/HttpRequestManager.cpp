@@ -2,22 +2,18 @@
 
 HttpRequestManager::HttpRequestManager(Client& client)
 {
-	parser.parse(client);
+	request = parser.parse(client);
 	
 	// if Static
-	if (1)
-	{
+	if (request.is_static)
 		handler = new StaticHandler();
-	}
 	else
-	{
 		handler = new DynamicHandler();
-	}
 }
 
-void	HttpRequestManager::processRequest(void)
+std::vector<unsigned char>	HttpRequestManager::processRequest(void)
 {
-	handler->handle();
+	return handler->handle(request);
 }
 
 HttpRequestManager::~HttpRequestManager()
