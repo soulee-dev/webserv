@@ -2,7 +2,7 @@
 
 std::vector<unsigned char>&	HttpResponse::build_response_message()
 {
-	std::stringstream	ss(std::ios::binary);
+	std::stringstream	ss;
 
 	// start-line
 	ss << http_version << SPACE << status_code << SPACE << reason_phrase << CRLF;
