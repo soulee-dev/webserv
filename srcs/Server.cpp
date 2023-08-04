@@ -33,27 +33,27 @@ int Server::getListen() const
     return this->listen;
 }
 
-std::map<std::string, Location> Server::getLocations(void) const
+const std::map<std::string, Location> &Server::getLocations(void) const
 {
     return this->locations;
 }
 
-std::string Server::getServerName(void) const
+const std::string &Server::getServerName(void) const
 {
     return this->serverName;
 }
 
-std::string Server::getRoot(void) const
+const std::string &Server::getRoot(void) const
 {
     return this->root;
 }
 
-std::map<std::vector<int>, std::string> Server::getErrorPage(void) const
+const std::map<std::vector<int>, std::string> &Server::getErrorPage(void) const
 {
     return this->errorPage;
 }
 
-std::map<std::string, int> Server::getRedirection(void) const
+const std::map<std::string, int> &Server::getRedirection(void) const
 {
     return this->redirection;
 }
