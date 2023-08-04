@@ -60,22 +60,16 @@
 		"unordered_map": "cpp",
 		"utility": "cpp",
 		"vector": "cpp",
-<<<<<<< HEAD
+		"__functional_03": "cpp",
 		"__tree": "cpp",
+		"memory_resource": "cpp",
+		"map": "cpp",
 		"deque": "cpp",
 		"fstream": "cpp",
 		"iomanip": "cpp",
-		"map": "cpp",
-		"stack": "cpp"
-	},
-	"editor.formatOnSave": false
-=======
-		"deque": "cpp",
-		"map": "cpp",
-		"__tree": "cpp",
-		"fstream": "cpp",
-		"iomanip": "cpp",
-		"stack": "cpp"
+		"stack": "cpp",
+		"variant": "cpp",
+		"filesystem": "cpp"
 	}
 >>>>>>> 882fb4b93a53ef1f7fac2cac0351d6134f6bc222
 }
