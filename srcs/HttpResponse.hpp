@@ -4,8 +4,11 @@
 #include <map>
 #include <vector>
 #include <sstream>
+#include <iostream>
 
 # define CRLF "\r\n";
+# define SPACE " ";
+# define COLON ":";
 
 class HttpResponse
 {
@@ -22,5 +25,5 @@ class HttpResponse
 		std::vector<unsigned char>			body;
 
 	public:
-		static std::vector<unsigned char>&	build_response_message();
+		 std::vector<unsigned char>&		build_response_message();
 };
