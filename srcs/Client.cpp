@@ -1,9 +1,9 @@
 #include "Client.hpp"
 #include "Server.hpp"
+#include <fcntl.h>
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
-#include <fcntl.h>
 
 // constructors
 Client::Client() : parseState(METHOD) {}
@@ -54,7 +54,7 @@ void Client::setFd(int fd)
     this->client_fd = fd;
 }
 
-void Client::setEvents(Event *event)
+void Client::setEvents(Event* event)
 {
     this->events = event;
 };
@@ -86,6 +86,7 @@ bool Client::readEventProcess(void)
                     Content-Type: text/html\r\nContent-Length: 153\r\nConnection: keep-alive\r\n\r\n<html>\r\n\
                     <head><title>404 Not Found</title></head>\r\n<body>\r\n<center><h1>Hello my name is jj!!</h1></center>\r\n\
                     <hr><center>webserv 0.1</center>\r\n</body>\r\n</html>"[374]);
+        // events->changeEvents(2, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &sendBuffer);
         parseState = METHOD;
         req.clear();
         return true;
@@ -98,7 +99,7 @@ bool Client::writeEventProcess(void)
     int writeSize = write(client_fd, &sendBuffer[0], sendBuffer.size());
     if (writeSize == -1)
     {
-        std::cout << "write() error" << std::endl;
+        std::cout << "!!write() error" << std::endl;
         return true;
     }
     sendBuffer.erase(sendBuffer.begin(), sendBuffer.begin() + writeSize);
@@ -174,7 +175,7 @@ void Client::readHeader(const char* buffer)
                 // header Parsing이 끝난 후, flag를 done이나 BODY 가 아닌 CHUNKED 로 보내기 위한 로직
                 if (req.headers.find("transfer-encoding") != req.headers.end())
                 {
-                    //make_tempfile_name;
+                    // make_tempfile_name;
                     std::string tempFile = "temp_" + req.requestTarget;
                     // file open
                     req.chunkedFd = open(tempFile.c_str(), O_WRONLY | O_APPEND, 0644);
@@ -222,7 +223,6 @@ void Client::readHeader(const char* buffer)
             key[i] = tolower(key[i]);
         req.headers[key] = value;
     }
-
 }
 
 void Client::readChunked(const char* buffer)
@@ -236,32 +236,30 @@ void Client::readChunked(const char* buffer)
     // 반복문의 종료 조건 :  마지막 \r\n까지
     // 반복 조건 : 1\r\n 2\r\n이 한 쌍
     // 반복 시행 :
-        // 1번째 줄은 16진수 숫자
-        // 숫자 변환 법 (택1):
-            // 1. istringstream
-            //std::istringstream iss(s);
-            //iss >> std::hex >> i;
-            // 2. sscanf이용
-            // 3. 삼항 연산자 사용 https://commandlinefanatic.com/cgi-bin/showarticle.cgi?article=art077
-        // 완전 종료 조건 : 사이즈가 0
-            // 이경우 FLAG를 DONE 으로 바꿈,
-            // write event 의 filter도변경
-        // 2번째 줄
-            // data는 위에서 읽은 사이즈 만큼만 읽기
-            // 만약 읽은 사이즈보다 작은 데이터만 남아있으면 에러
-            // 왜냐하면 마지막 데이터도 \r\n이 붙어 있는 상태의 것이기 때문
+    // 1번째 줄은 16진수 숫자
+    // 숫자 변환 법 (택1):
+    // 1. istringstream
+    // std::istringstream iss(s);
+    // iss >> std::hex >> i;
+    // 2. sscanf이용
+    // 3. 삼항 연산자 사용 https://commandlinefanatic.com/cgi-bin/showarticle.cgi?article=art077
+    // 완전 종료 조건 : 사이즈가 0
+    // 이경우 FLAG를 DONE 으로 바꿈,
+    // write event 의 filter도변경
+    // 2번째 줄
+    // data는 위에서 읽은 사이즈 만큼만 읽기
+    // 만약 읽은 사이즈보다 작은 데이터만 남아있으면 에러
+    // 왜냐하면 마지막 데이터도 \r\n이 붙어 있는 상태의 것이기 때문
 
-
-    //readBuffer 에 1번째줄, 2번째쭐 1쌍 이상이 있지 않으면 readBuffer에 붙여 넣기만 하고 끝남
-    // 만약 계속 아무것도 안들어 온다면 타임 아웃.
+    // readBuffer 에 1번째줄, 2번째쭐 1쌍 이상이 있지 않으면 readBuffer에 붙여 넣기만 하고 끝남
+    //  만약 계속 아무것도 안들어 온다면 타임 아웃.
 
     // 마지막 \r\n 이후에 남은 데이터가 있다면 readBuffer에 붙임;
 
-    //write 이벤트 등록, fd 로 write 는 nonClientWriteEventProcess 에서 함,
-    //cgi 에 보내는 것도 해당 프로세스가 처리하도록 할 것임
-    //udata에 있는 readBuffer를 write 하도록 함
+    // write 이벤트 등록, fd 로 write 는 nonClientWriteEventProcess 에서 함,
+    // cgi 에 보내는 것도 해당 프로세스가 처리하도록 할 것임
+    // udata에 있는 readBuffer를 write 하도록 함
     events->changeEvents(req.chunkedFd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &readBuffer);
-
 }
 
 void Client::readBody(const char* buffer)
@@ -274,7 +272,7 @@ void Client::readBody(const char* buffer)
         return;
     }
     readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
-    //std::string a;
+    // std::string a;
     if ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\r\n\r\n", &"\r\n\r\n"[4])) != readBuffer.end())
     {
         req.body = std::vector<unsigned char>(readBuffer.begin(), pos);

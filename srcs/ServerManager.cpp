@@ -202,16 +202,19 @@ void ServerManager::writeEventProcess(struct kevent& currEvent)
 {
     if (isResponseToServer(currEvent) == false)
     {
-        // 현재 로직은 바꿔야 함 -_-; 해당 ident 가 clientFD 가 아니라는 것을 확인 하는 조건으로
-        if (&clientManager.getClient(currEvent.ident) != NULL)
+        if (clientManager.isClient(currEvent.ident) == true)
         {
             clientManager.writeEventProcess(currEvent); // 더이상 보낼게 없을때 true 반환
             events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata);
         }
         else
         {
-            clientManager.nonClientWriteEventProcess(currEvent);
-            events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata);
+            int res = clientManager.nonClientWriteEventProcess(currEvent);
+            if (res != 0)
+            {
+                close(currEvent.ident);
+                events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, NULL);
+            }
         }
     }
     else
