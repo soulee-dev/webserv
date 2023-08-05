@@ -256,7 +256,7 @@ void Client::readChunked(const char* buffer, size_t readSize)
             }
             else if (longBodySize + 2 > readBuffer.size())
                 return ;
-            chunkBuffer.insert(chunkBuffer.end(), readBuffer.begin(), readBuffer.begin() + longBodySize);
+            req.body.insert(req.body.end(), readBuffer.begin(), readBuffer.begin() + longBodySize);
             haveToReadBody = false;
             if (readBuffer[longBodySize] != '\r' || readBuffer[longBodySize + 1] != '\n')
             {
