@@ -78,7 +78,7 @@ bool Client::readEventProcess(void)
 		// start Parse Request Message //
 		std::vector<std::string> list = this->getServer()->getLocations()["/"].getIndex();
 		std::string rootie = this->getServer()->getLocations()["/"].getRoot();
-		int isAutoIndex = this->getServer()->getLocations()["/"].getAutoIndex();
+		bool isAutoIndex = this->getServer()->getLocations()["/"].getAutoIndex();
 		list.push_back(rootie);
 		list.push_back(std::to_string(isAutoIndex));
 

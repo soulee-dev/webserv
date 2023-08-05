@@ -24,10 +24,8 @@ int	compareStaticFile(std::vector<std::string> fileList, HttpRequest& request)
 	for (int i = 0; i < indexList.size(); i++)
 	{
 		std::string	target = indexList[i];
-		// std::cout << "TARGET : " << target << '\n';
 		for (int j = 0; j < fileList.size(); j++)
 		{
-			// std::cout << "FILE : " << fileList[j] << '\n';
 			if (target == fileList[j])
 			{
 				request.target = target;
@@ -72,7 +70,6 @@ void	processDirectory(HttpRequest& request)
 		std::cout << BOLDRED << "Call Error Handler\n" << RESET;
 	closedir(dir);
 }
-
 
 void	MakeStaticResponse(HttpRequest& request)
 {

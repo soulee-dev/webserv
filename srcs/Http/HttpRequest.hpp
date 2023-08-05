@@ -8,7 +8,6 @@
 #include <sstream>
 
 # define CRLF "\r\n"
-
 class HttpRequest
 {
 	public:
@@ -18,7 +17,7 @@ class HttpRequest
 		off_t		file_size;
 		std::string	cgi_args;
 
-		// gyopark ADDED
+		// ------- gyopark ADDED ------- //
 		std::string	method;
 		std::string	header;
 		std::vector<unsigned char> ubuffer;
@@ -26,5 +25,7 @@ class HttpRequest
 		std::vector<std::string> indexList;
 		std::string	root;
 		std::string target;
-		int	isAutoIndex;
+		bool	isAutoIndex;
+		bool	isError;
+		// ----------------------------- //
 };

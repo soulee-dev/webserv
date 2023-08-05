@@ -4,6 +4,7 @@ HttpRequest	HttpParser::parse(Client& client, std::vector<std::string> List)
 {
 	HttpRequest		result;
 	RequestMessage	request; 
+	result.isError = false;
 	request = client.getReq();
 	
 	std::istringstream	iss(List.back());
@@ -22,7 +23,7 @@ HttpRequest	HttpParser::parse(Client& client, std::vector<std::string> List)
 		std::cout << BOLDYELLOW << "URI : " << request.requestTarget << '\n';
 		result.file_name = result.root + result.path;
 		std::cout << BOLDGREEN << "FILE NAME : " << result.file_name << '\n';
-	} // now working here STATIC
+	}
 	else
 	{
 		result.is_static = false;
