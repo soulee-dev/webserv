@@ -74,20 +74,24 @@ bool Client::readEventProcess(void)
 		// 메시지 처리하여 버퍼에 입력해야함.
 		// events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
 		std::cout << "메시지 잘 받았습니다^^" << std::endl;
-		
-		// --- Parse Request Message, Fill class ResponseMessage --- //
-		// ResponseMessage res;
-		// ParseRequest::parseRequest(*this, res); 
-		// --- End parsing Request Message --- //
-
+	
 		// start Parse Request Message //
-		HttpRequestManager  requestManager(*this);
+		std::vector<std::string> list = this->getServer()->getLocations()["/"].getIndex();
+		std::string rootie = this->getServer()->getLocations()["/"].getRoot();
+		int isAutoIndex = this->getServer()->getLocations()["/"].getAutoIndex();
+		list.push_back(rootie);
+		list.push_back(std::to_string(isAutoIndex));
+
+		HttpRequestManager  requestManager(*this, list);
 		std::vector<unsigned char>  buffer  = requestManager.processRequest();
 		// end Parse Request Message // 
 
 		sendBuffer.insert(sendBuffer.end(), buffer.begin(), buffer.end());
 		parseState = METHOD;
 		req.clear();
+	
+		std::cout << BOLDCYAN << " -- SUCCESSFULLY SEND MESSAGE -- \n";
+
 		return true;
 	}
 	return false;

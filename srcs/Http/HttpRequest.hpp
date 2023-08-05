@@ -3,6 +3,10 @@
 #include <string>
 #include <vector>
 
+#include "../Color.hpp"
+#include <iostream>
+#include <sstream>
+
 # define CRLF "\r\n"
 
 class HttpRequest
@@ -15,7 +19,12 @@ class HttpRequest
 		std::string	cgi_args;
 
 		// gyopark ADDED
+		std::string	method;
 		std::string	header;
 		std::vector<unsigned char> ubuffer;
 		std::vector<unsigned char> body;
+		std::vector<std::string> indexList;
+		std::string	root;
+		std::string target;
+		int	isAutoIndex;
 };

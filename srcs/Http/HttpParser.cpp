@@ -1,11 +1,18 @@
 #include "HttpParser.hpp"
 
-HttpRequest	HttpParser::parse(Client& client)
+HttpRequest	HttpParser::parse(Client& client, std::vector<std::string> List)
 {
 	HttpRequest		result;
-	RequestMessage	request;
-	
+	RequestMessage	request; 
 	request = client.getReq();
+	
+	std::istringstream	iss(List.back());
+	List.pop_back();
+	iss >> result.isAutoIndex;
+	result.root = List.back();
+	List.pop_back();
+	result.method = request.method;
+	result.indexList = List;
 
 	if (request.requestTarget.find("cgi-bin") == std::string::npos)
 	{
@@ -13,7 +20,7 @@ HttpRequest	HttpParser::parse(Client& client)
 		result.is_static = true;
 		result.path = request.requestTarget;
 		std::cout << BOLDYELLOW << "URI : " << request.requestTarget << '\n';
-		result.file_name = "./html" + result.path;
+		result.file_name = result.root + result.path;
 		std::cout << BOLDGREEN << "FILE NAME : " << result.file_name << '\n';
 	} // now working here STATIC
 	else

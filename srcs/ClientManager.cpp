@@ -27,7 +27,7 @@ ClientManager::SOCKET ClientManager::addNewClient(SOCKET client_fd, Server* serv
 #include "Color.hpp"
 void ClientManager::disconnectClient(SOCKET client_fd)
 {
-    std::cout << BOLDCYAN << "\n--- DISCONNECT WITH CLIENT ---" << RESET << std::endl;
+    std::cout << BOLDCYAN << "\n -- DISCONNECT WITH CLIENT --" << RESET << std::endl;
     close(client_fd);
     clients.erase(client_fd);
 }

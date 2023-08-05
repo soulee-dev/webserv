@@ -1,4 +1,5 @@
 #include "StaticHandler.hpp"
+#include "ErrorHandler.hpp"
 
 std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request) const
 {
@@ -7,7 +8,7 @@ std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request) const
     if (S_ISDIR(stat_buf.st_mode))
         processDirectory(request);
 	else
-		std::cout << BOLDMAGENTA << request.file_name << " is NOT DIRECTORY" << RESET << std::endl;
+		std::cout << BOLDMAGENTA << "Is NOT DIRECTORY ---> " << request.file_name << RESET << std::endl;
 	MakeStaticResponse(request);
 
 	std::vector<unsigned char>	result;
@@ -16,36 +17,62 @@ std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request) const
 	return (result);
 }
 
+int	compareStaticFile(std::vector<std::string> fileList, HttpRequest& request)
+{
+	std::vector<std::string> indexList = request.indexList;
+
+	for (int i = 0; i < indexList.size(); i++)
+	{
+		std::string	target = indexList[i];
+		// std::cout << "TARGET : " << target << '\n';
+		for (int j = 0; j < fileList.size(); j++)
+		{
+			// std::cout << "FILE : " << fileList[j] << '\n';
+			if (target == fileList[j])
+			{
+				request.target = target;
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
 void	processDirectory(HttpRequest& request)
 {
-	std::cout << BOLDYELLOW << request.file_name << " is DIRECTORY" << RESET << std::endl;
+	std::cout << BOLDYELLOW << "Is DIRECTORY ---> " << request.file_name  << RESET << std::endl;
 	DIR	*dir = opendir(request.file_name.c_str());
 	if (dir == NULL)
 	{
 		std::cout << "404 File not found\n";
-		// exit(0);
+		std::cout << BOLDRED << "Call Error Handler\n" << RESET;
         return ;
 	}
 	struct dirent* entry;
+	std::vector<std::string> fileList;
 	while ((entry = readdir(dir)) != NULL)
 	{
-		std::string	file_name = entry->d_name;
-		// entry 구조체 dname에는 html 디렉토리의 모든 파일이 저장되어있음, 모든 파일 네임 확인하려면 아래 주석 풀면 됨
-		// std::cout << "Entry file_name : " << file_name << '\n';
-		if (file_name == "index.html" || file_name == "index.htm")
-		{
-			struct stat stat_index;
-			std::string path = request.file_name + "index.html";
-			int indexStat = stat(path.c_str(), &stat_index);
-			if ((indexStat == 0) && S_ISREG(stat_index.st_mode) && (S_IRUSR & stat_index.st_mode))
-			{
-				request.file_name = path;
-				std::cout << BOLDRED << "PATH : " << path <<RESET << '\n';
-			}
-		}
+		fileList.push_back(entry->d_name);
+		// std::cout << BOLDBLACK << "ENTRY : " << fileList.back() << '\n';
 	}
+	if (compareStaticFile(fileList, request))
+	{
+		struct stat stat_index;
+		std::string path = request.file_name + request.target;
+		int indexStat = stat(path.c_str(), &stat_index);
+		if ((indexStat == 0) && S_ISREG(stat_index.st_mode) && (S_IRUSR & stat_index.st_mode))
+		{
+			request.file_name = path;
+			std::cout << BOLDRED << "PATH : " << path <<RESET << '\n';
+		}
+		else
+			std::cout << BOLDRED << "Call Error Handler\n" << RESET;	
+	}
+	else
+		std::cout << BOLDRED << "Call Error Handler\n" << RESET;
 	closedir(dir);
 }
+
 
 void	MakeStaticResponse(HttpRequest& request)
 {
