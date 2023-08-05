@@ -179,15 +179,9 @@ void Client::readHeader(const char* buffer)
             {
 
                 // header Parsing이 끝난 후, flag를 done이나 BODY 가 아닌 CHUNKED 로 보내기 위한 로직
-                if (req.headers.find("transfer-encoding") != req.headers.end())
+                std::map<std::string, std::string>::iterator encodingIt = req.headers.find("transfer-encoding");
+                if (encodingIt != req.headers.end() && encodingIt->second == "chunked")
                 {
-                    //make_tempfile_name;
-                    std::string tempFile = "/Users/jaemjeon/webserv/temp_";// + req.requestTarget;
-                    // file open
-                    req.chunkedFd = open(tempFile.c_str(), O_WRONLY | O_APPEND | O_CREAT, 0644);
-                    // fd event 등록 ?
-                    events->changeEvents(req.chunkedFd, EVFILT_WRITE, EV_ADD | EV_DISABLE, 0, 0, NULL);
-
                     // parse State 변경
                     parseState = CHUNKED;
                     return (readChunked("", 0));
