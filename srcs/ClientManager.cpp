@@ -1,6 +1,7 @@
 #include "ClientManager.hpp"
 #include <sys/event.h>
 #include <unistd.h>
+#include <vector>
 
 // constructors
 ClientManager::ClientManager(){};
@@ -53,5 +54,7 @@ bool ClientManager::writeEventProcess(struct kevent& currEvent)
 
 bool ClientManager::nonClientWriteEventProcess(struct kevent& currEvent)
 {
-
+   std::vector<unsigned char>* tmpVec;
+   tmpVec = reinterpret_cast<std::vector<unsigned char>*>(currEvent.udata);
+   write(currEvent.ident, currEvent.udata, tmpVec->size());
 }

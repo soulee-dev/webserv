@@ -4,6 +4,7 @@
 #include <sstream>
 #include <unistd.h>
 #include <fcntl.h>
+#include <algorithm>
 
 // constructors
 Client::Client() : parseState(METHOD) {}
@@ -181,15 +182,15 @@ void Client::readHeader(const char* buffer)
                 if (req.headers.find("transfer-encoding") != req.headers.end())
                 {
                     //make_tempfile_name;
-                    std::string tempFile = "temp_" + req.requestTarget;
+                    std::string tempFile = "/Users/jaemjeon/webserv/temp_";// + req.requestTarget;
                     // file open
-                    req.chunkedFd = open(tempFile.c_str(), O_WRONLY | O_APPEND, 0644);
+                    req.chunkedFd = open(tempFile.c_str(), O_WRONLY | O_APPEND | O_CREAT, 0644);
                     // fd event 등록 ?
                     events->changeEvents(req.chunkedFd, EVFILT_WRITE, EV_ADD | EV_DISABLE, 0, 0, NULL);
 
                     // parse State 변경
                     parseState = CHUNKED;
-                    return (readChunked(""));
+                    return (readChunked("", 0));
                 }
                 else
                 {
@@ -231,45 +232,47 @@ void Client::readHeader(const char* buffer)
 
 }
 
-void Client::readChunked(const char* buffer)
+
+void Client::readChunked(const char* buffer, size_t readSize)
 {
-    if (req.chunkedFd == -1)
-        std::cout << "wrong parseState" << std::endl;
-    readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
+    static const char *crlf = "\r\n";
+    static std::string strbodySize;
+    static long longBodySize;
+    static bool haveToReadBody = false;
+    
+    readBuffer.insert(readBuffer.end(), buffer, buffer + readSize);
 
-    std::vector<unsigned char>::iterator pos;
-    // 반복문을 돌면서 readBuffer를 읽음 -> 처음엔 무조건 size, 다음줄은 무조건 data여야 함
-    // 반복문의 종료 조건 :  마지막 \r\n까지
-    // 반복 조건 : 1\r\n 2\r\n이 한 쌍
-    // 반복 시행 :
-        // 1번째 줄은 16진수 숫자
-        // 숫자 변환 법 (택1):
-            // 1. istringstream
-            //std::istringstream iss(s);
-            //iss >> std::hex >> i;
-            // 2. sscanf이용
-            // 3. 삼항 연산자 사용 https://commandlinefanatic.com/cgi-bin/showarticle.cgi?article=art077
-        // 완전 종료 조건 : 사이즈가 0
-            // 이경우 FLAG를 DONE 으로 바꿈,
-            // write event 의 filter도변경
-            // readbuffer, flag, 아랫 줄에서 넘기고 난 chunkbuffer 초기화
-            // events->changeEvents(req.chunkedFd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &chunkedBuffer);
-        // 2번째 줄
-            // data는 위에서 읽은 사이즈 만큼만 읽기
-            // 만약 읽은 사이즈보다 작은 데이터만 남아있으면 에러
-            // 왜냐하면 마지막 데이터도 \r\n이 붙어 있는 상태의 것이기 때문
-
-
-    //readBuffer 에 1번째줄, 2번째쭐 1쌍 이상이 있지 않으면 readBuffer에 붙여 넣기만 하고 끝남
-    // 만약 계속 아무것도 안들어 온다면 타임 아웃.
-
-    // 마지막 \r\n 이후에 남은 데이터가 있다면 readBuffer에 붙임;
-
-    //만약 정상적으로 끝났다면, fd 로 write 는 nonClientWriteEventProcess 에서 함,
-    //cgi 에 보내는 것도 위의 프로세스가 처리하도록 할 것임
-    //udata에 있는 Buffer를 ident로 write 하도록 함
-
-
+    std::vector<unsigned char>::iterator pos = std::search(readBuffer.begin(), readBuffer.end(), crlf, &crlf[2]);
+    while (pos != readBuffer.end())
+    {
+        if (haveToReadBody == false)
+        {
+            strbodySize = std::string(readBuffer.begin(), pos);
+            readBuffer.erase(readBuffer.begin(), pos + 2);
+            longBodySize = strtol(strbodySize.c_str(), NULL, 16);
+            haveToReadBody = true;
+        }
+        if (haveToReadBody == true)
+        {
+            if (longBodySize == 0)
+            {
+                parseState = DONE;
+                haveToReadBody = false;
+                return ;
+            }
+            else if (longBodySize + 2 > readBuffer.size())
+                return ;
+            chunkBuffer.insert(chunkBuffer.end(), readBuffer.begin(), readBuffer.begin() + longBodySize);
+            haveToReadBody = false;
+            if (readBuffer[longBodySize] != '\r' || readBuffer[longBodySize + 1] != '\n')
+            {
+                parseState = ERROR;
+                return ;
+            }
+            readBuffer.erase(readBuffer.begin(), readBuffer.begin() + longBodySize + 2);
+            pos = std::search(readBuffer.begin(), readBuffer.end(), crlf, &crlf[2]);
+        }
+    }
 }
 
 void Client::readBody(const char* buffer, size_t readSize)
