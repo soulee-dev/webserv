@@ -181,7 +181,7 @@ void Client::readHeader(const char* buffer)
                 if (req.headers.find("transfer-encoding") != req.headers.end())
                 {
                     // make_tempfile_name;
-                    std::string tempFile = "temp_" + req.requestTarget;
+                    std::string tempFile = "temp_" + req.uri;
                     // file open
                     req.chunkedFd = open(tempFile.c_str(), O_WRONLY | O_APPEND, 0644);
                     // fd event 등록 ?
@@ -334,8 +334,8 @@ void Client::readRequestTarget(const char* buffer)
     readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
     if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ", &" "[1])) != readBuffer.end())
     {
-        req.requestTarget = std::string(readBuffer.begin(), pos);
-        req.startLine += " " + req.requestTarget;
+        req.uri = std::string(readBuffer.begin(), pos);
+        req.startLine += " " + req.uri;
         readBuffer.erase(readBuffer.begin(), pos + 1);
         parseState = HTTP_VERSION;
         if ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\r\n", &"\r\n"[2])) != readBuffer.end())
