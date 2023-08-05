@@ -81,5 +81,5 @@ bool ClientManager::nonClientWriteEventProcess(struct kevent& currEvent)
 
 bool ClientManager::isClient(SOCKET client_fd)
 {
-    return (&(clients.find(client_fd)->second) != NULL);
+    return (clients.find(client_fd) != clients.end());
 }
