@@ -126,7 +126,7 @@ bool Client::readMessage(void)
     case METHOD:
         readMethod(buffer);
         break;
-    case REQUEST_TARGET:
+    case URI:
         readUri(buffer);
         break;
     case HTTP_VERSION:
@@ -311,7 +311,7 @@ void Client::readMethod(const char* buffer)
         req.method = std::string(readBuffer.begin(), pos);
         req.startLine = req.method;
         readBuffer.erase(readBuffer.begin(), pos + 1);
-        parseState = REQUEST_TARGET;
+        parseState = URI;
         // 또 다른 공백을 찾은 경우 다음 파싱으로 넘어감.
         // 이때 공백이 연속해서 들어오는 경우를 생각해 볼 수 있는데 이런 경우 에러처리로 됨.
         if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ", &" "[1])) != readBuffer.end())

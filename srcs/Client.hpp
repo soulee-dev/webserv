@@ -8,7 +8,7 @@
 enum RequestMessageParseState
 {
 	METHOD,
-	REQUEST_TARGET,
+	URI,
 	HTTP_VERSION,
 	HEADER,
 	BODY,
