@@ -135,10 +135,10 @@ bool Client::readMessage(void)
         readHeader(buffer);
         break;
     case BODY:
-        readBody(buffer);
+        readBody(buffer, readSize);
         break;
     case CHUNKED:
-        readChunked(buffer);
+        readChunked(buffer, readSize);
     default:
         break;
     }
@@ -194,7 +194,7 @@ void Client::readHeader(const char* buffer)
                 else
                 {
                     parseState = BODY;
-                    return (readBody(""));
+                    return (readBody("", 0));
                 }
             }
         }
@@ -272,11 +272,11 @@ void Client::readChunked(const char* buffer)
 
 }
 
-void Client::readBody(const char* buffer)
+void Client::readBody(const char* buffer, size_t readSize)
 {
     std::vector<unsigned char>::iterator pos;
 
-    readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
+    readBuffer.insert(readBuffer.end(), buffer, buffer + readSize);
     if (req.headers.find("content-length") != req.headers.end())
     {
         size_t lengthToRead = atoi(req.headers["content-length"].c_str()) - req.body.size();
