@@ -127,7 +127,7 @@ bool Client::readMessage(void)
         readMethod(buffer);
         break;
     case REQUEST_TARGET:
-        readRequestTarget(buffer);
+        readUri(buffer);
         break;
     case HTTP_VERSION:
         readHttpVersion(buffer);
@@ -315,7 +315,7 @@ void Client::readMethod(const char* buffer)
         // 또 다른 공백을 찾은 경우 다음 파싱으로 넘어감.
         // 이때 공백이 연속해서 들어오는 경우를 생각해 볼 수 있는데 이런 경우 에러처리로 됨.
         if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ", &" "[1])) != readBuffer.end())
-            readRequestTarget("");
+            readUri("");
         else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\r\n", &"\r\n"[2])) != readBuffer.end())
         {
             parseState = ERROR;
@@ -329,7 +329,7 @@ void Client::readMethod(const char* buffer)
     }
 }
 
-void Client::readRequestTarget(const char* buffer)
+void Client::readUri(const char* buffer)
 {
     std::vector<unsigned char>::iterator pos;
 
