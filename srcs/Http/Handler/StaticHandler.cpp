@@ -1,12 +1,22 @@
 #include "StaticHandler.hpp"
 
-std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request) const
+std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request)
 {
-	std::string	s = "HTTP/1.1 404 Not Found\r\nServer: nginx/1.25.1\r\nDate: Fri, 28 Jul 2023 12:42:57 GMT\r\n\
-                    Content-Type: text/html\r\nContent-Length: 153\r\nConnection: keep-alive\r\n\r\n<html>\r\n\
-                    <head><title>404 Not Found</title></head>\r\n<body>\r\n<center><h1>Hello my name is jj!!</h1></center>\r\n\
-                    <hr><center>webserv 0.1</center>\r\n</body>\r\n</html>";
-	
-	std::vector<unsigned char>	result(s.begin(), s.end());
-	return (result);
+	std::string					file_type = getFileType(request.file_name);
+	std::vector<char>			file_buffer;
+	std::ifstream				file(request.file_name, std::ios::binary);
+	int							length;
+
+	file.seekg(0, file.end);
+	length = file.tellg();
+	file.seekg(0, file.beg);
+	file_buffer.resize(length);
+	file.read(&file_buffer[0], length);
+	headers["Connection"] = "close";
+	headers["Content-Length"] = itos(length);
+	headers["Content-Type"] = file_type;
+	buildHeader(200);
+	response.insert(response.end(), header.begin(), header.end());
+	response.insert(response.end(), file_buffer.begin(), file_buffer.end());
+	return (response);
 }

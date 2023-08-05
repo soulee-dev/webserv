@@ -3,13 +3,13 @@ NAME = webserv
 
 # Cmd & Options
 CXX			= c++
-#CXXFLAGS	= # -fsanitize=address -g#-Wall -Werror -Wextra -std=c++98 -g3
-CXXFLAGS	=
+# CXXFLAGS	= -fsanitize=address -g -Wall -Werror -Wextra -std=c++98 -g3
+CXXFLAGS = -g3
 RM 			= rm
 RMFLAGS		= -f
 OUT_DIR		= objs
 SRC_DIR		= srcs
-FILE		= Client ClientManager ConfigFunctions ConfigParser Event Location Message RequestMessage ResponseMessage Server ServerManager Http/HttpRequestManager Http/Handler/StaticHandler Http/Handler/DynamicHandler Http/HttpParser main
+FILE		= Client ClientManager ConfigFunctions ConfigParser Event Location Message RequestMessage ResponseMessage Server ServerManager Http/HttpRequestManager Http/Handler/Handler Http/Handler/StaticHandler Http/Handler/DynamicHandler Http/Handler/ErrorHandler Http/HttpParser Http/Handler/HttpStatusCodes main
 OBJECTS		= $(addprefix $(OUT_DIR)/, $(addsuffix .o, $(FILE)))
 
 # Compile rules

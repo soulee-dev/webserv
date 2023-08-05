@@ -1,6 +1,6 @@
 #include "DirectoryIndexHandler.hpp"
 
-std::vector<unsigned char>	DirectoryIndexHandler::handle(HttpRequest& request) const
+std::vector<unsigned char>	DirectoryIndexHandler::handle(HttpRequest& request)
 {
 
 }
