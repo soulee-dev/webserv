@@ -168,7 +168,7 @@ void Client::readHeader(const char* buffer)
                 parseState = ERROR;
                 return;
             }
-            else if (req.headers.find("content-length") == req.headers.end() 
+            else if (req.headers.find("content-length") == req.headers.end()
                 && (req.method == "GET" || req.method == "DELETE"))
             {
                 parseState = DONE;
