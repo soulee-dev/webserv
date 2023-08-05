@@ -1,5 +1,6 @@
 #include "Client.hpp"
 #include "Server.hpp"
+#include <fcntl.h>
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
@@ -52,6 +53,11 @@ void Client::setFd(int fd)
 {
     this->client_fd = fd;
 }
+
+void Client::setEvents(Event* event)
+{
+    this->events = event;
+};
 // functions
 void Client::runServer()
 {
@@ -119,8 +125,8 @@ bool Client::readMessage(void)
     case METHOD:
         readMethod(buffer);
         break;
-    case REQUEST_TARGET:
-        readRequestTarget(buffer);
+    case URI:
+        readUri(buffer);
         break;
     case HTTP_VERSION:
         readHttpVersion(buffer);
@@ -131,6 +137,8 @@ bool Client::readMessage(void)
     case BODY:
         readBody(buffer);
         break;
+    case CHUNKED:
+        readChunked(buffer);
     default:
         break;
     }
@@ -168,8 +176,26 @@ void Client::readHeader(const char* buffer)
             }
             else
             {
-                parseState = BODY;
-                return (readBody(""));
+
+                // header Parsing이 끝난 후, flag를 done이나 BODY 가 아닌 CHUNKED 로 보내기 위한 로직
+                if (req.headers.find("transfer-encoding") != req.headers.end())
+                {
+                    // make_tempfile_name;
+                    std::string tempFile = "temp_" + req.uri;
+                    // file open
+                    req.chunkedFd = open(tempFile.c_str(), O_WRONLY | O_APPEND, 0644);
+                    // fd event 등록 ?
+                    events->changeEvents(req.chunkedFd, EVFILT_WRITE, EV_ADD | EV_DISABLE, 0, 0, NULL);
+
+                    // parse State 변경
+                    parseState = CHUNKED;
+                    return (readChunked(""));
+                }
+                else
+                {
+                    parseState = BODY;
+                    return (readBody(""));
+                }
             }
         }
         headerSstream << line;
@@ -202,6 +228,43 @@ void Client::readHeader(const char* buffer)
             key[i] = tolower(key[i]);
         req.headers[key] = value;
     }
+}
+
+void Client::readChunked(const char* buffer)
+{
+    if (req.chunkedFd == -1)
+        std::cout << "wrong parseState" << std::endl;
+    readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
+
+    std::vector<unsigned char>::iterator pos;
+    // 반복문을 돌면서 readBuffer를 읽음 -> 처음엔 무조건 size, 다음줄은 무조건 data여야 함
+    // 반복문의 종료 조건 :  마지막 \r\n까지
+    // 반복 조건 : 1\r\n 2\r\n이 한 쌍
+    // 반복 시행 :
+    // 1번째 줄은 16진수 숫자
+    // 숫자 변환 법 (택1):
+    // 1. istringstream
+    // std::istringstream iss(s);
+    // iss >> std::hex >> i;
+    // 2. sscanf이용
+    // 3. 삼항 연산자 사용 https://commandlinefanatic.com/cgi-bin/showarticle.cgi?article=art077
+    // 완전 종료 조건 : 사이즈가 0
+    // 이경우 FLAG를 DONE 으로 바꿈,
+    // write event 의 filter도변경
+    // 2번째 줄
+    // data는 위에서 읽은 사이즈 만큼만 읽기
+    // 만약 읽은 사이즈보다 작은 데이터만 남아있으면 에러
+    // 왜냐하면 마지막 데이터도 \r\n이 붙어 있는 상태의 것이기 때문
+
+    // readBuffer 에 1번째줄, 2번째쭐 1쌍 이상이 있지 않으면 readBuffer에 붙여 넣기만 하고 끝남
+    //  만약 계속 아무것도 안들어 온다면 타임 아웃.
+
+    // 마지막 \r\n 이후에 남은 데이터가 있다면 readBuffer에 붙임;
+
+    // write 이벤트 등록, fd 로 write 는 nonClientWriteEventProcess 에서 함,
+    // cgi 에 보내는 것도 해당 프로세스가 처리하도록 할 것임
+    // udata에 있는 readBuffer를 write 하도록 함
+    events->changeEvents(req.chunkedFd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &readBuffer);
 }
 
 void Client::readBody(const char* buffer)
@@ -246,11 +309,11 @@ void Client::readMethod(const char* buffer)
         req.method = std::string(readBuffer.begin(), pos);
         req.startLine = req.method;
         readBuffer.erase(readBuffer.begin(), pos + 1);
-        parseState = REQUEST_TARGET;
+        parseState = URI;
         // 또 다른 공백을 찾은 경우 다음 파싱으로 넘어감.
         // 이때 공백이 연속해서 들어오는 경우를 생각해 볼 수 있는데 이런 경우 에러처리로 됨.
         if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ", &" "[1])) != readBuffer.end())
-            readRequestTarget("");
+            readUri("");
         else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\r\n", &"\r\n"[2])) != readBuffer.end())
         {
             parseState = ERROR;
@@ -264,7 +327,7 @@ void Client::readMethod(const char* buffer)
     }
 }
 
-void Client::readRequestTarget(const char* buffer)
+void Client::readUri(const char* buffer)
 {
     std::vector<unsigned char>::iterator pos;
 

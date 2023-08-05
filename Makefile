@@ -1,10 +1,23 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: jinam <jinam@student.42seoul.kr>           +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2023/06/02 11:11:51 by jinam             #+#    #+#              #
+#    Updated: 2023/08/05 21:12:56 by jaemjeon         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
+
 # Target
 NAME = webserv
 
 # Cmd & Options
 CXX			= c++
 #CXXFLAGS	= # -fsanitize=address -g#-Wall -Werror -Wextra -std=c++98 -g3
-CXXFLAGS	=
+CXXFLAGS	= -g
 RM 			= rm
 RMFLAGS		= -f
 OUT_DIR		= objs

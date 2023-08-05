@@ -1,4 +1,5 @@
 #include "ClientManager.hpp"
+#include <iostream>
 #include <sys/event.h>
 #include <unistd.h>
 
@@ -11,15 +12,16 @@ ClientManager::~ClientManager(){};
 // getter
 Client& ClientManager::getClient(SOCKET client_fd)
 {
-    return clients[client_fd];
+    return clients.find(client_fd)->second;
 }
 // setter
 // functions
-ClientManager::SOCKET ClientManager::addNewClient(SOCKET client_fd, Server* server)
+ClientManager::SOCKET ClientManager::addNewClient(SOCKET client_fd, Server* server, Event* events)
 {
     clients[client_fd] = Client();
     clients[client_fd].setFd(client_fd);
     clients[client_fd].setServer(server);
+    clients[client_fd].setEvents(events);
     return client_fd;
 }
 
@@ -45,7 +47,30 @@ bool ClientManager::writeEventProcess(struct kevent& currEvent)
     Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
     if (currClient->writeEventProcess()) // write에 실패하면 true를 반환
         disconnectClient(currEvent.ident);
-    if (currClient->isSendBufferEmpty())
+    if (currClient->isSendBufferEmpty()) // buffer 에 있는 모든 것을
         return true;
     return false;
+}
+
+bool ClientManager::nonClientWriteEventProcess(struct kevent& currEvent)
+{
+
+    std::vector<unsigned char>* buffer = reinterpret_cast<std::vector<unsigned char>*>(currEvent.udata);
+
+    int writeSize = write(currEvent.ident, &(*buffer)[0], buffer->size());
+    if (writeSize == -1)
+    {
+        std::cout << "write() error" << std::endl;
+        return -1;
+    }
+    buffer->erase(buffer->begin(), buffer->begin() + writeSize);
+    if (buffer->size() == 0)
+        return 1;
+    else
+        return 0;
+}
+
+bool ClientManager::isClient(SOCKET client_fd)
+{
+    return (clients.find(client_fd) != clients.end());
 }
