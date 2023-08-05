@@ -1,11 +1,11 @@
 #include "RequestMessage.hpp"
 
 // constructors
-RequestMessage::RequestMessage() {}
+RequestMessage::RequestMessage() : chunkedFd(-1) {}
 // destructor
 RequestMessage::~RequestMessage() {}
 // copy constructors
-RequestMessage::RequestMessage(RequestMessage const& other) : Message(other)
+RequestMessage::RequestMessage(RequestMessage const& other) : Message(other), chunkedFd(-1)
 {
     method = other.method;
     uri = other.uri;
@@ -15,6 +15,7 @@ RequestMessage& RequestMessage::operator=(RequestMessage const& rhs)
 {
     method = rhs.method;
     uri = rhs.uri;
+    chunkedFd = rhs.chunkedFd;
     Message::operator=(rhs);
     return *this;
 }

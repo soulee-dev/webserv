@@ -1,5 +1,6 @@
 #include "Client.hpp"
 #include "Server.hpp"
+#include <fcntl.h>
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
@@ -55,7 +56,8 @@ void Client::setFd(int fd)
     this->client_fd = fd;
 }
 
-void Client::setEvents(Event *event)
+
+void Client::setEvents(Event* event)
 {
     this->events = event;
 };
@@ -225,7 +227,6 @@ void Client::readHeader(const char* buffer)
     }
 
 }
-
 
 void Client::readChunked(const char* buffer, size_t readSize)
 {

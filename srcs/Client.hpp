@@ -30,6 +30,7 @@ private:
 
     std::vector<unsigned char> readBuffer;
     std::vector<unsigned char> sendBuffer;
+    std::vector<unsigned char> chunkBuffer;
     RequestMessageParseState parseState;
 
 	void readMethod(const char *buffer);

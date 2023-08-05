@@ -18,6 +18,7 @@ public:
     SOCKET addNewClient(SOCKET server_fd, Server* server, Event* event);
     void disconnectClient(SOCKET client_fd);
     Client& getClient(SOCKET client_fd);
+    bool isClient(SOCKET client_fd);
 
     bool readEventProcess(struct kevent& currEvent);
     bool writeEventProcess(struct kevent& currEvent);
