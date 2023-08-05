@@ -16,6 +16,8 @@ public:
 	std::string fileType;
 	std::string	cgi_args;
 	int	is_directory;
+    bool    isError;
+    int     errnum;
 	// --------------------- //
 
     void clear();

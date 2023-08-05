@@ -3,6 +3,7 @@
 // --- gyopark ADDED --- //
 #include "Color.hpp"
 #include "Http/HttpRequestManager.hpp"
+#include "Http/Handler/ErrorHandler.hpp"
 // --------------------- //
 #include <iostream>
 #include <sstream>
@@ -85,8 +86,12 @@ bool Client::readEventProcess(void)
 		HttpRequestManager  requestManager(*this, list);
 		std::vector<unsigned char>  buffer  = requestManager.processRequest();
 		// end Parse Request Message // 
-
-		sendBuffer.insert(sendBuffer.end(), buffer.begin(), buffer.end());
+		if (this->getReq().isError)
+		{
+			ErrorHandler	err; // errnum에 따라 다르게 처리를 해줄거에요
+		}
+		else
+			sendBuffer.insert(sendBuffer.end(), buffer.begin(), buffer.end());
 		parseState = METHOD;
 		req.clear();
 	

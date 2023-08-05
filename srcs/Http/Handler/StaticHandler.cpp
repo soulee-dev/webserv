@@ -6,7 +6,9 @@ std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request) const
     struct stat stat_buf;
     int ret_stat = stat(request.file_name.c_str(), &stat_buf);
     if (S_ISDIR(stat_buf.st_mode))
+	{
         processDirectory(request);
+	}
 	else
 		std::cout << BOLDMAGENTA << "Is NOT DIRECTORY ---> " << request.file_name << RESET << std::endl;
 	MakeStaticResponse(request);
@@ -40,9 +42,11 @@ void	processDirectory(HttpRequest& request)
 {
 	std::cout << BOLDYELLOW << "Is DIRECTORY ---> " << request.file_name  << RESET << std::endl;
 	DIR	*dir = opendir(request.file_name.c_str());
-	if (dir == NULL)
+	if (dir == NULL) // Error Handler를 호출해야 하는 첫 번째 경우 (errnum = 2), 현재 default.conf의 root는 /html로 지정되어 있는데, 그 /html이 없는 경우이다.
 	{
-		std::cout << "404 File not found\n";
+		request.isError = true;
+		request.errnum = 2;
+		std::cout << "404 File not found\n"; 
 		std::cout << BOLDRED << "Call Error Handler\n" << RESET;
         return ;
 	}

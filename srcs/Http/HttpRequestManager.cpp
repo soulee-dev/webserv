@@ -15,6 +15,12 @@ HttpRequestManager::HttpRequestManager(Client& client, std::vector<std::string> 
 		std::cout << BOLDBLUE << " -- PROCESSING DYNAMIC --\n";
 		handler = new DynamicHandler();
 	}
+	
+	if (request.isError)
+	{
+		client.getReq().isError = true;
+		client.getReq().errnum = request.errnum;
+	}
 }
 
 std::vector<unsigned char>	HttpRequestManager::processRequest(void)

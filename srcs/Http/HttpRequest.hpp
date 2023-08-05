@@ -27,5 +27,6 @@ class HttpRequest
 		std::string target;
 		bool	isAutoIndex;
 		bool	isError;
+		int		errnum;
 		// ----------------------------- //
 };

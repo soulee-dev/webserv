@@ -1,10 +1,13 @@
-#include "StaticHandler.hpp"
-#include "DynamicHandler.hpp"
 #include "ErrorHandler.hpp"
 
-std::vector<unsigned char>	ErrorHandler::handle(HttpRequest& request) const
+std::vector<unsigned char> ErrorHandler::handle(HttpRequest& request) const 
 {
-	
+	request.errnum = 9999;
+    std::vector<unsigned char> byteVector;
+    // Add some bytes to the vector
+    byteVector.push_back(0x41); // ASCII code for 'A'
+
+    return byteVector;
 }
 
 // void ErrorHandler::ClientError(std::string status)
