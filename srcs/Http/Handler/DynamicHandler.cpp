@@ -2,4 +2,5 @@
 
 std::vector<unsigned char>	DynamicHandler::handle(HttpRequest& request) const
 {
+	
 }
