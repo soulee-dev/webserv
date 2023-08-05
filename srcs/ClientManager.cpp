@@ -57,19 +57,10 @@ bool ClientManager::nonClientWriteEventProcess(struct kevent& currEvent)
 
     std::vector<unsigned char>* buffer = reinterpret_cast<std::vector<unsigned char>*>(currEvent.udata);
 
-    // int writeSize = write(currEvent.ident, buffer[0], buffer.size());
     int writeSize = write(currEvent.ident, &(*buffer)[0], buffer->size());
-    {
-        for (std::vector<unsigned char>::iterator it = buffer->begin(); it != buffer->end(); it++)
-        {
-            std::cout << *it;
-        }
-        std::cout << std::endl;
-        std::cout << buffer->size() << std::endl;
-    }
     if (writeSize == -1)
     {
-        std::cout << ">> write() error" << std::endl;
+        std::cout << "write() error" << std::endl;
         return -1;
     }
     buffer->erase(buffer->begin(), buffer->begin() + writeSize);

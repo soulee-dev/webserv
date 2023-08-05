@@ -86,7 +86,6 @@ bool Client::readEventProcess(void)
                     Content-Type: text/html\r\nContent-Length: 153\r\nConnection: keep-alive\r\n\r\n<html>\r\n\
                     <head><title>404 Not Found</title></head>\r\n<body>\r\n<center><h1>Hello my name is jj!!</h1></center>\r\n\
                     <hr><center>webserv 0.1</center>\r\n</body>\r\n</html>"[374]);
-        // events->changeEvents(2, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &sendBuffer);
         parseState = METHOD;
         req.clear();
         return true;
@@ -99,7 +98,7 @@ bool Client::writeEventProcess(void)
     int writeSize = write(client_fd, &sendBuffer[0], sendBuffer.size());
     if (writeSize == -1)
     {
-        std::cout << "!!write() error" << std::endl;
+        std::cout << "write() error" << std::endl;
         return true;
     }
     sendBuffer.erase(sendBuffer.begin(), sendBuffer.begin() + writeSize);

@@ -210,10 +210,18 @@ void ServerManager::writeEventProcess(struct kevent& currEvent)
         else
         {
             int res = clientManager.nonClientWriteEventProcess(currEvent);
-            if (res != 0)
+            if (res == -1)
             {
                 close(currEvent.ident);
-                events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, NULL);
+                events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata);
+            }
+            else if (res == 1)
+            {
+                events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata);
+            }
+            else 
+            {
+                events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, currEvent.udata);
             }
         }
     }
