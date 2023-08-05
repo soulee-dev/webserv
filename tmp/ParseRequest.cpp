@@ -36,7 +36,7 @@ void ParseRequest::parseRequest(Client &c, ResponseMessage &r)
 		if (lc != std::string::npos)
 			c.getReq().cgi_args = uri.substr(lc + 1);
 		c.getReq().fileName = "." + uri.substr(0, lc);
-		processDynamic(c, r);
+		// processDynamic(c, r);
 	}
 }
 

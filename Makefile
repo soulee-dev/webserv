@@ -1,16 +1,3 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: gyopark <gyopark@student.42.fr>            +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2023/06/02 11:11:51 by jinam             #+#    #+#              #
-#    Updated: 2023/08/04 20:00:28 by gyopark          ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
-
 # Target
 NAME = webserv
 
@@ -22,13 +9,12 @@ RM 			= rm
 RMFLAGS		= -f
 OUT_DIR		= objs
 SRC_DIR		= srcs
-FILE		= Client ClientManager ConfigFunctions ConfigParser Event Location Message \
-				RequestMessage ResponseMessage Server ServerManager ParseRequest main
+FILE		= Client ClientManager ConfigFunctions ConfigParser Event Location Message RequestMessage ResponseMessage Server ServerManager Http/HttpRequestManager Http/Handler/StaticHandler Http/Handler/DynamicHandler Http/HttpParser main
 OBJECTS		= $(addprefix $(OUT_DIR)/, $(addsuffix .o, $(FILE)))
 
 # Compile rules
 $(OUT_DIR)/%.o : $(SRC_DIR)/%.cpp
-	@mkdir -p $(OUT_DIR)
+	@mkdir -p $(dir $@)
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
 .PHONY	: all no clean fclean re
