@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sys/event.h>
 #include <unistd.h>
+#include <vector>
 
 // constructors
 ClientManager::ClientManager(){};
@@ -16,6 +17,7 @@ Client& ClientManager::getClient(SOCKET client_fd)
 }
 // setter
 // functions
+
 ClientManager::SOCKET ClientManager::addNewClient(SOCKET client_fd, Server* server, Event* events)
 {
     clients[client_fd] = Client();
@@ -54,7 +56,6 @@ bool ClientManager::writeEventProcess(struct kevent& currEvent)
 
 bool ClientManager::nonClientWriteEventProcess(struct kevent& currEvent)
 {
-
     std::vector<unsigned char>* buffer = reinterpret_cast<std::vector<unsigned char>*>(currEvent.udata);
 
     int writeSize = write(currEvent.ident, &(*buffer)[0], buffer->size());

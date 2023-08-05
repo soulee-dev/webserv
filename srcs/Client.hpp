@@ -37,8 +37,8 @@ private:
 	void readUri(const char *buffer);
 	void readHttpVersion(const char *buffer);
 	void readHeader(const char *buffer);
-	void readBody(const char *buffer);
-	void readChunked(const char *buffer);
+	void readBody(const char *buffer, size_t readSize);
+	void readChunked(const char *buffer, size_t readSize);
 
 public:
     typedef int PORT;
