@@ -169,6 +169,7 @@ void Client::readHeader(const char* buffer)
             if (req.headers.find("host") == req.headers.end())
             {
                 parseState = ERROR;
+                req.errorCode = BAD_REQUEST;
                 return;
             }
             else if (req.headers.find("content-length") == req.headers.end()
@@ -200,6 +201,7 @@ void Client::readHeader(const char* buffer)
         if (key.size() == 0)
         {
             parseState = ERROR;
+            req.errorCode = BAD_REQUEST;
             return;
         }
         for (size_t i = 0; i < key.size(); i++)
@@ -207,6 +209,7 @@ void Client::readHeader(const char* buffer)
             if (isspace(key[i]))
             {
                 parseState = ERROR;
+                req.errorCode = BAD_REQUEST;
                 return;
             }
         }
@@ -214,6 +217,7 @@ void Client::readHeader(const char* buffer)
         if (value.size() == 0)
         {
             parseState = ERROR;
+            req.errorCode = BAD_REQUEST;
             return;
         }
         headerSstream.clear();
@@ -262,6 +266,7 @@ void Client::readChunked(const char* buffer, size_t readSize)
             if (readBuffer[longBodySize] != '\r' || readBuffer[longBodySize + 1] != '\n')
             {
                 parseState = ERROR;
+                req.errorCode = BAD_REQUEST;
                 return ;
             }
             readBuffer.erase(readBuffer.begin(), readBuffer.begin() + longBodySize + 2);
@@ -320,12 +325,14 @@ void Client::readMethod(const char* buffer)
         else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\r\n", &"\r\n"[2])) != readBuffer.end())
         {
             parseState = ERROR;
+            req.errorCode = BAD_REQUEST;
         }
     }
     // 공백이 아닌 개행을 읽은 경우 파싱이 완료되지 못하기 때문에 에러
     else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\r\n", &"\r\n"[2])) != readBuffer.end())
     {
         parseState = ERROR;
+        req.errorCode = BAD_REQUEST;
         readBuffer.erase(readBuffer.begin(), pos + 2);
     }
 }
@@ -346,11 +353,13 @@ void Client::readUri(const char* buffer)
         else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ", &" "[1])) != readBuffer.end())
         {
             parseState = ERROR;
+            req.errorCode = BAD_REQUEST;
         }
     }
     else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\r\n", &"\r\n"[2])) != readBuffer.end())
     {
         parseState = ERROR;
+        req.errorCode = BAD_REQUEST;
         readBuffer.erase(readBuffer.begin(), pos + 2);
     }
 }
@@ -367,6 +376,7 @@ void Client::readHttpVersion(const char* buffer)
         if (req.httpVersion != "HTTP/1.1" && req.httpVersion != "HTTP/1.0")
         {
             parseState = ERROR;
+            req.errorCode = HTTP_VERSION_NOT_SUPPORT;
             return;
         }
         req.startLine += " " + req.httpVersion;
