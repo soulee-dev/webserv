@@ -8,7 +8,7 @@
 enum RequestMessageParseState
 {
 	METHOD,
-	REQUEST_TARGET,
+	URI,
 	HTTP_VERSION,
 	HEADER,
 	BODY,
@@ -34,7 +34,7 @@ private:
     RequestMessageParseState parseState;
 
 	void readMethod(const char *buffer);
-	void readRequestTarget(const char *buffer);
+	void readUri(const char *buffer);
 	void readHttpVersion(const char *buffer);
 	void readHeader(const char *buffer);
 	void readBody(const char *buffer);
