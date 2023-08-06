@@ -54,7 +54,7 @@ bool ClientManager::writeEventProcess(struct kevent& currEvent)
     return false;
 }
 
-bool ClientManager::nonClientWriteEventProcess(struct kevent& currEvent)
+int ClientManager::nonClientWriteEventProcess(struct kevent& currEvent)
 {
     std::vector<unsigned char>* buffer = reinterpret_cast<std::vector<unsigned char>*>(currEvent.udata);
 
@@ -69,6 +69,24 @@ bool ClientManager::nonClientWriteEventProcess(struct kevent& currEvent)
         return 1;
     else
         return 0;
+}
+
+int ClientManager::nonClientReadEventProcess(struct kevent& currEvent)
+{
+    const size_t BUFFER_SIZE = 1024;
+    std::vector<unsigned char>* readBuffer = reinterpret_cast<std::vector<unsigned char>*>(currEvent.udata);
+    char buffer[BUFFER_SIZE];
+
+    ssize_t ret = read(currEvent.ident, buffer, BUFFER_SIZE);
+    if (ret == -1)
+        return -1;
+    if (ret == 0)
+        return 1;
+    else
+    {
+        readBuffer->insert(readBuffer->end(), buffer, &buffer[ret]);
+        return 0;
+    }
 }
 
 bool ClientManager::isClient(SOCKET client_fd)

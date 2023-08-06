@@ -22,5 +22,6 @@ public:
 
     bool readEventProcess(struct kevent& currEvent);
     bool writeEventProcess(struct kevent& currEvent);
-    bool nonClientWriteEventProcess(struct kevent& currEvent);
+    int nonClientWriteEventProcess(struct kevent& currEvent);
+    int nonClientReadEventProcess(struct kevent& currEvent);
 };
