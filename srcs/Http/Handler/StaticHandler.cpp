@@ -3,7 +3,7 @@
 std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request)
 {
 	std::string					file_type = getFileType(request.file_name);
-	std::vector<char>			file_buffer;
+	std::vector<unsigned char>			file_buffer;
 	std::ifstream				file(request.file_name, std::ios::binary);
 	int							length;
 
@@ -11,7 +11,7 @@ std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request)
 	length = file.tellg();
 	file.seekg(0, file.beg);
 	file_buffer.resize(length);
-	file.read(&file_buffer[0], length);
+	file.read(reinterpret_cast<char*>(&file_buffer[0]), length);
 	headers["Connection"] = "close";
 	headers["Content-Length"] = itos(length);
 	headers["Content-Type"] = file_type;
