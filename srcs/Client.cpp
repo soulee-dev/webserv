@@ -1,9 +1,12 @@
 #include "Client.hpp"
 #include "Server.hpp"
+#include <fcntl.h>
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
 #include "Http/HttpRequestManager.hpp"
+#include <fcntl.h>
+#include <algorithm>
 
 // constructors
 Client::Client() : parseState(METHOD) {}
@@ -53,6 +56,12 @@ void Client::setFd(int fd)
 {
     this->client_fd = fd;
 }
+
+
+void Client::setEvents(Event* event)
+{
+    this->events = event;
+};
 // functions
 void Client::runServer()
 {
@@ -115,8 +124,8 @@ bool Client::readMessage(void)
     case METHOD:
         readMethod(buffer);
         break;
-    case REQUEST_TARGET:
-        readRequestTarget(buffer);
+    case URI:
+        readUri(buffer);
         break;
     case HTTP_VERSION:
         readHttpVersion(buffer);
@@ -125,8 +134,10 @@ bool Client::readMessage(void)
         readHeader(buffer);
         break;
     case BODY:
-        readBody(buffer);
+        readBody(buffer, readSize);
         break;
+    case CHUNKED:
+        readChunked(buffer, readSize);
     default:
         break;
     }
@@ -156,7 +167,7 @@ void Client::readHeader(const char* buffer)
                 parseState = ERROR;
                 return;
             }
-            else if (req.headers.find("content-length") == req.headers.end() 
+            else if (req.headers.find("content-length") == req.headers.end()
                 && (req.method == "GET" || req.method == "DELETE"))
             {
                 parseState = DONE;
@@ -164,8 +175,20 @@ void Client::readHeader(const char* buffer)
             }
             else
             {
-                parseState = BODY;
-                return (readBody(""));
+
+                // header Parsing이 끝난 후, flag를 done이나 BODY 가 아닌 CHUNKED 로 보내기 위한 로직
+                std::map<std::string, std::string>::iterator encodingIt = req.headers.find("transfer-encoding");
+                if (encodingIt != req.headers.end() && encodingIt->second == "chunked")
+                {
+                    // parse State 변경
+                    parseState = CHUNKED;
+                    return (readChunked("", 0));
+                }
+                else
+                {
+                    parseState = BODY;
+                    return (readBody("", 0));
+                }
             }
         }
         headerSstream << line;
@@ -198,13 +221,56 @@ void Client::readHeader(const char* buffer)
             key[i] = tolower(key[i]);
         req.headers[key] = value;
     }
+
 }
 
-void Client::readBody(const char* buffer)
+void Client::readChunked(const char* buffer, size_t readSize)
+{
+    static const char *crlf = "\r\n";
+    static std::string strbodySize;
+    static long longBodySize;
+    static bool haveToReadBody = false;
+    
+    readBuffer.insert(readBuffer.end(), buffer, buffer + readSize);
+
+    std::vector<unsigned char>::iterator pos = std::search(readBuffer.begin(), readBuffer.end(), crlf, &crlf[2]);
+    while (pos != readBuffer.end())
+    {
+        if (haveToReadBody == false)
+        {
+            strbodySize = std::string(readBuffer.begin(), pos);
+            readBuffer.erase(readBuffer.begin(), pos + 2);
+            longBodySize = strtol(strbodySize.c_str(), NULL, 16);
+            haveToReadBody = true;
+        }
+        if (haveToReadBody == true)
+        {
+            if (longBodySize == 0)
+            {
+                parseState = DONE;
+                haveToReadBody = false;
+                return ;
+            }
+            else if (longBodySize + 2 > readBuffer.size())
+                return ;
+            req.body.insert(req.body.end(), readBuffer.begin(), readBuffer.begin() + longBodySize);
+            haveToReadBody = false;
+            if (readBuffer[longBodySize] != '\r' || readBuffer[longBodySize + 1] != '\n')
+            {
+                parseState = ERROR;
+                return ;
+            }
+            readBuffer.erase(readBuffer.begin(), readBuffer.begin() + longBodySize + 2);
+            pos = std::search(readBuffer.begin(), readBuffer.end(), crlf, &crlf[2]);
+        }
+    }
+}
+
+void Client::readBody(const char* buffer, size_t readSize)
 {
     std::vector<unsigned char>::iterator pos;
 
-    readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
+    readBuffer.insert(readBuffer.end(), buffer, buffer + readSize);
     if (req.headers.find("content-length") != req.headers.end())
     {
         size_t lengthToRead = atoi(req.headers["content-length"].c_str()) - req.body.size();
@@ -242,11 +308,11 @@ void Client::readMethod(const char* buffer)
         req.method = std::string(readBuffer.begin(), pos);
         req.startLine = req.method;
         readBuffer.erase(readBuffer.begin(), pos + 1);
-        parseState = REQUEST_TARGET;
+        parseState = URI;
         // 또 다른 공백을 찾은 경우 다음 파싱으로 넘어감.
         // 이때 공백이 연속해서 들어오는 경우를 생각해 볼 수 있는데 이런 경우 에러처리로 됨.
         if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ", &" "[1])) != readBuffer.end())
-            readRequestTarget("");
+            readUri("");
         else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\r\n", &"\r\n"[2])) != readBuffer.end())
         {
             parseState = ERROR;
@@ -260,15 +326,15 @@ void Client::readMethod(const char* buffer)
     }
 }
 
-void Client::readRequestTarget(const char* buffer)
+void Client::readUri(const char* buffer)
 {
     std::vector<unsigned char>::iterator pos;
 
     readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
     if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ", &" "[1])) != readBuffer.end())
     {
-        req.requestTarget = std::string(readBuffer.begin(), pos);
-        req.startLine += " " + req.requestTarget;
+        req.uri = std::string(readBuffer.begin(), pos);
+        req.startLine += " " + req.uri;
         readBuffer.erase(readBuffer.begin(), pos + 1);
         parseState = HTTP_VERSION;
         if ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\r\n", &"\r\n"[2])) != readBuffer.end())

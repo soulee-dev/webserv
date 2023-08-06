@@ -16,12 +16,13 @@ class ServerManager
 private:
     typedef int PORT;
     typedef int SOCKET;
-    ServerManager(ServerManager const& other);
-    ServerManager& operator=(ServerManager const& rhs);
     Event events;
     ClientManager clientManager;
     std::map<PORT, Server> servers;
     std::map<SOCKET, PORT> portByServerSocket;
+
+    ServerManager(ServerManager const& other);
+    ServerManager& operator=(ServerManager const& rhs);
 
 public:
     static const int LISTENCAPACITY = 5;
