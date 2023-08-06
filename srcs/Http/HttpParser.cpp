@@ -7,7 +7,7 @@ HttpRequest	HttpParser::parse(Client& client)
 	
 	request = client.getReq();
 
-	result.method = request.method;
+	result.requestMessage = request;
 	if (request.uri.find("cgi-bin") == std::string::npos)
 	{
 		// When static
