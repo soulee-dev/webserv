@@ -12,12 +12,13 @@ std::vector<unsigned char>	DynamicHandler::handle(HttpRequest& request)
 	if (pipe(pipe_fd) == -1 || pipe(pipe_fd_back) == -1)
 	{
 		// TODO handle error;
-		
+		std::cerr << "pipe() error" << std::endl;
 	}
 	pid_t	pid = fork();
 	if (pid == -1)
 	{
 		// TODO handle error
+		std::cerr << "fork() error" << std::endl;
 	}
 	if (pid == 0)
 	{
@@ -35,6 +36,7 @@ std::vector<unsigned char>	DynamicHandler::handle(HttpRequest& request)
 		if (execve(request.file_name.c_str(), empty_list, environ) == -1)
 		{
 			// TODO handle error
+			std::cerr << "execve() error" << std::endl;
 		}
 	}
 	else
@@ -53,7 +55,12 @@ std::vector<unsigned char>	DynamicHandler::handle(HttpRequest& request)
 		close(pipe_fd[0]);
 		wait(NULL);
 	}
-	buildHeader(200);
+	// buildHeader(200);
+	std::stringstream	ss;
+
+	ss << SERVER_HTTP_VERSION << SPACE << 200 << get_status_codes().find(200)->second << CRLF;
+	ss << "Server:" << SPACE << SERVER_NAME << CRLF;
+	header = stou(ss);
 	response.insert(response.end(), header.begin(), header.end());
 	response.insert(response.end(), buffer.begin(), buffer.end());
 	return (response);

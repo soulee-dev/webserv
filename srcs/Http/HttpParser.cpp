@@ -21,7 +21,7 @@ HttpRequest	HttpParser::parse(Client& client)
 		size_t	location = request.uri.find('?');
 		if (location != std::string::npos)
 			result.cgi_args = request.uri.substr(location + 1);
-		result.file_name = "." + request.uri.substr(0, location);
+		result.file_name = "./www" + request.uri.substr(0, location);
 	}
 	return result;
 };
