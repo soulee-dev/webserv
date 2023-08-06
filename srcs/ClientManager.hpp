@@ -22,6 +22,6 @@ public:
 
     bool readEventProcess(struct kevent& currEvent);
     bool writeEventProcess(struct kevent& currEvent);
-    int nonClientWriteEventProcess(struct kevent& currEvent);
-    int nonClientReadEventProcess(struct kevent& currEvent);
+    int ReqToCgiWriteProcess(struct kevent& currEvent);
+    int CgiToResReadProcess(struct kevent& currEvent);
 };
