@@ -37,8 +37,11 @@ bool ClientManager::readEventProcess(struct kevent& currEvent)
 {
     // 이거 근데 ident 로 바로 찾아와서 쓸수 있지 않은지
     Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
-    if (currClient->readMessage()) // read에서 에러나면 true를 반환
+    if (currClient->readMessage()) // read에서 에러나면 false를 반환
+    {
         disconnectClient(currEvent.ident);
+        return false; // read 에서 에러가 났으니 disconnect 하고 false를 반환하여 이벤트 등록하지 않도록 함.
+    }
     if (currClient->readEventProcess()) // 응답을 보낼 준비가 되면 true를 반환
         return true;
     return false;
@@ -49,7 +52,7 @@ bool ClientManager::writeEventProcess(struct kevent& currEvent)
     Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
     if (currClient->writeEventProcess()) // write에 실패하면 true를 반환
         disconnectClient(currEvent.ident);
-    if (currClient->isSendBufferEmpty()) // buffer 에 있는 모든 것을
+    if (currClient->isSendBufferEmpty()) // Sendbuffer가 다 비워짐
         return true;
     return false;
 }
