@@ -50,8 +50,11 @@ bool ClientManager::readEventProcess(struct kevent& currEvent)
 bool ClientManager::writeEventProcess(struct kevent& currEvent)
 {
     Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
-    if (currClient->writeEventProcess()) // write에 실패하면 true를 반환
+    if (currClient->writeEventProcess()) // write에 실패하면 false를 반환
+    {
         disconnectClient(currEvent.ident);
+        return false; // write에서 에러가 났으니 disconnect 하고 false를 반환하여 이벤트 등록하지 않도록 함.
+    }
     if (currClient->isSendBufferEmpty()) // Sendbuffer가 다 비워짐
         return true;
     return false;
