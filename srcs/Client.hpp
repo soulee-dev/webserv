@@ -1,22 +1,22 @@
 #pragma once
+#include "Event.hpp"
 #include "Location.hpp"
 #include "RequestMessage.hpp"
 #include "ResponseMessage.hpp"
 #include "Server.hpp"
-#include "Event.hpp"
 #include <queue>
 
 enum RequestMessageParseState
 {
     READY,
-	METHOD,
-	URI,
-	HTTP_VERSION,
-	HEADER,
-	BODY,
-	DONE,
+    METHOD,
+    URI,
+    HTTP_VERSION,
+    HEADER,
+    BODY,
+    DONE,
     CHUNKED,
-	ERROR,
+    ERROR,
 };
 
 class Client
@@ -27,7 +27,7 @@ private:
     // event 등록;
     Event* events;
 
-    std::queue<RequestMessage> queReq; // 가져갈땐 pop, 넣을땐 push
+    std::queue<RequestMessage> queReq;  // 가져갈땐 pop, 넣을땐 push
     std::queue<ResponseMessage> queRes; // 가져갈땐 pop, 넣을땐 push
 
     std::vector<unsigned char> readBuffer;
@@ -35,12 +35,13 @@ private:
     RequestMessageParseState parseState;
 
     void createRequest(void);
-	void readMethod(const char *buffer);
-	void readUri(const char *buffer);
-	void readHttpVersion(const char *buffer);
-	void readHeader(const char *buffer);
-	void readBody(const char *buffer, size_t readSize);
-	void readChunked(const char *buffer, size_t readSize);
+    void createResponse(void);
+    void readMethod(const char* buffer);
+    void readUri(const char* buffer);
+    void readHttpVersion(const char* buffer);
+    void readHeader(const char* buffer);
+    void readBody(const char* buffer, size_t readSize);
+    void readChunked(const char* buffer, size_t readSize);
 
 public:
     typedef int PORT;
@@ -52,15 +53,16 @@ public:
     ~Client();
     // void runServer(void);
 
-
     // setter
     void setFd(int fd);
     void setServer(Server* server);
     void setEvents(Event* event);
 
     // getter
-    ResponseMessage& getRes(void);
-    RequestMessage& getReq(void);
+    ResponseMessage& getBackRes(void);
+    RequestMessage& getBackReq(void);
+    ResponseMessage& getfrontRes(void);
+    RequestMessage& getfrontReq(void);
     Server* getServer(void) const;
     SOCKET getClientFd(void) const;
 
