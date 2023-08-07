@@ -4,9 +4,11 @@
 #include "ResponseMessage.hpp"
 #include "Server.hpp"
 #include "Event.hpp"
+#include <queue>
 
 enum RequestMessageParseState
 {
+    READY,
 	METHOD,
 	URI,
 	HTTP_VERSION,
@@ -25,14 +27,14 @@ private:
     // event 등록;
     Event* events;
 
-    RequestMessage req;
-    ResponseMessage res;
+    std::queue<RequestMessage> queReq; // 가져갈땐 pop, 넣을땐 push
+    std::queue<ResponseMessage> queRes; // 가져갈땐 pop, 넣을땐 push
 
     std::vector<unsigned char> readBuffer;
     std::vector<unsigned char> sendBuffer;
-    std::vector<unsigned char> chunkBuffer;
     RequestMessageParseState parseState;
 
+    void createRequest(void);
 	void readMethod(const char *buffer);
 	void readUri(const char *buffer);
 	void readHttpVersion(const char *buffer);
@@ -48,7 +50,7 @@ public:
     Client& operator=(const Client& ref);
 
     ~Client();
-    void runServer(void);
+    // void runServer(void);
 
 
     // setter
@@ -63,6 +65,8 @@ public:
     SOCKET getClientFd(void) const;
 
     // functions
+    RequestMessage popReq(void);
+    ResponseMessage popRes(void);
     void errorEventProcess(void);
     bool readEventProcess(void);
     bool writeEventProcess(void);

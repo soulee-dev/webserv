@@ -9,20 +9,20 @@
 #include <algorithm>
 
 // constructors
-Client::Client() : parseState(METHOD) {}
+Client::Client() : parseState(READY) {}
 // destructor
 Client::~Client() {}
 // copy constructors
 Client::Client(Client const& other)
-    : client_fd(other.client_fd), server(other.server), req(other.req), res(other.res),
+    : client_fd(other.client_fd), server(other.server), queReq(other.queReq), queRes(other.queRes),
       readBuffer(other.readBuffer), sendBuffer(other.sendBuffer), parseState(METHOD) {}
 // operators
 Client& Client::operator=(Client const& rhs)
 {
     if (this != &rhs)
     {
-        this->res = rhs.res;
-        this->req = rhs.req;
+        this->queRes = rhs.queRes;
+        this->queReq = rhs.queReq;
         this->client_fd = rhs.client_fd;
         this->server = rhs.server;
         this->readBuffer = rhs.readBuffer;
@@ -35,12 +35,12 @@ Client& Client::operator=(Client const& rhs)
 // getter
 ResponseMessage& Client::getRes(void)
 {
-    return this->res;
+    return queRes.front();
 }
 
 RequestMessage& Client::getReq(void)
 {
-    return this->req;
+    return queReq.front();
 }
 
 Server* Client::getServer(void) const
@@ -57,16 +57,29 @@ void Client::setFd(int fd)
     this->client_fd = fd;
 }
 
-
 void Client::setEvents(Event* event)
 {
     this->events = event;
 };
 // functions
-void Client::runServer()
+RequestMessage Client::popReq(void)
 {
-    this->server->runServer(this->req, this->res);
+    RequestMessage ret = getReq();
+    queReq.pop();
+    return ret;
 }
+
+ResponseMessage Client::popRes(void)
+{
+    ResponseMessage ret = getRes();
+    queRes.pop();
+    return ret;
+}
+
+// void Client::runServer()
+// {
+//     this->server->runServer(this->req, this->res);
+// }
 
 void Client::errorEventProcess(void)
 {
@@ -121,6 +134,8 @@ bool Client::readMessage(void)
     // 함수 포인터 배열 사용해보는것도?
     switch (parseState)
     {
+    case READY:
+        createRequest();
     case METHOD:
         readMethod(buffer);
         break;
