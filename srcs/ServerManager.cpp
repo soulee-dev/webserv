@@ -187,47 +187,55 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
 {
     if (isResponseToServer(currEvent))
         acceptClient(currEvent.ident);
-    else
+    else if (clientManager.isClient(currEvent.ident) == true) // clinet
     {
         events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_EOF, NOTE_SECONDS, 100, currEvent.udata);
         if (clientManager.readEventProcess(currEvent))
         {
-            // events.changeEvents(currEvent.ident, EVFILT_READ, EV_DISABLE, 0, 0, currEvent.udata);
             events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_ENABLE, 0, 0, currEvent.udata);
+        }
+    }
+    else // file Read event...
+    {
+        //Timer 설정 
+        events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_EOF, NOTE_SECONDS, 100, currEvent.udata);
+
+        //Cgi에서 보내는 data 를 response의 body 에 저장 
+        ssize_t ret = clientManager.CgiToResReadProcess(currEvent); // -1: read error, 0 : read left 1 : read done
+        if (ret != 0) // read error || read done
+        {
+            events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
+            // close(currEvent.ident);
+        }
+        if (ret == 1)
+        {
+            // cgi 에서 결과물을 받을때 response 가 완성 되어있다면, client 로 바로 전송 하도록 이벤트를 보냄
+            //Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
+            //events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
+            // close(currEvent.ident);
+
+            // 위의 경우가 아닌 경우에는 client 의 response 메시지를 만드는 function 을 호출한다. 
+            // 예 : currClient->getRes().buildResponse();
         }
     }
 }
 
 void ServerManager::writeEventProcess(struct kevent& currEvent)
 {
-    if (isResponseToServer(currEvent) == false)
+    if (clientManager.isClient(currEvent.ident) == true)
     {
-        if (clientManager.isClient(currEvent.ident) == true)
-        {
-            clientManager.writeEventProcess(currEvent); // 더이상 보낼게 없을때 true 반환
+        if (clientManager.writeEventProcess(currEvent)) // 더이상 보낼게 없을때 true 반환
             events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata);
-        }
-        else
-        {
-            int res = clientManager.nonClientWriteEventProcess(currEvent);
-            if (res == -1)
-            {
-                close(currEvent.ident);
-                events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata);
-            }
-            else if (res == 1)
-            {
-                events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata);
-            }
-            else 
-            {
-                events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, currEvent.udata);
-            }
-        }
     }
     else
     {
-        std::cout << "wrong way" << std::endl;
+        ssize_t res = clientManager.ReqToCgiWriteProcess(currEvent);
+        if (res != 0) // -1 : write error, 1 : buffer->size == 0, 0 : buffer left
+            events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata);
+        // if (res == -1)
+        //     close(currEvent.ident);
+        // BE에서 pipe fd 관리를 해주는 것이라면 여기에서 close하는게 맞나 싶음.. 중복 close로 엉뚱한 fd가 close되진 않을까..?
+        // readEventProcess 에서도 동일한 이슈..
     }
 }
 
