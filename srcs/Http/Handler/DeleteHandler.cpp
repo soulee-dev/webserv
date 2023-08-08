@@ -10,7 +10,7 @@ std::vector<unsigned char>	DeleteHandler::handle(HttpRequest& request)
 	}
 	else
 	{
-		buildHeader(200);
+		buildHeader(404);
 		response.insert(response.end(), header.begin(), header.end());
 	}
 	return (response);
