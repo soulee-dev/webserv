@@ -5,18 +5,71 @@ std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request) const
 {
     struct stat stat_buf;
     int ret_stat = stat(request.file_name.c_str(), &stat_buf);
-    if (S_ISDIR(stat_buf.st_mode))
+	std::vector<unsigned char>	result;
+   
+    if (S_ISDIR(stat_buf.st_mode) || is_directory(request.file_name))
 	{
         processDirectory(request);
+		if (request.errnum > 0 || request.isAutoIndex)
+		{
+			result.insert(result.end(), request.header.begin(), request.header.end());
+   	 		result.insert(result.end(), request.ubuffer.begin(), request.ubuffer.end());
+			return (result);
+		}
 	}
 	else
 		std::cout << BOLDMAGENTA << "Is NOT DIRECTORY ---> " << request.file_name << RESET << std::endl;
-	MakeStaticResponse(request);
+	
+	if (!(S_ISREG(stat_buf.st_mode)) || !(S_IRUSR & stat_buf.st_mode)) 
+	{
+		std::string header = "403 Forbidden";
+		std::string buffer = "403 Forbidden";
+		result.insert(result.end(), header.begin(), header.end());
+		result.insert(result.end(), buffer.begin(), buffer.end());
+		return (result);
+	}
+	else
+		MakeStaticResponse(request);
 
-	std::vector<unsigned char>	result;
     result.insert(result.end(), request.header.begin(), request.header.end());
     result.insert(result.end(), request.ubuffer.begin(), request.ubuffer.end());
 	return (result);
+}
+
+int	is_directory(std::string fileName)
+{
+	if (fileName.back() == '/')
+		return 1;
+	return (0);
+}
+
+void	handleDirectoryListing(HttpRequest& request)
+{
+	DIR	*dir = opendir(request.file_name.c_str());
+	if (dir == NULL) 
+	// Error Handler를 호출해야 하는 첫 번째 경우 (errnum = 1), 
+	// 현재 default.conf의 root는 /html로 지정되어 있는데, 그 /html이 없는 경우이다.
+	{
+		request.errnum = 1;
+		std::cout << "404 File not found\n"; 
+		std::cout << BOLDRED << "Call Error Handler 1\n" << RESET;
+		ErrorHandler err;
+        return ;
+	}
+
+	std::string html = "<html><body><h1>Directory Listing</h1><ul>";
+	struct dirent* entry;
+
+    while ((entry = readdir(dir)) != NULL) {
+        html += "<li><a href='" + std::string(entry->d_name) + "'/>" + std::string(entry->d_name) + "</li>";
+    }
+
+    html += "</ul></body></html>";
+	std::cout << BOLDGREEN << "CONTENT HTML : " << html << '\n';
+	closedir(dir);
+
+	request.header = build_header("200 OK", html.length(), "text/html");
+    request.ubuffer.insert(request.ubuffer.end(), html.begin(), html.end());
 }
 
 int	compareStaticFile(std::vector<std::string> fileList, HttpRequest& request)
@@ -42,20 +95,24 @@ void	processDirectory(HttpRequest& request)
 {
 	std::cout << BOLDYELLOW << "Is DIRECTORY ---> " << request.file_name  << RESET << std::endl;
 	DIR	*dir = opendir(request.file_name.c_str());
-	if (dir == NULL) // Error Handler를 호출해야 하는 첫 번째 경우 (errnum = 2), 현재 default.conf의 root는 /html로 지정되어 있는데, 그 /html이 없는 경우이다.
+	if (dir == NULL) 
+	// Error Handler를 호출해야 하는 첫 번째 경우 (errnum = 1), 
+	// 현재 default.conf의 root는 /html로 지정되어 있는데, 그 /html이 없는 경우이다.
 	{
-		request.isError = true;
-		request.errnum = 2;
+		request.errnum = 1;
 		std::cout << "404 File not found\n"; 
-		std::cout << BOLDRED << "Call Error Handler\n" << RESET;
-        return ;
+		std::cout << BOLDRED << "Call Error Handler 1\n" << RESET;
+       	ErrorHandler	err;
+		err.handle(request);
+		return ;
 	}
 	struct dirent* entry;
 	std::vector<std::string> fileList;
 	while ((entry = readdir(dir)) != NULL)
 	{
 		fileList.push_back(entry->d_name);
-		// std::cout << BOLDBLACK << "ENTRY : " << fileList.back() << '\n';
+		// std::cout << BOLDBLACK << "ENTRY : " << fileList.back() << '\n'; 
+		// 디렉토리 내 파일 이름 확인
 	}
 	if (compareStaticFile(fileList, request))
 	{
@@ -65,13 +122,37 @@ void	processDirectory(HttpRequest& request)
 		if ((indexStat == 0) && S_ISREG(stat_index.st_mode) && (S_IRUSR & stat_index.st_mode))
 		{
 			request.file_name = path;
-			std::cout << BOLDRED << "PATH : " << path <<RESET << '\n';
+			std::cout << BOLDRED << "PATH : " << path << RESET << '\n';
 		}
 		else
-			std::cout << BOLDRED << "Call Error Handler\n" << RESET;	
+		{
+			// Error Handler를 호출해야 하는 두 번째 경우 (errnum = 2), 
+			// index vector내의 파일이 정규 파일이 아닌 경우(ISREG), 
+			// 혹은 사용자에게 권한이 주어지지 않은 경우(ISUSR) 
+			std::cout << BOLDRED << "Call Error Handler 2\n" << RESET;
+			request.errnum = 2;
+			return ;
+		}
 	}
 	else
-		std::cout << BOLDRED << "Call Error Handler\n" << RESET;
+	{
+		if (request.isAutoIndex)
+		{
+			closedir(dir);
+			handleDirectoryListing(request);
+			return ;
+		}
+		else
+		{
+			// Error Handler를 호출해야 하는 세 번째 경우 (errnum = 3), 
+			// root 디렉토리 내에 conf 파일 index에 지정한 파일이 없으면서
+			// 동시에 auto index도 아닌 경우
+			std::cout << BOLDRED << "Call Error Handler 3\n" << RESET;
+			request.errnum = 3;
+       		ErrorHandler	err;
+			err.handle(request);
+		}
+	}
 	closedir(dir);
 }
 

@@ -4,7 +4,6 @@ HttpRequest	HttpParser::parse(Client& client, std::vector<std::string> List)
 {
 	HttpRequest		result;
 	RequestMessage	request; 
-	result.isError = false;
 	request = client.getReq();
 	
 	std::istringstream	iss(List.back());
@@ -13,7 +12,10 @@ HttpRequest	HttpParser::parse(Client& client, std::vector<std::string> List)
 	result.root = List.back();
 	List.pop_back();
 	result.method = request.method;
+	std::cout << BOLDMAGENTA << "METHOD : " << result.method << '\n';
+	
 	result.indexList = List;
+	result.errnum = 0;
 
 	if (request.requestTarget.find("cgi-bin") == std::string::npos)
 	{

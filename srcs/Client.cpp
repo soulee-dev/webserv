@@ -68,7 +68,7 @@ void Client::errorEventProcess(void)
 	std::cout << "errorEventProcess" << std::endl;
 }
 
-bool Client::readEventProcess(void)
+bool Client::readEventProcess(void) // RUN 5
 {
 	if (parseState == DONE || parseState == ERROR)
 	{
@@ -76,7 +76,7 @@ bool Client::readEventProcess(void)
 		// events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
 		std::cout << "메시지 잘 받았습니다^^" << std::endl;
 	
-		// start Parse Request Message //
+		// START Parse Request Message //
 		std::vector<std::string> list = this->getServer()->getLocations()["/"].getIndex();
 		std::string rootie = this->getServer()->getLocations()["/"].getRoot();
 		bool isAutoIndex = this->getServer()->getLocations()["/"].getAutoIndex();
@@ -85,18 +85,23 @@ bool Client::readEventProcess(void)
 
 		HttpRequestManager  requestManager(*this, list);
 		std::vector<unsigned char>  buffer  = requestManager.processRequest();
-		// end Parse Request Message // 
-		if (this->getReq().isError)
+		// END Parse Request Message //
+
+		if (requestManager.getRequest().errnum > 0)
 		{
-			ErrorHandler	err; // errnum에 따라 다르게 처리를 해줄거에요
+			sendBuffer.insert(sendBuffer.end(), buffer.begin(), buffer.end());
+			std::cout << BOLDRED << " -- ERROR HANDLED " << requestManager.getRequest().errnum << " -- \n";
+			parseState = METHOD;
+			req.clear();
+			return true;
 		}
 		else
+		{
 			sendBuffer.insert(sendBuffer.end(), buffer.begin(), buffer.end());
+			std::cout << BOLDCYAN << " -- SUCCESSFULLY SEND MESSAGE -- \n";
+		}
 		parseState = METHOD;
 		req.clear();
-	
-		std::cout << BOLDCYAN << " -- SUCCESSFULLY SEND MESSAGE -- \n";
-
 		return true;
 	}
 	return false;
@@ -240,6 +245,7 @@ void Client::readMethod(const char* buffer)
 		return;
 	// 입력버퍼벡터 뒤에 방금읽은 버퍼를 덧붙임
 	readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
+
 	// 입력버퍼벡터에서 공백을 찾음
 	if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ", &" "[1])) != readBuffer.end())
 	{

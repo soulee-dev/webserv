@@ -37,5 +37,5 @@ int main(int argc, char** argv)
 	}
 	
 	serverManager.initServers();
-	serverManager.runServerManager();
+	serverManager.runServerManager(); // RUN 1
 }

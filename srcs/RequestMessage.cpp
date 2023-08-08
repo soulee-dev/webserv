@@ -30,4 +30,9 @@ void RequestMessage::clear()
     body.clear();
     method.clear();
     requestTarget.clear();
+
+    // -- ADDED -- //
+    fileName.clear();
+	fileType.clear();
+	cgi_args.clear();
 }

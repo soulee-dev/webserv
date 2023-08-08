@@ -6,6 +6,7 @@
 #include "Handler/Handler.hpp"
 #include "Handler/StaticHandler.hpp"
 #include "Handler/DynamicHandler.hpp"
+#include "Handler/ErrorHandler.hpp"
 
 class HttpRequestManager
 {
@@ -17,4 +18,5 @@ class HttpRequestManager
 		HttpRequestManager(Client& client, std::vector<std::string> List);
 		std::vector<unsigned char>	processRequest(void);
 		~HttpRequestManager();
+		HttpRequest	getRequest() const;
 };

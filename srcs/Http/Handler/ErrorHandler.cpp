@@ -2,32 +2,66 @@
 
 std::vector<unsigned char> ErrorHandler::handle(HttpRequest& request) const 
 {
-	request.errnum = 9999;
-    std::vector<unsigned char> byteVector;
-    // Add some bytes to the vector
-    byteVector.push_back(0x41); // ASCII code for 'A'
+	int	_errnum = request.errnum;
+	std::vector<unsigned char> _ubuffer;
+	std::cout << BOLDRED << "ERRNUM : " << _errnum << '\n';
 
-    return byteVector;
+	switch (_errnum)
+	{
+		case 1:
+			noDirectory(request);
+			break;
+		case 2:
+			noRegUsr(request);
+			break;
+		case 3:
+			noAutoIndex(request);
+			break;
+	}
+	_ubuffer.insert(_ubuffer.end(), request.header.begin(), request.header.end());
+	_ubuffer.insert(_ubuffer.end(), request.ubuffer.begin(), request.ubuffer.end());
+	return _ubuffer;
 }
 
-// void ErrorHandler::ClientError(std::string status)
-// {
-// 	std::string htmlFile = "<html><title>Tiny Error</title><body bgcolor=""ffffff"">" + error_num + ":" + short_msg + "<p>" + long_msg + ":" + cause + "</p> <hr><em>The Tiny Web server</em></body></html>";
-//     std::string	message = BuildHeader(error_num + " " + short_msg, htmlFile.size(), "text/html") + htmlFile;
+void	noDirectory(HttpRequest& request)
+{
+	std::string	header = "<h1>404 File Not Found</h1>";
+	std::string buffer = "<h1>404 File Not Found</h1>";
 
-// 	ssize_t	sent_bytes;
+	request.header = build_header_err("404 File Not Found", header.length(), "text/html");
+    request.ubuffer.insert(request.ubuffer.end(), buffer.begin(), buffer.end());
+}
 
-// 	if ((sent_bytes = send(fd, message.c_str(), message.size(), 0)) < 0)
-// 		throw std::runtime_error("Send failed");
-// 	if (sent_bytes == message.size())
-// 		std::cout << "Successfully send message" << std::endl;
-// 	else
-// 		std::cout << "Error" << std::endl;
-// }
+void	noRegUsr(HttpRequest& request)
+{
+	std::string	header = "<h1>401 Unauthorized</h1>";
+	std::string buffer = "<h1>401 Unauthorized</h1>";
+	std::vector<unsigned char> ubuffer;
 
-// if (ret_stat < 0)
-// {
-// 	std::cout << "404 ";
-// 	ClientError(req.fd, req.file_name, "404", "Not found", "Tiny couldn't find this file");
-// 	return ;
-// }
+	request.header = build_header_err("404 File Not Found", header.length(), "text/html");
+    request.ubuffer.insert(request.ubuffer.end(), buffer.begin(), buffer.end());
+}
+
+void	noAutoIndex(HttpRequest& request)
+{
+	std::string	header = "<h1>404 File Not Found</h1>";
+	std::string buffer = "<h1>404 File Not Found</h1>";
+	std::vector<unsigned char> ubuffer;
+
+	request.header = build_header_err("404 File Not Found", header.length(), "text/html");
+    request.ubuffer.insert(request.ubuffer.end(), buffer.begin(), buffer.end());
+}
+
+std::string	build_header_err(std::string status_code, int file_size, std::string file_type)
+{
+	std::ostringstream	header;
+
+	header << "HTTP/1.1 " << status_code << CRLF;
+	header << "Server: " << "Master J&J Server" << CRLF;
+	header << "Connection: close" << CRLF;
+	header << "Content-length: " << file_size << CRLF;
+	header << "Content-type: " << file_type << CRLF;
+	header << CRLF;
+
+	return (header.str());
+}
