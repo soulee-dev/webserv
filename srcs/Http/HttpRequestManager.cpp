@@ -12,6 +12,11 @@ HttpRequestManager::HttpRequestManager(Client& client)
 	// if Static
 	if (request.is_static)
 	{	
+		if (request.requestMessage.method == "DELETE")
+		{
+			handler = new DeleteHandler();
+			return ;
+		}
 		if (Handler::IsDirectory(request.file_name))
 		{
 			for (std::vector<std::string>::const_iterator index = location.getIndex().begin(); index != location.getIndex().end(); ++index)

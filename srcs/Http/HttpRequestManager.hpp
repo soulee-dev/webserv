@@ -7,6 +7,7 @@
 #include "Handler/Handler.hpp"
 #include "Handler/ErrorHandler.hpp"
 #include "Handler/StaticHandler.hpp"
+#include "Handler/DeleteHandler.hpp"
 #include "Handler/DynamicHandler.hpp"
 
 class HttpRequestManager
