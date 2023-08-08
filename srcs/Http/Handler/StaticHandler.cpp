@@ -20,17 +20,19 @@ std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request) const
 	else
 		std::cout << BOLDMAGENTA << "Is NOT DIRECTORY ---> " << request.file_name << RESET << std::endl;
 	
-	if (!(S_ISREG(stat_buf.st_mode)) || !(S_IRUSR & stat_buf.st_mode)) 
-	{
-		std::string header = "403 Forbidden";
-		std::string buffer = "403 Forbidden";
-		result.insert(result.end(), header.begin(), header.end());
-		result.insert(result.end(), buffer.begin(), buffer.end());
-		return (result);
-	}
+	// if (!(S_ISREG(stat_buf.st_mode)) || !(S_IRUSR & stat_buf.st_mode)) 
+	// {
+	// 	std::string header = "403 Forbidden";
+	// 	std::string buffer = "403 Forbidden";
+	// 	result.insert(result.end(), header.begin(), header.end());
+	// 	result.insert(result.end(), buffer.begin(), buffer.end());
+	// 	return (result);
+	// }
 	else
+	{
+		std::cout << "ASDFAS\n";
 		MakeStaticResponse(request);
-
+	}
     result.insert(result.end(), request.header.begin(), request.header.end());
     result.insert(result.end(), request.ubuffer.begin(), request.ubuffer.end());
 	return (result);
