@@ -27,5 +27,6 @@ class HttpRequest
 		std::string target;
 		bool	isAutoIndex;
 		int		errnum;
+		int		check; // 파일이 존재하면서 동시에 autoindex on인 경우를 확인하기 위한 변수
 		// ----------------------------- //
 };

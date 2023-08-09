@@ -6,11 +6,12 @@ std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request) const
     struct stat stat_buf;
     int ret_stat = stat(request.file_name.c_str(), &stat_buf);
 	std::vector<unsigned char>	result;
-   
-    if (S_ISDIR(stat_buf.st_mode) || is_directory(request.file_name))
+	request.check = 0;
+
+    if (S_ISDIR(stat_buf.st_mode) || (is_directory(request.file_name)))
 	{
         processDirectory(request);
-		if (request.errnum > 0 || request.isAutoIndex)
+		if (request.errnum > 0 || (request.check = 0 && request.isAutoIndex))
 		{
 			result.insert(result.end(), request.header.begin(), request.header.end());
    	 		result.insert(result.end(), request.ubuffer.begin(), request.ubuffer.end());
@@ -20,17 +21,22 @@ std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request) const
 	else
 		std::cout << BOLDMAGENTA << "Is NOT DIRECTORY ---> " << request.file_name << RESET << std::endl;
 	
-	// if (!(S_ISREG(stat_buf.st_mode)) || !(S_IRUSR & stat_buf.st_mode)) 
-	// {
-	// 	std::string header = "403 Forbidden";
-	// 	std::string buffer = "403 Forbidden";
-	// 	result.insert(result.end(), header.begin(), header.end());
-	// 	result.insert(result.end(), buffer.begin(), buffer.end());
-	// 	return (result);
-	// }
+	if (!(S_IRUSR & stat_buf.st_mode)) // chmod 등으로 권한이 없어진 파일
+	{
+		std::string header = "<h1>403 Forbidden</h1>";
+		std::string buffer = "<h1>403 Forbidden</h1>";
+		request.header = build_header("403 forbidden", header.length(), "text/html");
+	    request.ubuffer.insert(request.ubuffer.end(), buffer.begin(), buffer.end());
+	}
+	else if (S_ISREG(stat_buf.st_mode)) // 정규 파일이 아닌 경우(디렉토리, 파이프 등등)
+	{
+		std::string header = "<h1>403 Forbidden</h1>";
+		std::string buffer = "<h1>403 Forbidden</h1>";
+		request.header = build_header("403 forbidden", header.length(), "text/html");
+	    request.ubuffer.insert(request.ubuffer.end(), buffer.begin(), buffer.end());
+	}
 	else
 	{
-		std::cout << "ASDFAS\n";
 		MakeStaticResponse(request);
 	}
     result.insert(result.end(), request.header.begin(), request.header.end());
@@ -63,7 +69,7 @@ void	handleDirectoryListing(HttpRequest& request)
 	struct dirent* entry;
 
     while ((entry = readdir(dir)) != NULL) {
-        html += "<li><a href='" + std::string(entry->d_name) + "'/>" + std::string(entry->d_name) + "</li>";
+        html += "<li><a href='" + std::string(entry->d_name) + "'>" + std::string(entry->d_name) + "</a></li>";
     }
 
     html += "</ul></body></html>";
@@ -123,6 +129,9 @@ void	processDirectory(HttpRequest& request)
 		int indexStat = stat(path.c_str(), &stat_index);
 		if ((indexStat == 0) && S_ISREG(stat_index.st_mode) && (S_IRUSR & stat_index.st_mode))
 		{
+			std::cout << request.check << '\n';
+			request.check = 1;
+			std::cout << request.check << '\n';
 			request.file_name = path;
 			std::cout << BOLDRED << "PATH : " << path << RESET << '\n';
 		}
