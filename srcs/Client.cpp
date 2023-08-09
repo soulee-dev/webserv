@@ -77,9 +77,23 @@ bool Client::readEventProcess(void) // RUN 5
 		std::cout << "메시지 잘 받았습니다^^" << std::endl;
 	
 		// START Parse Request Message //
-		std::vector<std::string> list = this->getServer()->getLocations()["/"].getIndex();
-		std::string rootie = this->getServer()->getLocations()["/"].getRoot();
-		bool isAutoIndex = this->getServer()->getLocations()["/"].getAutoIndex();
+		// Location을 정할 때 URI가 "/" 이외의 블록들은 들어오지 못하는데 그부분 개선 필요
+		std::string toFindUri = this->getReq().requestTarget;
+		std::string	foundUri;
+		std::cout << "--- URI LIST ---\n";
+		std::map<std::string, Location> myLocations = this->getServer()->getLocations();
+		std::map<std::string, Location>::iterator it;
+		for (it = myLocations.begin(); it != myLocations.end(); ++it) {
+			std::cout << BOLDGREEN << it->first << RESET << std::endl;
+			if (toFindUri == it->first)
+				foundUri = toFindUri;
+		}
+		std::cout << "----------------\n";
+
+		std::cout << BOLDRED << "FOUNDURI : " << foundUri << '\n';
+		std::vector<std::string> list = this->getServer()->getLocations()[foundUri].getIndex();
+		std::string rootie = this->getServer()->getLocations()[foundUri].getRoot();
+		bool isAutoIndex = this->getServer()->getLocations()[foundUri].getAutoIndex();
 		list.push_back(rootie);
 		list.push_back(std::to_string(isAutoIndex));
 

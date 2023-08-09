@@ -22,8 +22,8 @@ HttpRequest	HttpParser::parse(Client& client, std::vector<std::string> List)
 		// When static
 		result.is_static = true;
 		result.path = request.requestTarget;
-		std::cout << BOLDYELLOW << "URI : " << request.requestTarget << '\n';
-		result.file_name = result.root + result.path;
+		std::cout << BOLDYELLOW << "URI(PATH) : " << request.requestTarget << '\n';
+		result.file_name = result.root; // + result.path;
 		std::cout << BOLDGREEN << "FILE NAME : " << result.file_name << '\n';
 	}
 	else

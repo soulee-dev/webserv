@@ -21,6 +21,7 @@ std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request) const
 	else
 		std::cout << BOLDMAGENTA << "Is NOT DIRECTORY ---> " << request.file_name << RESET << std::endl;
 	
+	std::cout << request.file_name.c_str() << '\n';
 	if (!(S_IRUSR & stat_buf.st_mode)) // chmod 등으로 권한이 없어진 파일
 	{
 		std::string header = "<h1>403 Forbidden</h1>";
@@ -125,13 +126,12 @@ void	processDirectory(HttpRequest& request)
 	if (compareStaticFile(fileList, request))
 	{
 		struct stat stat_index;
-		std::string path = request.file_name + request.target;
+		std::string path = request.file_name + "/" + request.target;
+		std::cout << " => " << path <<'\n'; 
 		int indexStat = stat(path.c_str(), &stat_index);
 		if ((indexStat == 0) && S_ISREG(stat_index.st_mode) && (S_IRUSR & stat_index.st_mode))
 		{
-			std::cout << request.check << '\n';
 			request.check = 1;
-			std::cout << request.check << '\n';
 			request.file_name = path;
 			std::cout << BOLDRED << "PATH : " << path << RESET << '\n';
 		}

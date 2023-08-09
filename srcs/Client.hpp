@@ -22,15 +22,15 @@ enum RequestMessageParseState
 class Client
 {
 private:
-    int client_fd;
-    Server* server;
+	int client_fd;
+	Server* server;
 
-    RequestMessage req;
-    ResponseMessage res;
+	RequestMessage req;
+	ResponseMessage res;
 
-    std::vector<unsigned char> readBuffer;
-    std::vector<unsigned char> sendBuffer;
-    RequestMessageParseState parseState;
+	std::vector<unsigned char> readBuffer;
+	std::vector<unsigned char> sendBuffer;
+	RequestMessageParseState parseState;
 
 	void readMethod(const char *buffer);
 	void readRequestTarget(const char *buffer);
@@ -39,29 +39,30 @@ private:
 	void readBody(const char *buffer);
 
 public:
-    typedef int PORT;
-    typedef int SOCKET;
-    Client();
-    Client(const Client& ref);
-    Client& operator=(const Client& ref);
-    ~Client();
-    void runServer(void);
+	typedef int PORT;
+	typedef int SOCKET;
+	Client();
+	Client(const Client& ref);
+	Client& operator=(const Client& ref);
+	~Client();
+	void runServer(void);
 
-    // setter
-    void setFd(int fd);
-    void setServer(Server* server);
+	// setter
+	void setFd(int fd);
+	void setServer(Server* server);
 
-    // getter
-    ResponseMessage& getRes(void);
-    RequestMessage& getReq(void);
-    Server* getServer(void) const;
-    SOCKET getClientFd(void) const;
+	// getter
+	ResponseMessage& getRes(void);
+	RequestMessage& getReq(void);
+	Server* getServer(void) const;
+	SOCKET getClientFd(void) const;
 
-    // functions
-    void errorEventProcess(void);
-    bool readEventProcess(void);
-    bool writeEventProcess(void);
+	// functions
+	void errorEventProcess(void);
+	bool readEventProcess(void);
+	bool writeEventProcess(void);
 
-    bool readMessage(void);
-    bool isSendBufferEmpty(void);
+	bool readMessage(void);
+	bool isSendBufferEmpty(void);
+
 };
