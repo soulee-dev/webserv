@@ -11,7 +11,7 @@ std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request) const
     if (S_ISDIR(stat_buf.st_mode) || (is_directory(request.file_name)))
 	{
         processDirectory(request);
-		if (request.errnum > 0 || (request.check = 0 && request.isAutoIndex))
+		if (request.errnum > 0 || (request.check == 0 && request.isAutoIndex == 1))
 		{
 			result.insert(result.end(), request.header.begin(), request.header.end());
    	 		result.insert(result.end(), request.ubuffer.begin(), request.ubuffer.end());
@@ -20,8 +20,7 @@ std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request) const
 	}
 	else
 		std::cout << BOLDMAGENTA << "Is NOT DIRECTORY ---> " << request.file_name << RESET << std::endl;
-	
-	std::cout << request.file_name.c_str() << '\n';
+
 	if (!(S_IRUSR & stat_buf.st_mode)) // chmod 등으로 권한이 없어진 파일
 	{
 		std::string header = "<h1>403 Forbidden</h1>";
@@ -40,6 +39,9 @@ std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request) const
 	{
 		MakeStaticResponse(request);
 	}
+	// std::cout << "header: ";
+	// for (size_t i = 0; i < request.header.size(); i++)
+	// 	std::cout << request.header[i];
     result.insert(result.end(), request.header.begin(), request.header.end());
     result.insert(result.end(), request.ubuffer.begin(), request.ubuffer.end());
 	return (result);
@@ -74,7 +76,6 @@ void	handleDirectoryListing(HttpRequest& request)
     }
 
     html += "</ul></body></html>";
-	std::cout << BOLDGREEN << "CONTENT HTML : " << html << '\n';
 	closedir(dir);
 
 	request.header = build_header("200 OK", html.length(), "text/html");
@@ -127,13 +128,12 @@ void	processDirectory(HttpRequest& request)
 	{
 		struct stat stat_index;
 		std::string path = request.file_name + "/" + request.target;
-		std::cout << " => " << path <<'\n'; 
 		int indexStat = stat(path.c_str(), &stat_index);
 		if ((indexStat == 0) && S_ISREG(stat_index.st_mode) && (S_IRUSR & stat_index.st_mode))
 		{
 			request.check = 1;
 			request.file_name = path;
-			std::cout << BOLDRED << "PATH : " << path << RESET << '\n';
+			std::cout << BOLDGREEN << "PATH : " << path << RESET << '\n';
 		}
 		else
 		{
@@ -149,6 +149,7 @@ void	processDirectory(HttpRequest& request)
 	{
 		if (request.isAutoIndex)
 		{
+			request.check = 0;
 			closedir(dir);
 			handleDirectoryListing(request);
 			return ;
@@ -173,6 +174,7 @@ void	MakeStaticResponse(HttpRequest& request)
 	std::vector<char>	buffer;
 	std::ifstream		file(request.file_name, std::ios::binary);
 
+	std::cout << BOLDRED << "MakeStaticResponse" << std::endl;
 	file.seekg(0, file.end);
 	int length = file.tellg();
 	if (length <= 0) // when cannot read file
@@ -194,7 +196,7 @@ std::string	build_header(std::string status_code, int file_size, std::string fil
 	header << "Server: " << "Master J&J Server" << CRLF;
 	header << "Connection: close" << CRLF;
 	header << "Content-length: " << file_size << CRLF;
-	header << "Content-type: " << file_type << CRLF;
+	header << "Content-Type: " << file_type << CRLF;
 	header << CRLF;
 
 	return (header.str());

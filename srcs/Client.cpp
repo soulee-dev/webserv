@@ -77,20 +77,50 @@ bool Client::readEventProcess(void) // RUN 5
 		std::cout << "메시지 잘 받았습니다^^" << std::endl;
 	
 		// START Parse Request Message //
-		// Location을 정할 때 URI가 "/" 이외의 블록들은 들어오지 못하는데 그부분 개선 필요
+
+		// /aaa/bbb/ccc/dddd/daskdjaskljdlaksjd.html
+		// key / /gyopark = 0
+		
 		std::string toFindUri = this->getReq().requestTarget;
+		std::cout << BOLDYELLOW << "TOFINDURI : " << toFindUri << RESET << '\n';
 		std::string	foundUri;
+		std::string foundFile;
+		int	NoUri = 0;
+		
 		std::cout << "--- URI LIST ---\n";
 		std::map<std::string, Location> myLocations = this->getServer()->getLocations();
 		std::map<std::string, Location>::iterator it;
-		for (it = myLocations.begin(); it != myLocations.end(); ++it) {
+		for (it = myLocations.begin(); it != myLocations.end(); ++it) 
+		{
 			std::cout << BOLDGREEN << it->first << RESET << std::endl;
-			if (toFindUri == it->first)
-				foundUri = toFindUri;
+			std::cout << BOLDCYAN << it->first.size() << RESET << std::endl;
+			for (size_t i = 0; i < it->first.size(); i++)
+			{
+				// std::cout << "IT : " << it->first[i] << " TOFINDURI[i] : " << toFindUri[i] << '\n';
+				if (it->first[i] != toFindUri[i])
+					NoUri = 1;
+			}
+			if (NoUri == 0)
+			{
+				foundUri = it->first;
+				break ;
+			}
+			else
+				std::cout << "NO URI matching with sentence\n";
+		}
+		std::cout << "No Uri : " << NoUri << '\n';
+		if (NoUri == 0)
+		{
+			std::cout << BOLDRED << "FOUNDURI : " << foundUri << '\n';
+			int size = it->first.size();
+			foundFile = toFindUri.substr(size, 10240);
+			if (foundFile.empty())
+				std::cout << BOLDRED << "foundfile is empty...\n";
+			else
+				std::cout << BOLDRED << "FOUNDFILE : " << foundFile << '\n';
 		}
 		std::cout << "----------------\n";
 
-		std::cout << BOLDRED << "FOUNDURI : " << foundUri << '\n';
 		std::vector<std::string> list = this->getServer()->getLocations()[foundUri].getIndex();
 		std::string rootie = this->getServer()->getLocations()[foundUri].getRoot();
 		bool isAutoIndex = this->getServer()->getLocations()[foundUri].getAutoIndex();
