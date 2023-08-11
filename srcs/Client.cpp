@@ -82,7 +82,7 @@ bool Client::readEventProcess(void) // RUN 5
 		// key / /gyopark = 0
 		
 		std::string toFindUri = this->getReq().requestTarget;
-		std::cout << BOLDYELLOW << "파싱된 URI : " << toFindUri << RESET << '\n';
+		std::cout << BOLDYELLOW << "파싱된 Sentence : " << toFindUri << RESET << '\n';
 		std::string	foundUri;
 		std::string foundFile;
 		int	NoUri = 0;
