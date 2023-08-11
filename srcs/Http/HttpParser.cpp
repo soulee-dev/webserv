@@ -27,7 +27,7 @@ HttpRequest	HttpParser::parse(Client& client, std::vector<std::string> List, int
 		std::cout << BOLDYELLOW << "URI(PATH) : " << request.requestTarget << '\n';
 		std::cout << BOLDYELLOW << "ROOT : " << result.root << '\n';
 		if (block == 1)
-			result.file_name = result.root + List[0]; // + result.path;
+			result.file_name = result.root + "/" + List[0]; // + result.path;
 		else
 			result.file_name = result.root;
 		std::cout << BOLDGREEN << "FILE NAME : " << result.file_name << '\n';

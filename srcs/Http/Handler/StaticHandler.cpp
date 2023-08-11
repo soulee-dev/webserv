@@ -4,6 +4,7 @@
 std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request) const
 {
     struct stat stat_buf;
+	std::cout << "file_name" << request.file_name << std::endl;
     int ret_stat = stat(request.file_name.c_str(), &stat_buf);
 	std::vector<unsigned char>	result;
 	request.check = 0;
@@ -21,7 +22,10 @@ std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request) const
 	else
 		std::cout << BOLDMAGENTA << "Is NOT DIRECTORY ---> " << request.file_name << RESET << std::endl;
 
-	if (!(S_IRUSR & stat_buf.st_mode)) // chmod 등으로 권한이 없어진 파일
+	struct stat stat_buf_file;
+	int ret_stat_file = stat(request.file_name.c_str(), &stat_buf_file);
+
+	if (!(S_IRUSR & stat_buf_file.st_mode)) // chmod 등으로 권한이 없어진 파일
 	{
 		std::cout << "S_IRUSR Error\n";
 		std::string header = "<h1>403 Forbidden</h1>";
@@ -29,7 +33,7 @@ std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request) const
 		request.header = build_header("403 forbidden", header.length(), "text/html");
 	    request.ubuffer.insert(request.ubuffer.end(), buffer.begin(), buffer.end());
 	}
-	else if (!S_ISREG(stat_buf.st_mode)) // 정규 파일이 아닌 경우(디렉토리, 파이프 등등)
+	else if (!S_ISREG(stat_buf_file.st_mode)) // 정규 파일이 아닌 경우(디렉토리, 파이프 등등)
 	{
 		std::cout << "S_ISREG Error\n";
 		std::string header = "<h1>403 Forbidden</h1>";
