@@ -82,21 +82,18 @@ bool Client::readEventProcess(void) // RUN 5
 		// key / /gyopark = 0
 		
 		std::string toFindUri = this->getReq().requestTarget;
-		std::cout << BOLDYELLOW << "TOFINDURI : " << toFindUri << RESET << '\n';
+		std::cout << BOLDYELLOW << "파싱된 URI : " << toFindUri << RESET << '\n';
 		std::string	foundUri;
 		std::string foundFile;
 		int	NoUri = 0;
 		
-		std::cout << "--- URI LIST ---\n";
 		std::map<std::string, Location> myLocations = this->getServer()->getLocations();
 		std::map<std::string, Location>::iterator it;
 		for (it = myLocations.begin(); it != myLocations.end(); ++it) 
 		{
-			std::cout << BOLDGREEN << it->first << RESET << std::endl;
-			std::cout << BOLDCYAN << it->first.size() << RESET << std::endl;
+			std::cout << BOLDGREEN << "블록에 있는 URI 인자 : " << it->first << RESET << std::endl;
 			for (size_t i = 0; i < it->first.size(); i++)
 			{
-				// std::cout << "IT : " << it->first[i] << " TOFINDURI[i] : " << toFindUri[i] << '\n';
 				if (it->first[i] != toFindUri[i])
 					NoUri = 1;
 			}
@@ -108,20 +105,25 @@ bool Client::readEventProcess(void) // RUN 5
 			else
 				std::cout << "NO URI matching with sentence\n";
 		}
-		std::cout << "No Uri : " << NoUri << '\n';
+		std::cout << "No Uri : " << NoUri << '\n' << "0이면 일치하는 블록 있는거고 1이면 없는 겁니다. 1일때 예외처리 해줘야 합니다.\n";
 		if (NoUri == 0)
 		{
-			std::cout << BOLDRED << "FOUNDURI : " << foundUri << '\n';
+			std::cout << BOLDCYAN << "FOUND URI : " << foundUri << '\n';
 			int size = it->first.size();
 			foundFile = toFindUri.substr(size, 10240);
 			if (foundFile.empty())
-				std::cout << BOLDRED << "foundfile is empty...\n";
+				std::cout << BOLDRED << "foundfile is empty...\n" << RESET;
 			else
-				std::cout << BOLDRED << "FOUNDFILE : " << foundFile << '\n';
+				std::cout << BOLDCYAN << "FOUND FILE : " << foundFile << RESET << '\n';
 		}
 		std::cout << "----------------\n";
+		
+		std::vector<std::string> list;
+		if (foundFile.empty())
+			list = this->getServer()->getLocations()[foundUri].getIndex();
+		else
+			list.push_back(foundFile);
 
-		std::vector<std::string> list = this->getServer()->getLocations()[foundUri].getIndex();
 		std::string rootie = this->getServer()->getLocations()[foundUri].getRoot();
 		bool isAutoIndex = this->getServer()->getLocations()[foundUri].getAutoIndex();
 		list.push_back(rootie);
