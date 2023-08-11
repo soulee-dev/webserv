@@ -11,7 +11,7 @@ int main(int argc, char** argv)
         std::cout << "please input only one file..." << std::endl;
         return 1;
     }
-    if (argc == 0)
+    if (argc == 1)
     {
         std::cout << "use default config file..." << std::endl;
         configFileName = "./config/default.conf";
