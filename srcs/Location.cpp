@@ -29,17 +29,17 @@ Location& Location::operator=(Location const& rhs)
     return *this;
 }
 // getter
-const std::string& Location::getRoot(void) const
+std::string Location::getRoot(void) const
 {
     return this->root;
 }
 
-const std::map<std::vector<int>, std::string>& Location::getErrorPage(void) const
+std::map<std::vector<int>, std::string> Location::getErrorPage(void) const
 {
     return this->errorPage;
 }
 
-const std::map<std::string, int>& Location::getRedirection(void) const
+std::map<std::string, int> Location::getRedirection(void) const
 {
     return this->redirection;
 }
@@ -49,7 +49,7 @@ unsigned int Location::getAllowMethod(void) const
     return this->allowMethod;
 }
 
-const std::vector<std::string>& Location::getIndex(void) const
+std::vector<std::string> Location::getIndex(void) const
 {
     return this->index;
 }

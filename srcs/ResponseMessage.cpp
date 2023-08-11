@@ -20,5 +20,14 @@ ResponseMessage& ResponseMessage::operator=(ResponseMessage const& rhs)
 }
 
 // getter
+std::vector<unsigned char>  ResponseMessage::getResponse() const
+{
+    return (this->res);
+}
 // setter
+void    ResponseMessage::fillResponse(std::string &header, std::vector<char> buffer)
+{
+    res.insert(res.end(), header.begin(), header.end());
+	res.insert(res.end(), buffer.begin(), buffer.end());
+}
 // functions

@@ -22,7 +22,8 @@ RM 			= rm
 RMFLAGS		= -f
 OUT_DIR		= objs
 SRC_DIR		= srcs
-FILE		= Client ClientManager ConfigFunctions ConfigParser Event Location Message RequestMessage ResponseMessage Server ServerManager Http/HttpRequestManager Http/Handler/Handler Http/Handler/StaticHandler Http/Handler/DynamicHandler Http/Handler/ErrorHandler Http/HttpParser Http/Handler/HttpStatusCodes main
+FILE		= Client ClientManager ConfigFunctions ConfigParser Event Location Message RequestMessage \
+				Http/Handler/ErrorHandler ResponseMessage Server ServerManager Http/HttpRequestManager Http/Handler/StaticHandler Http/Handler/DynamicHandler Http/HttpParser main
 OBJECTS		= $(addprefix $(OUT_DIR)/, $(addsuffix .o, $(FILE)))
 
 # Compile rules

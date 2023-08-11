@@ -18,5 +18,14 @@ public:
     std::string uri;
     enum ParseErrorCode errorCode;
 
-    void clear();
+	// --- gyopark ADDED --- //
+	std::string	fileName;
+	std::string fileType;
+	std::string	cgi_args;
+	int		is_directory;
+	bool    isError;
+	int     errnum;
+	// --------------------- //
+
+	void clear();
 };

@@ -3,6 +3,11 @@
 #include "Server.hpp"
 #include <algorithm>
 #include <fcntl.h>
+// --- gyopark ADDED --- //
+#include "Color.hpp"
+#include "Http/HttpRequestManager.hpp"
+#include "Http/Handler/ErrorHandler.hpp"
+// --------------------- //
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
@@ -69,20 +74,44 @@ ResponseMessage Client::popRes(void)
 
 void Client::errorEventProcess(void)
 {
-    std::cout << "errorEventProcess" << std::endl;
+	std::cout << "errorEventProcess" << std::endl;
 }
 
-bool Client::readEventProcess(void)
+bool Client::readEventProcess(void) // RUN 5
 {
-    if (parseState == DONE || parseState == ERROR)
-    {
-        // 메시지 처리하여 버퍼에 입력해야함.
-        // events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
-        std::cout << "메시지 잘 받았습니다^^" << std::endl;
+	if (parseState == DONE || parseState == ERROR)
+	{
+		// 메시지 처리하여 버퍼에 입력해야함.
+		// events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
+		std::cout << "메시지 잘 받았습니다^^" << std::endl;
+	
+		// START Parse Request Message //
+		// Location을 정할 때 URI가 "/" 이외의 블록들은 들어오지 못하는데 그부분 개선 필요
+		std::string toFindUri = this->getFrontReq().uri;
+		std::string	foundUri;
+		std::cout << "--- URI LIST ---\n";
+		std::map<std::string, Location> myLocations = this->getServer()->getLocations();
+		std::map<std::string, Location>::iterator it;
+		for (it = myLocations.begin(); it != myLocations.end(); ++it) {
+			std::cout << BOLDGREEN << it->first << RESET << std::endl;
+			if (toFindUri == it->first)
+				foundUri = toFindUri;
+		}
+		std::cout << "----------------\n";
 
-        HttpRequestManager requestManager(*this);
-        std::vector<unsigned char> buffer = requestManager.processRequest();
-        sendBuffer.insert(sendBuffer.end(), buffer.begin(), buffer.end());
+        std::cout << BOLDRED << "FOUNDURI : " << foundUri << '\n';
+		std::vector<std::string> list = this->getServer()->getLocations()[foundUri].getIndex();
+		std::string rootie = this->getServer()->getLocations()[foundUri].getRoot();
+		bool isAutoIndex = this->getServer()->getLocations()[foundUri].getAutoIndex();
+		list.push_back(rootie);
+		list.push_back(std::to_string(isAutoIndex));
+
+		HttpRequestManager  requestManager(*this, list);
+		std::vector<unsigned char>  buffer  = requestManager.processRequest();
+		// END Parse Request Message //
+
+		sendBuffer.insert(sendBuffer.end(), buffer.begin(), buffer.end());
+		std::cout << BOLDCYAN << " -- SUCCESSFULLY SEND MESSAGE -- \n";
         parseState = READY;
         return true;
     }
@@ -91,29 +120,29 @@ bool Client::readEventProcess(void)
 
 bool Client::writeEventProcess(void)
 {
-    int writeSize = write(client_fd, &sendBuffer[0], sendBuffer.size());
-    if (writeSize == -1)
-    {
-        std::cout << "write() error" << std::endl;
-        return true;
-    }
-    sendBuffer.erase(sendBuffer.begin(), sendBuffer.begin() + writeSize);
-    return false;
+	int writeSize = write(client_fd, &sendBuffer[0], sendBuffer.size());
+	if (writeSize == -1)
+	{
+		std::cout << "write() error" << std::endl;
+		return true;
+	}
+	sendBuffer.erase(sendBuffer.begin(), sendBuffer.begin() + writeSize);
+	return false;
 }
 
 bool Client::readMessage(void)
 {
-    const size_t BUFFER_SIZE = 1024;
-    char buffer[BUFFER_SIZE + 1];
-    ssize_t readSize = read(client_fd, buffer, BUFFER_SIZE);
+	const size_t BUFFER_SIZE = 1024;
+	char buffer[BUFFER_SIZE + 1];
+	ssize_t readSize = read(client_fd, buffer, BUFFER_SIZE);
 
-    if (readSize <= 0)
-    {
-        if (readSize == -1)
-            std::cout << "read() error" << std::endl;
-        return true;
-    }
-    buffer[readSize] = '\0';
+	if (readSize <= 0)
+	{
+		if (readSize == -1)
+			std::cout << "read() error" << std::endl;
+		return true;
+	}
+	buffer[readSize] = '\0';
 
     // 함수 포인터 배열 사용해보는것도?
     switch (parseState)
@@ -153,7 +182,7 @@ void Client::readHeader(const char* buffer)
     std::vector<unsigned char>::iterator pos;
     RequestMessage& req = getBackReq();
 
-    readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
+	readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
 
     while ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\n",
                               &"\n"[1])) != readBuffer.end())
@@ -227,9 +256,9 @@ void Client::readHeader(const char* buffer)
             value.erase(value.begin());
         for (size_t i = 0; i < key.size(); i++)
 
-            key[i] = tolower(key[i]);
-        req.headers[key] = value;
-    }
+			key[i] = tolower(key[i]);
+		req.headers[key] = value;
+	}
 }
 
 void Client::readChunked(const char* buffer, size_t readSize)

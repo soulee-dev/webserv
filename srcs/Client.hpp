@@ -6,6 +6,10 @@
 #include "Server.hpp"
 #include <queue>
 
+#include <sys/stat.h> // for struct stat
+#include <dirent.h> // for directory listing
+
+
 enum RequestMessageParseState
 {
     READY,
@@ -30,9 +34,9 @@ private:
     std::queue<RequestMessage> queReq;  // 가져갈땐 pop, 넣을땐 push
     std::queue<ResponseMessage> queRes; // 가져갈땐 pop, 넣을땐 push
 
-    std::vector<unsigned char> readBuffer;
-    std::vector<unsigned char> sendBuffer;
-    RequestMessageParseState parseState;
+	std::vector<unsigned char> readBuffer;
+	std::vector<unsigned char> sendBuffer;
+	RequestMessageParseState parseState;
 
     void createRequest(void);
     void createResponse(void);

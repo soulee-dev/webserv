@@ -1,13 +1,12 @@
 #pragma once
 
 #include <vector>
-#include <string>
 #include "../Client.hpp"
 #include "HttpParser.hpp"
 #include "Handler/Handler.hpp"
-#include "Handler/ErrorHandler.hpp"
 #include "Handler/StaticHandler.hpp"
 #include "Handler/DynamicHandler.hpp"
+#include "Handler/ErrorHandler.hpp"
 
 class HttpRequestManager
 {
@@ -16,7 +15,8 @@ class HttpRequestManager
 		HttpParser	parser;
 		Handler*	handler;
 	public:
-		HttpRequestManager(Client& client);
+		HttpRequestManager(Client& client, std::vector<std::string> List);
 		std::vector<unsigned char>	processRequest(void);
 		~HttpRequestManager();
+		HttpRequest	getRequest() const;
 };
