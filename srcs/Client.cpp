@@ -37,9 +37,9 @@ ResponseMessage& Client::getBackRes(void) { return queRes.back(); }
 
 RequestMessage& Client::getBackReq(void) { return queReq.back(); }
 
-ResponseMessage& Client::getfrontRes(void) { return queRes.front(); }
+ResponseMessage& Client::getFrontRes(void) { return queRes.front(); }
 
-RequestMessage& Client::getfrontReq(void) { return queReq.front(); }
+RequestMessage& Client::getFrontReq(void) { return queReq.front(); }
 
 Server* Client::getServer(void) const { return this->server; }
 // setter

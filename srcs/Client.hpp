@@ -61,8 +61,8 @@ public:
     // getter
     ResponseMessage& getBackRes(void);
     RequestMessage& getBackReq(void);
-    ResponseMessage& getfrontRes(void);
-    RequestMessage& getfrontReq(void);
+    ResponseMessage& getFrontRes(void);
+    RequestMessage& getFrontReq(void);
     Server* getServer(void) const;
     SOCKET getClientFd(void) const;
 

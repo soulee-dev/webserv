@@ -5,7 +5,7 @@ HttpRequest HttpParser::parse(Client& client)
     HttpRequest result;
     RequestMessage request;
 
-    request = client.getfrontReq();
+    request = client.getFrontReq();
 
     result.requestMessage = request;
     if (request.uri.find("cgi-bin") == std::string::npos)
