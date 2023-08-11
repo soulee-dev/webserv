@@ -15,7 +15,7 @@ class HttpRequestManager
 		HttpParser	parser;
 		Handler*	handler;
 	public:
-		HttpRequestManager(Client& client, std::vector<std::string> List);
+		HttpRequestManager(Client& client, std::vector<std::string> List, int block);
 		std::vector<unsigned char>	processRequest(void);
 		~HttpRequestManager();
 		HttpRequest	getRequest() const;

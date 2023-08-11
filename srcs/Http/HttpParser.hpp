@@ -6,5 +6,5 @@
 class HttpParser
 {
 	public:
-		static HttpRequest	parse(Client& client, std::vector<std::string> List);
+		static HttpRequest	parse(Client& client, std::vector<std::string> List, int block);
 };

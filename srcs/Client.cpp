@@ -105,7 +105,7 @@ bool Client::readEventProcess(void) // RUN 5
 			else
 				std::cout << "NO URI matching with sentence\n";
 		}
-		std::cout << "No Uri : " << NoUri << '\n' << "0이면 일치하는 블록 있는거고 1이면 없는 겁니다. 1일때 예외처리 해줘야 합니다.\n";
+		std::cout << "No Uri : " << NoUri << '\n' << "No Uri 0이면 일치하는 블록 있는거고 1이면 없는 겁니다. 1일때 예외처리 해줘야 합니다.\n";
 		if (NoUri == 0)
 		{
 			std::cout << BOLDCYAN << "FOUND URI : " << foundUri << '\n';
@@ -116,20 +116,25 @@ bool Client::readEventProcess(void) // RUN 5
 			else
 				std::cout << BOLDCYAN << "FOUND FILE : " << foundFile << RESET << '\n';
 		}
-		std::cout << "----------------\n";
+		std::cout << "\n";
 		
+		int	block = 0;
 		std::vector<std::string> list;
 		if (foundFile.empty())
+		{
 			list = this->getServer()->getLocations()[foundUri].getIndex();
+		}
 		else
+		{
+			block = 1;
 			list.push_back(foundFile);
-
+		}
 		std::string rootie = this->getServer()->getLocations()[foundUri].getRoot();
 		bool isAutoIndex = this->getServer()->getLocations()[foundUri].getAutoIndex();
 		list.push_back(rootie);
 		list.push_back(std::to_string(isAutoIndex));
 
-		HttpRequestManager  requestManager(*this, list);
+		HttpRequestManager  requestManager(*this, list, block);
 		std::vector<unsigned char>  buffer  = requestManager.processRequest();
 		// END Parse Request Message //
 

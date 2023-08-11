@@ -1,8 +1,8 @@
 #include "HttpRequestManager.hpp"
 
-HttpRequestManager::HttpRequestManager(Client& client, std::vector<std::string> List)
+HttpRequestManager::HttpRequestManager(Client& client, std::vector<std::string> List, int block)
 {
-	request = parser.parse(client, List);
+	request = parser.parse(client, List, block);
 
 	// if Static
 	if (request.is_static)

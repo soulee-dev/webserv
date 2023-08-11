@@ -1,6 +1,6 @@
 #include "HttpParser.hpp"
 
-HttpRequest	HttpParser::parse(Client& client, std::vector<std::string> List)
+HttpRequest	HttpParser::parse(Client& client, std::vector<std::string> List, int block)
 {
 	HttpRequest		result;
 	RequestMessage	request; 
@@ -16,14 +16,20 @@ HttpRequest	HttpParser::parse(Client& client, std::vector<std::string> List)
 	
 	result.indexList = List;
 	result.errnum = 0;
-
+	std::cout << "BLOCK : " << block << RESET << '\n';
+	std::cout << "block 1이면 conf 파일보다 검색한 문장을 우선으로 파싱합니다. block 0이면 default.conf 참조합니다.\n";
+	
 	if (request.requestTarget.find("cgi-bin") == std::string::npos)
 	{
 		// When static
 		result.is_static = true;
 		result.path = request.requestTarget;
 		std::cout << BOLDYELLOW << "URI(PATH) : " << request.requestTarget << '\n';
-		result.file_name = result.root; // + result.path;
+		std::cout << BOLDYELLOW << "ROOT : " << result.root << '\n';
+		if (block == 1)
+			result.file_name = result.root + List[0]; // + result.path;
+		else
+			result.file_name = result.root;
 		std::cout << BOLDGREEN << "FILE NAME : " << result.file_name << '\n';
 	}
 	else

@@ -23,13 +23,15 @@ std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request) const
 
 	if (!(S_IRUSR & stat_buf.st_mode)) // chmod 등으로 권한이 없어진 파일
 	{
+		std::cout << "S_IRUSR Error\n";
 		std::string header = "<h1>403 Forbidden</h1>";
 		std::string buffer = "<h1>403 Forbidden</h1>";
 		request.header = build_header("403 forbidden", header.length(), "text/html");
 	    request.ubuffer.insert(request.ubuffer.end(), buffer.begin(), buffer.end());
 	}
-	else if (S_ISREG(stat_buf.st_mode)) // 정규 파일이 아닌 경우(디렉토리, 파이프 등등)
+	else if (!S_ISREG(stat_buf.st_mode)) // 정규 파일이 아닌 경우(디렉토리, 파이프 등등)
 	{
+		std::cout << "S_ISREG Error\n";
 		std::string header = "<h1>403 Forbidden</h1>";
 		std::string buffer = "<h1>403 Forbidden</h1>";
 		request.header = build_header("403 forbidden", header.length(), "text/html");
@@ -174,7 +176,6 @@ void	MakeStaticResponse(HttpRequest& request)
 	std::vector<char>	buffer;
 	std::ifstream		file(request.file_name, std::ios::binary);
 
-	std::cout << BOLDRED << "MakeStaticResponse" << std::endl;
 	file.seekg(0, file.end);
 	int length = file.tellg();
 	if (length <= 0) // when cannot read file
