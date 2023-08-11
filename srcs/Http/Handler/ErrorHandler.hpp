@@ -5,7 +5,8 @@
 class ErrorHandler : public Handler
 {
 	public:
-		std::vector<unsigned char>	handle(HttpRequest& request) const;
+		std::vector<unsigned char>	handle(Client& client) const;
+		~ErrorHandler();
 };
 
 void	noDirectory(HttpRequest& request);

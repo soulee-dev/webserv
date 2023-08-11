@@ -1,9 +1,12 @@
 #include "DynamicHandler.hpp"
+#include "../../Client.hpp"
 
 extern char **environ;
 
-std::vector<unsigned char>	DynamicHandler::handle(HttpRequest& request) const
+std::vector<unsigned char>	DynamicHandler::handle(Client& client) const
 {
+	HttpRequest&	request = client.httpRequestManager.getRequest();
+
 	std::vector<unsigned char> result;
     std::string file_type = getFileTypeD(request.file_name);
     std::ostringstream  header;
@@ -44,7 +47,7 @@ std::vector<unsigned char>	DynamicHandler::handle(HttpRequest& request) const
 		
 		close(pipe_fd[0]);
 
-		if (execve("./cgi-bin/post_echo", empty_list, environ) == -1)
+		if (execve("./www/cgi-bin/post_echo", empty_list, environ) == -1)
 		{
 			std::cerr << "execve error" << std::endl;
 			exit(0);
@@ -55,16 +58,19 @@ std::vector<unsigned char>	DynamicHandler::handle(HttpRequest& request) const
 		// Parent process
 		close(pipe_fd[0]); // Close unused read end
 		close(pipe_fd_back[1]); // Close unused write end in parent
-		write(pipe_fd[1], body.c_str(), body.size()); // Write body to pipe
-		close(pipe_fd[1]);
+		// request.client
+
+		client.events->changeEvents(pipe_fd[1], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &request);	
+		// write(pipe_fd[1], body.c_str(), body.size()); // Write body to pipe
+		// close(pipe_fd[1]);
 
 		char read_buffer[1024];
 		ssize_t bytes_read;
-		while ((bytes_read = read(pipe_fd_back[0], read_buffer, sizeof(read_buffer))) > 0) {
-			buffer.insert(buffer.end(), read_buffer, read_buffer + bytes_read);
-		}
+		// while ((bytes_read = read(pipe_fd_back[0], read_buffer, sizeof(read_buffer))) > 0) {
+			// buffer.insert(buffer.end(), read_buffer, read_buffer + bytes_read);
+		// }
 		close(pipe_fd[0]);
-		wait(NULL);
+		// wait(NULL);
 	}
 	header << "HTTP/1.1 200 OK" << CRLF;
 	header << "Server: Master J&J" << CRLF;
@@ -97,3 +103,6 @@ std::string	getFileTypeD(std::string file_name) // makefile 오류나서 dynamic
 		file_type = "text/plain";
 	return (file_type);
 }
+
+DynamicHandler::~DynamicHandler()
+{}

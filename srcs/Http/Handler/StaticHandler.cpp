@@ -1,16 +1,18 @@
 #include "StaticHandler.hpp"
 #include "ErrorHandler.hpp"
+#include "../../Client.hpp"
 
-std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request) const
+std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 {
     struct stat stat_buf;
+	HttpRequest&	request = client.httpRequestManager.getRequest();
     int ret_stat = stat(request.file_name.c_str(), &stat_buf);
 	std::vector<unsigned char>	result;
 	request.check = 0;
 
     if (S_ISDIR(stat_buf.st_mode) || (is_directory(request.file_name)))
 	{
-        processDirectory(request);
+        processDirectory(client);
 		if (request.errnum > 0 || (request.check == 0 && request.isAutoIndex))
 		{
 			result.insert(result.end(), request.header.begin(), request.header.end());
@@ -100,8 +102,10 @@ int	compareStaticFile(std::vector<std::string> fileList, HttpRequest& request)
 	return 0;
 }
 
-void	processDirectory(HttpRequest& request)
+void	processDirectory(Client& client)
 {
+	HttpRequest&	request = client.httpRequestManager.getRequest();
+
 	std::cout << BOLDYELLOW << "Is DIRECTORY ---> " << request.file_name  << RESET << std::endl;
 	DIR	*dir = opendir(request.file_name.c_str());
 	if (dir == NULL) 
@@ -112,7 +116,7 @@ void	processDirectory(HttpRequest& request)
 		std::cout << "404 File not found\n"; 
 		std::cout << BOLDRED << "Call Error Handler 1\n" << RESET;
        	ErrorHandler	err;
-		err.handle(request);
+		err.handle(client);
 		return ;
 	}
 	struct dirent* entry;
@@ -161,7 +165,7 @@ void	processDirectory(HttpRequest& request)
 			std::cout << BOLDRED << "Call Error Handler 3\n" << RESET;
 			request.errnum = 3;
        		ErrorHandler	err;
-			err.handle(request);
+			err.handle(client);
 		}
 	}
 	closedir(dir);
@@ -220,3 +224,6 @@ std::string	getFileType(std::string file_name)
 		file_type = "text/plain";
 	return (file_type);
 }
+
+StaticHandler::~StaticHandler()
+{}

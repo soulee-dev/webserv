@@ -1,7 +1,10 @@
 #include "ErrorHandler.hpp"
+#include "../../Client.hpp"
 
-std::vector<unsigned char> ErrorHandler::handle(HttpRequest& request) const 
+std::vector<unsigned char> ErrorHandler::handle(Client& client) const 
 {
+	HttpRequest	request = client.httpRequestManager.getRequest();
+
 	int	_errnum = request.errnum;
 	std::vector<unsigned char> _ubuffer;
 	std::cout << BOLDRED << "ERRNUM : " << _errnum << '\n';
@@ -65,3 +68,6 @@ std::string	build_header_err(std::string status_code, int file_size, std::string
 
 	return (header.str());
 }
+
+ErrorHandler::~ErrorHandler()
+{}

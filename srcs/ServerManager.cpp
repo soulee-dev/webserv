@@ -235,10 +235,15 @@ void ServerManager::writeEventProcess(struct kevent& currEvent)
     }
     else
     {
+		std::cout << "REQTOCGI?" << std::endl;
         ssize_t res = clientManager.ReqToCgiWriteProcess(currEvent);
-        if (res != 0) // -1 : write error, 1 : buffer->size == 0, 0 : buffer left
-            events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata);
-        // if (res == -1)
+        if (res != 0)
+		{
+			close(currEvent.ident);
+			events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata);
+
+		} // -1 : write error, 1 : buffer->size == 0, 0 : buffer left
+                   // if (res == -1)
         //     close(currEvent.ident);
         // BE에서 pipe fd 관리를 해주는 것이라면 여기에서 close하는게 맞나 싶음.. 중복 close로 엉뚱한 fd가 close되진 않을까..?
         // readEventProcess 에서도 동일한 이슈..

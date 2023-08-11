@@ -35,20 +35,20 @@ std::vector<unsigned char>	Handler::stou(std::stringstream& ss)
 	return result;
 }
 
-void	Handler::buildHeader(int status_code)
-{
-	std::stringstream			ss;
+// void	Handler::buildHeader(int status_code)
+// {
+// 	std::stringstream			ss;
 
-	// start-line
-	ss << SERVER_HTTP_VERSION << SPACE << status_code << SPACE << get_status_codes().find(status_code)->second << CRLF;
-	ss << "Server:" << SPACE << SERVER_NAME << CRLF;
-	for (std::map<std::string, std::string>::iterator header = headers.begin(); header != headers.end(); ++header)
-	{
-		ss << header->first << COLON << SPACE << header->second << CRLF;
-	}
-	ss << CRLF;
-	header = stou(ss);
-}
+// 	// start-line
+// 	ss << SERVER_HTTP_VERSION << SPACE << status_code << SPACE << get_status_codes().find(status_code)->second << CRLF;
+// 	ss << "Server:" << SPACE << SERVER_NAME << CRLF;
+// 	for (std::map<std::string, std::string>::iterator header = headers.begin(); header != headers.end(); ++header)
+// 	{
+// 		ss << header->first << COLON << SPACE << header->second << CRLF;
+// 	}
+// 	ss << CRLF;
+// 	header = stou(ss);
+// }
 
 bool	Handler::IsDirectory(std::string path)
 {
@@ -94,3 +94,6 @@ bool	Handler::IsFileExist(std::string path)
 		return true;
 	return false;
 }
+
+Handler::~Handler()
+{}

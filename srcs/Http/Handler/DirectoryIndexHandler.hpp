@@ -5,5 +5,5 @@
 class DirectoryIndexHandler : public Handler
 {
 	public:
-		std::vector<unsigned char>	handle(HttpRequest& request);
+		std::vector<unsigned char>	handle(Client& client);
 };

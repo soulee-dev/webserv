@@ -1,22 +1,31 @@
 #pragma once
 
 #include <vector>
-#include "../Client.hpp"
-#include "HttpParser.hpp"
+#include <queue>
 #include "Handler/Handler.hpp"
 #include "Handler/StaticHandler.hpp"
 #include "Handler/DynamicHandler.hpp"
 #include "Handler/ErrorHandler.hpp"
 
+class Client;
+
 class HttpRequestManager
 {
 	private:
-		HttpRequest	request;
-		HttpParser	parser;
+		//HttpRequest	request;
+		std::queue<HttpRequest> queReq;  // 가져갈땐 pop, 넣을땐 push
+		// HttpParser	parser;
 		Handler*	handler;
 	public:
-		HttpRequestManager(Client& client, std::vector<std::string> List);
-		std::vector<unsigned char>	processRequest(void);
+		HttpRequestManager(); 
+		HttpRequest	parse(std::vector<std::string> List);
+		void	setHandler(std::vector<std::string> List);
+		std::vector<unsigned char>	processRequest(Client& client);
 		~HttpRequestManager();
-		HttpRequest	getRequest() const;
+		HttpRequest& getRequest();
+
+		void pushReq(void);
+		HttpRequest& getBackReq(void);
+		HttpRequest& getFrontReq(void);
+		HttpRequest popReq(void);
 };

@@ -13,12 +13,13 @@
 #include <unistd.h>
 
 // constructors
-Client::Client() : parseState(READY) {}
+Client::Client() : parseState(READY) {
+}
 // destructor
 Client::~Client() {}
 // copy constructors
 Client::Client(Client const& other)
-    : client_fd(other.client_fd), server(other.server), queReq(other.queReq),
+    : client_fd(other.client_fd), server(other.server),
       queRes(other.queRes), readBuffer(other.readBuffer),
       sendBuffer(other.sendBuffer), parseState(METHOD) {}
 // operators
@@ -27,7 +28,6 @@ Client& Client::operator=(Client const& rhs)
     if (this != &rhs)
     {
         this->queRes = rhs.queRes;
-        this->queReq = rhs.queReq;
         this->client_fd = rhs.client_fd;
         this->server = rhs.server;
         this->readBuffer = rhs.readBuffer;
@@ -40,11 +40,8 @@ Client& Client::operator=(Client const& rhs)
 // getter
 ResponseMessage& Client::getBackRes(void) { return queRes.back(); }
 
-RequestMessage& Client::getBackReq(void) { return queReq.back(); }
-
 ResponseMessage& Client::getFrontRes(void) { return queRes.front(); }
 
-RequestMessage& Client::getFrontReq(void) { return queReq.front(); }
 
 Server* Client::getServer(void) const { return this->server; }
 // setter
@@ -53,12 +50,7 @@ void Client::setFd(int fd) { this->client_fd = fd; }
 
 void Client::setEvents(Event* event) { this->events = event; };
 // functions
-RequestMessage Client::popReq(void)
-{
-    RequestMessage ret = queReq.front();
-    queReq.pop();
-    return ret;
-}
+
 
 ResponseMessage Client::popRes(void)
 {
@@ -87,7 +79,7 @@ bool Client::readEventProcess(void) // RUN 5
 	
 		// START Parse Request Message //
 		// Location을 정할 때 URI가 "/" 이외의 블록들은 들어오지 못하는데 그부분 개선 필요
-		std::string toFindUri = this->getFrontReq().uri;
+		std::string toFindUri = httpRequestManager.getFrontReq().uri;
 		std::string	foundUri;
 		std::cout << "--- URI LIST ---\n";
 		std::map<std::string, Location> myLocations = this->getServer()->getLocations();
@@ -106,8 +98,8 @@ bool Client::readEventProcess(void) // RUN 5
 		list.push_back(rootie);
 		list.push_back(std::to_string(isAutoIndex));
 
-		HttpRequestManager  requestManager(*this, list);
-		std::vector<unsigned char>  buffer  = requestManager.processRequest();
+        httpRequestManager.setHandler(list);
+		std::vector<unsigned char>  buffer  = httpRequestManager.processRequest(*this);
 		// END Parse Request Message //
 
 		sendBuffer.insert(sendBuffer.end(), buffer.begin(), buffer.end());
@@ -180,7 +172,7 @@ void Client::readHeader(const char* buffer)
     std::string key;
     std::string value;
     std::vector<unsigned char>::iterator pos;
-    RequestMessage& req = getBackReq();
+    HttpRequest& req = httpRequestManager.getBackReq();
 
 	readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
 
@@ -267,7 +259,7 @@ void Client::readChunked(const char* buffer, size_t readSize)
     static std::string strbodySize;
     static long longBodySize;
     static bool haveToReadBody = false;
-    RequestMessage& req = getBackReq();
+    HttpRequest& req = httpRequestManager.getBackReq();
 
     readBuffer.insert(readBuffer.end(), buffer, buffer + readSize);
 
@@ -312,7 +304,7 @@ void Client::readChunked(const char* buffer, size_t readSize)
 void Client::readBody(const char* buffer, size_t readSize)
 {
     std::vector<unsigned char>::iterator pos;
-    RequestMessage& req = getBackReq();
+    HttpRequest& req = httpRequestManager.getBackReq();
 
     readBuffer.insert(readBuffer.end(), buffer, buffer + readSize);
     if (req.headers.find("content-length") != req.headers.end())
@@ -344,7 +336,7 @@ void Client::readBody(const char* buffer, size_t readSize)
 void Client::readMethod(const char* buffer)
 {
     std::vector<unsigned char>::iterator pos;
-    RequestMessage& req = getBackReq();
+    HttpRequest& req = httpRequestManager.getBackReq();
 
     // 첫줄에 개행만 들어온 경우 무시
     if (strcmp(buffer, "\n") == 0 || strcmp(buffer, "\r\n") == 0)
@@ -385,7 +377,7 @@ void Client::readMethod(const char* buffer)
 void Client::readUri(const char* buffer)
 {
     std::vector<unsigned char>::iterator pos;
-    RequestMessage& req = getBackReq();
+    HttpRequest& req = httpRequestManager.getBackReq();
 
     readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
     if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ", &" "[1])) !=
@@ -417,7 +409,7 @@ void Client::readUri(const char* buffer)
 void Client::readHttpVersion(const char* buffer)
 {
     std::vector<unsigned char>::iterator pos;
-    RequestMessage& req = getBackReq();
+    HttpRequest& req = httpRequestManager.getBackReq();
 
     readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
     if ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\r\n",
@@ -448,8 +440,7 @@ bool Client::isSendBufferEmpty(void)
 
 void Client::createRequest(void)
 {
-    // queReq.emplace();
-    queReq.push(RequestMessage());
+    httpRequestManager.pushReq();
 }
 
 void Client::createResponse(void)

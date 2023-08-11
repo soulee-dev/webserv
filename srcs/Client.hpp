@@ -4,6 +4,7 @@
 #include "RequestMessage.hpp"
 #include "ResponseMessage.hpp"
 #include "Server.hpp"
+#include "Http/HttpRequestManager.hpp"
 #include <queue>
 
 #include <sys/stat.h> // for struct stat
@@ -29,9 +30,8 @@ private:
     int client_fd;
     Server* server;
     // event 등록;
-    Event* events;
 
-    std::queue<RequestMessage> queReq;  // 가져갈땐 pop, 넣을땐 push
+    
     std::queue<ResponseMessage> queRes; // 가져갈땐 pop, 넣을땐 push
 
 	std::vector<unsigned char> readBuffer;
@@ -48,6 +48,8 @@ private:
     void readChunked(const char* buffer, size_t readSize);
 
 public:
+    Event* events;
+    HttpRequestManager httpRequestManager;
     typedef int PORT;
     typedef int SOCKET;
     Client();
@@ -64,14 +66,14 @@ public:
 
     // getter
     ResponseMessage& getBackRes(void);
-    RequestMessage& getBackReq(void);
+
     ResponseMessage& getFrontRes(void);
-    RequestMessage& getFrontReq(void);
+
     Server* getServer(void) const;
     SOCKET getClientFd(void) const;
 
     // functions
-    RequestMessage popReq(void);
+
     ResponseMessage popRes(void);
     void errorEventProcess(void);
     bool readEventProcess(void);

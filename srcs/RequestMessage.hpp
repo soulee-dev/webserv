@@ -1,11 +1,11 @@
 #pragma once
 #include "Message.hpp"
 
-enum ParseErrorCode
-{
-    BAD_REQUEST = 400,
-    HTTP_VERSION_NOT_SUPPORT = 505,
-};
+// enum ParseErrorCode
+// {
+//     BAD_REQUEST = 400,
+//     HTTP_VERSION_NOT_SUPPORT = 505,
+// };
 
 class RequestMessage : public Message
 {
@@ -16,7 +16,7 @@ public:
     RequestMessage& operator=(RequestMessage const& rhs);
     std::string method;
     std::string uri;
-    enum ParseErrorCode errorCode;
+    // enum ParseErrorCode errorCode;
 
 	// --- gyopark ADDED --- //
 	std::string	fileName;
