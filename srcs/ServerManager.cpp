@@ -210,7 +210,8 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
         ssize_t ret = clientManager.CgiToResReadProcess(currEvent); // -1: read error, 0 : read left 1 : read done
         if (ret != 0) // read error || read done
         {
-            events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
+            //events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
+            events.changeEvents(currEvent.ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
             // close(currEvent.ident);
         }
         if (ret == 1)

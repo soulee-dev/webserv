@@ -81,4 +81,6 @@ public:
 
     bool readMessage(void);
     bool isSendBufferEmpty(void);
+
+    ResponseMessage& createResponse(void);
 };

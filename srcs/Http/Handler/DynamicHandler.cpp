@@ -3,6 +3,79 @@
 
 extern char **environ;
 
+void DynamicHandler::openFd(Client &client)
+{
+	HttpRequest &currRequest = client.httpRequestManager.getRequest();
+
+	if (pipe(currRequest.pipe_fd) == -1 || pipe(currRequest.pipe_fd_back) == -1)
+	{
+		std::cerr << "Pipe error" << std::endl;
+		exit(0);
+	}
+}
+
+void DynamicHandler::sendReqtoCgi(Client &client)
+{
+
+	HttpRequest &currRequest = client.httpRequestManager.getRequest();
+
+    std::string body(currRequest.body.begin(), currRequest.body.end());
+	std::cout << BOLDGREEN << "BODY\n" << body << RESET << '\n';
+    client.events->changeEvents(currRequest.pipe_fd[1], EVFILT_WRITE, EV_ENABLE, 0, 0, &client);
+}
+
+void DynamicHandler::runCgi(Client &client)
+{
+	pid_t	pid = fork();
+	HttpRequest &currRequest = client.httpRequestManager.getRequest();
+	if (pid == -1)
+	{
+		std::cerr << "Fork error" << std::endl;
+		exit(0);
+	}
+	if (pid == 0) // 자식 코드
+	{
+
+		// Child process
+		dup2(currRequest.pipe_fd[0], STDIN_FILENO); // stdin을 pipe_fd[0]로 복제
+		dup2(currRequest.pipe_fd_back[1], STDOUT_FILENO); // stdout을 pipe_fd_back[1]로 복제
+
+		close(currRequest.pipe_fd[0]); // Close unused read end
+		close(currRequest.pipe_fd_back[1]); // Close unused write end in parent
+		close(currRequest.pipe_fd[1]); // Close unused read end
+		close(currRequest.pipe_fd_back[0]); // Close unused write end in parent
+
+		int size = currRequest.body.size();
+		std::string size_str = std::to_string(size); //c++ 11 
+		const char *size_cstr = size_str.c_str();
+
+		setenv("REQUEST_METHOD", "POST", 1);
+		setenv("CONTENT_LENGTH", size_cstr, 1);
+		
+
+		if (execve("./www/cgi-bin/post_echo", {NULL}, environ) == -1)
+		{
+			std::cerr << "execve error" << std::endl;
+			exit(0);
+		}
+	}
+	else
+	{
+		close(currRequest.pipe_fd[0]); // Close unused read end
+		close(currRequest.pipe_fd_back[1]); // Close unused write end in parent
+		wait(NULL);
+	}
+}
+
+void makeResponse(Client& client)
+{
+	client.createResponse();
+	ResponseMessage& currRes = client.getBackRes();
+	currRes.startLine = "HTTP/1.1 200 OK";
+	currRes.headers["Server"] = "soulee king JJang";
+}
+
+
 std::vector<unsigned char>	DynamicHandler::handle(Client& client) const
 {
 	HttpRequest&	request = client.httpRequestManager.getRequest();
