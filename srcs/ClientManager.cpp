@@ -111,13 +111,11 @@ int ClientManager::CgiToResReadProcess(struct kevent& currEvent)
     std::cout << "inCgiToResRead, ret : " << ret << std::endl;
     if (ret == -1)
         return -1;
-    if (ret == 0)
+    readBuffer.insert(readBuffer.end(), buffer, &buffer[ret]);
+    if (ret == 0 || ret < BUFFER_SIZE)
         return 1;
     else
-    {
-        readBuffer.insert(readBuffer.end(), buffer, &buffer[ret]);
         return 0;
-    }
 }
 
 bool ClientManager::isClient(SOCKET client_fd)

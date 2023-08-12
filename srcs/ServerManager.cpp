@@ -179,6 +179,9 @@ void ServerManager::errorEventProcess(struct kevent& currEvent)
 	}
 	else
 	{
+		// std::cout << "errno " << errno << std::endl;
+		// std::cout << "flag " << currEvent.flags << std::endl;
+		// std::cout << "data_p " << currEvent.data << std::endl;
 		clientManager.disconnectClient(currEvent.ident);
 		std::cout << currEvent.ident << " client disconnected" << std::endl;
 	}
@@ -197,6 +200,7 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
         acceptClient(currEvent.ident);
     else if (clientManager.isClient(currEvent.ident) == true) // clinet
     {
+        //Timer 설정 
         events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_EOF, NOTE_SECONDS, 100, currEvent.udata);
         if (clientManager.readEventProcess(currEvent))
         {
@@ -205,27 +209,25 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
     }
     else // file Read event...
     {
-        //Timer 설정 
-        events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_EOF, NOTE_SECONDS, 100, currEvent.udata);
 
         //Cgi에서 보내는 data 를 response의 body 에 저장 
         ssize_t ret = clientManager.CgiToResReadProcess(currEvent); // -1: read error, 0 : read left 1 : read done
-		std::cout << "ret: " << ret << std::endl;
+		// std::cout << "ret: " << ret << std::endl;
         if (ret != 0) // read error || read done
         {
             //events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
             events.changeEvents(currEvent.ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+			
 			close(currClient->httpRequestManager.getRequest().pipe_fd_back[0]);
+
             // close(currEvent.ident);
         }
         if (ret == 1)
         {
             // cgi 에서 결과물을 받을때 response 가 완성 되어있다면, client 로 바로 전송 하도록 이벤트를 보냄
             //Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
-			std::cout << "when ret = 1" << std::endl;
 			// TODO: CGI 리팩토링 후 buildResponse 함수 만들어서 다 붙여주기
-			for (std::vector<unsigned char>::iterator it = currClient->getFrontRes().body.begin(); it != currClient->getFrontRes().body.end(); ++it)
-				std::cout << *it;
+
 			currClient->sendBuffer.insert(currClient->sendBuffer.end(), currClient->getFrontRes().startLine.begin(), currClient->getFrontRes().startLine.end());
 			currClient->sendBuffer.insert(currClient->sendBuffer.end(), currClient->getFrontRes().body.begin(), currClient->getFrontRes().body.end());
 
@@ -234,11 +236,14 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
 				std::cout << *it;
 			currClient->popRes();
             events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
+			wait(NULL);
             // close(currEvent.ident);
 
             // 위의 경우가 아닌 경우에는 client 의 response 메시지를 만드는 function 을 호출한다. 
             // 예 : currClient->getRes().buildResponse();
         }
+		// else
+		// 	events.changeEvents(currEvent.ident, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, currClient);	
     }
 }
 
