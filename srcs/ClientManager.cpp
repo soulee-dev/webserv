@@ -63,14 +63,16 @@ bool ClientManager::writeEventProcess(struct kevent& currEvent)
 
 int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
 {
-    std::cout << "WRITE!!!!!!!!!" << std::endl;
-    HttpRequest*    request = reinterpret_cast<HttpRequest*>(currEvent.udata);
-    std::vector<unsigned char>& buffer = request->body;
+    Client* client = reinterpret_cast<Client*>(currEvent.udata);
+    HttpRequest&    request = client->httpRequestManager.getRequest();
+    std::vector<unsigned char>& buffer = request.body;
 
     int writeSize = write(currEvent.ident, &buffer[0], buffer.size());
     if (writeSize == -1)
     {
         std::cout << "write() error" << std::endl;
+        std::cout << "errno : " << errno << std::endl;
+        // std::cout << request->body[0] << std::endl;
         return -1;
     }
     buffer.erase(buffer.begin(), buffer.begin() + writeSize);
@@ -102,9 +104,11 @@ int ClientManager::CgiToResReadProcess(struct kevent& currEvent)
 
     Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
     std::vector<unsigned char>& readBuffer = currClient->getFrontRes().body;
+    
     char buffer[BUFFER_SIZE];
 
     ssize_t ret = read(currEvent.ident, buffer, BUFFER_SIZE);
+    std::cout << "inCgiToResRead, ret : " << ret << std::endl;
     if (ret == -1)
         return -1;
     if (ret == 0)

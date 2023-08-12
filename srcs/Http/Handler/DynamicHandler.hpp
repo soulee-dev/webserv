@@ -10,6 +10,8 @@ class DynamicHandler : public Handler
 		void openFd(Client& client);
 		void sendReqtoCgi(Client& client);
 		void runCgi(Client& client);
+		void makeResponse(Client& client);
+		void readFromCgi(Client& client);
 		~DynamicHandler();
 };
 

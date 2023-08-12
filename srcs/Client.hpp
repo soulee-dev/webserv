@@ -35,11 +35,9 @@ private:
     std::queue<ResponseMessage> queRes; // 가져갈땐 pop, 넣을땐 push
 
 	std::vector<unsigned char> readBuffer;
-	std::vector<unsigned char> sendBuffer;
 	RequestMessageParseState parseState;
 
     void createRequest(void);
-    void createResponse(void);
     void readMethod(const char* buffer);
     void readUri(const char* buffer);
     void readHttpVersion(const char* buffer);
@@ -50,6 +48,7 @@ private:
 public:
     Event* events;
     HttpRequestManager httpRequestManager;
+	std::vector<unsigned char> sendBuffer;
     typedef int PORT;
     typedef int SOCKET;
     Client();
@@ -81,6 +80,7 @@ public:
 
     bool readMessage(void);
     bool isSendBufferEmpty(void);
+    
+    void createResponse(void);
 
-    ResponseMessage& createResponse(void);
 };

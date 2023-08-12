@@ -26,6 +26,7 @@ class HttpRequest
 		std::string	path;
 		off_t		file_size;
 		std::string	cgi_args;
+		int pipe_fd[2], pipe_fd_back[2];
 
     	std::string uri;
 		enum ParseErrorCode errorCode;

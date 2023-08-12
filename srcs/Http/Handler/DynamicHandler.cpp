@@ -21,7 +21,7 @@ void DynamicHandler::sendReqtoCgi(Client &client)
 
     std::string body(currRequest.body.begin(), currRequest.body.end());
 	std::cout << BOLDGREEN << "BODY\n" << body << RESET << '\n';
-    client.events->changeEvents(currRequest.pipe_fd[1], EVFILT_WRITE, EV_ENABLE, 0, 0, &client);
+    client.events->changeEvents(currRequest.pipe_fd[1], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &client);
 }
 
 void DynamicHandler::runCgi(Client &client)
@@ -53,7 +53,7 @@ void DynamicHandler::runCgi(Client &client)
 		setenv("CONTENT_LENGTH", size_cstr, 1);
 		
 
-		if (execve("./www/cgi-bin/post_echo", {NULL}, environ) == -1)
+		if (execve("./www/cgi-bin/post_echo", NULL, environ) == -1)
 		{
 			std::cerr << "execve error" << std::endl;
 			exit(0);
@@ -63,16 +63,22 @@ void DynamicHandler::runCgi(Client &client)
 	{
 		close(currRequest.pipe_fd[0]); // Close unused read end
 		close(currRequest.pipe_fd_back[1]); // Close unused write end in parent
-		wait(NULL);
+		// wait(NULL);
 	}
 }
 
-void makeResponse(Client& client)
+void DynamicHandler::makeResponse(Client& client)
 {
 	client.createResponse();
 	ResponseMessage& currRes = client.getBackRes();
 	currRes.startLine = "HTTP/1.1 200 OK";
 	currRes.headers["Server"] = "soulee king JJang";
+}
+
+void DynamicHandler::readFromCgi(Client& client)
+{
+	HttpRequest &currRequest = client.httpRequestManager.getRequest();
+    client.events->changeEvents(currRequest.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &client);
 }
 
 

@@ -23,9 +23,16 @@ class HttpRequestManager
 		std::vector<unsigned char>	processRequest(Client& client);
 		~HttpRequestManager();
 		HttpRequest& getRequest();
+		int			getHandlerType();
 
 		void pushReq(void);
 		HttpRequest& getBackReq(void);
 		HttpRequest& getFrontReq(void);
 		HttpRequest popReq(void);
+
+		void dynamicOpenFd(Client& client);
+		void dynamicSendReqtoCgi(Client& client);
+		void dynamicRunCgi(Client& client);
+		void dynamicMakeResponse(Client& client);
+		void dynamicReadFromCgi(Client& client);
 };

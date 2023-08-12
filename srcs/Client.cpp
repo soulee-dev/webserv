@@ -99,15 +99,26 @@ bool Client::readEventProcess(void) // RUN 5
 		list.push_back(std::to_string(isAutoIndex));
 
         httpRequestManager.setHandler(list);
-		std::vector<unsigned char>  buffer  = httpRequestManager.processRequest(*this);
+
+        httpRequestManager.dynamicOpenFd(*this);
+        httpRequestManager.dynamicSendReqtoCgi(*this);
+        httpRequestManager.dynamicRunCgi(*this);
+    
+
+		// std::vector<unsigned char>  buffer  = httpRequestManager.processRequest(*this);
 		// END Parse Request Message //
 
-		sendBuffer.insert(sendBuffer.end(), buffer.begin(), buffer.end());
+		// sendBuffer.insert(sendBuffer.end(), buffer.begin(), buffer.end());
 		std::cout << BOLDCYAN << " -- SUCCESSFULLY SEND MESSAGE -- \n";
         parseState = READY;
         return true;
     }
     return false;
+}
+
+int Client::getClientFd(void) const
+{
+    return client_fd;
 }
 
 bool Client::writeEventProcess(void)
@@ -116,6 +127,7 @@ bool Client::writeEventProcess(void)
 	if (writeSize == -1)
 	{
 		std::cout << "write() error" << std::endl;
+        std::cout << errno << std::endl;
 		return true;
 	}
 	sendBuffer.erase(sendBuffer.begin(), sendBuffer.begin() + writeSize);
