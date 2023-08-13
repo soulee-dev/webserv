@@ -179,9 +179,6 @@ void ServerManager::errorEventProcess(struct kevent& currEvent)
 	}
 	else
 	{
-		// std::cout << "errno " << errno << std::endl;
-		// std::cout << "flag " << currEvent.flags << std::endl;
-		// std::cout << "data_p " << currEvent.data << std::endl;
 		clientManager.disconnectClient(currEvent.ident);
 		std::cout << currEvent.ident << " client disconnected" << std::endl;
 	}
@@ -212,7 +209,6 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
 
         //Cgi에서 보내는 data 를 response의 body 에 저장 
         ssize_t ret = clientManager.CgiToResReadProcess(currEvent); // -1: read error, 0 : read left 1 : read done
-		// std::cout << "ret: " << ret << std::endl;
         if (ret != 0) // read error || read done
         {
             //events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
@@ -231,7 +227,7 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
 			currClient->sendBuffer.insert(currClient->sendBuffer.end(), currClient->getFrontRes().startLine.begin(), currClient->getFrontRes().startLine.end());
 			currClient->sendBuffer.insert(currClient->sendBuffer.end(), currClient->getFrontRes().body.begin(), currClient->getFrontRes().body.end());
 
-			// TODO: Header 붙이기i
+			// TODO: Header 붙이기
 			for (std::vector<unsigned char>::iterator it = currClient->sendBuffer.begin(); it != currClient->sendBuffer.end(); ++it)
 				std::cout << *it;
 			currClient->popRes();
@@ -242,8 +238,6 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
             // 위의 경우가 아닌 경우에는 client 의 response 메시지를 만드는 function 을 호출한다. 
             // 예 : currClient->getRes().buildResponse();
         }
-		// else
-		// 	events.changeEvents(currEvent.ident, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, currClient);	
     }
 }
 

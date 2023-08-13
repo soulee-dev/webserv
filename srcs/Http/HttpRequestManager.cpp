@@ -86,6 +86,7 @@ HttpRequest& HttpRequestManager::getRequest()
 
 HttpRequestManager::~HttpRequestManager()
 {
+	// TODO: Segfault when destructing instance
 	// delete handler;
 }
 

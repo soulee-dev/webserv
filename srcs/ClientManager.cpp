@@ -81,23 +81,7 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
     else
         return 0;
 }
-// int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
-// {
-//     Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
-//     std::vector<unsigned char>& buffer = currClient->getFrontReq().body;
 
-//     int writeSize = write(currEvent.ident, &buffer[0], buffer.size());
-//     if (writeSize == -1)
-//     {
-//         std::cout << "write() error" << std::endl;
-//         return -1;
-//     }
-//     buffer.erase(buffer.begin(), buffer.begin() + writeSize);
-//     if (buffer.size() == 0)
-//         return 1;
-//     else
-//         return 0;
-// }
 int ClientManager::CgiToResReadProcess(struct kevent& currEvent)
 {
     const size_t BUFFER_SIZE = 1024;
