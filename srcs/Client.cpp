@@ -89,23 +89,27 @@ bool Client::readEventProcess(void) // RUN 5
 		for (it = myLocations.begin(); it != myLocations.end(); ++it) 
 		{
 			std::cout << BOLDGREEN << "블록에 있는 URI 인자 : " << it->first << RESET << std::endl;
+			std::cout << "It->first : " << it->first << ' ' << " TOFINDURI : " << toFindUri << '\n';
 			if (it->first == "/" && toFindUri == "/")
 			{
 				foundUri = it->first;
 				break ;
 			}
-			else
-				continue ;
 			for (size_t i = 0; i < it->first.size(); i++)
 			{
-				std::cout << it->first[i] << ' ' << toFindUri[i] <<'\n';
-				if (it->first[i] != toFindUri[i])
+				NoUri = 0;
+				if (it->first.size() == 1 && it->first == "/")
+				{
+					NoUri = 1;
+					break ;
+				}
+				if (i < it->first.size() && it->first[i] != toFindUri[i])
 					NoUri = 1;
 			}
 			if (NoUri == 0)
 			{
 				foundUri = it->first;
-				std::cout << "FOUND URI : " << foundUri;
+				std::cout << BOLDCYAN << "FOUND URI : " << foundUri << '\n';
 				break ;
 			}
 			else
