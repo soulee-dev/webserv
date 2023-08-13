@@ -1,6 +1,6 @@
 #include "Handler.hpp"
 
-std::string	Handler::getFileType(std::string file_name)
+std::string	Handler::getFileType(std::string file_name) const
 {
 	std::string	file_type;
 

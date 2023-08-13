@@ -19,7 +19,7 @@ class	Client;
 class Handler
 {
 	public:
-		std::string	getFileType(std::string file_name);
+		std::string	getFileType(std::string file_name) const;
 		std::string	itos(int num);
 		std::vector<unsigned char>	stou(std::stringstream& ss);
 		// void		buildHeader(int status_code);
