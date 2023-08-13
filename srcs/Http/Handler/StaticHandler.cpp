@@ -10,6 +10,17 @@ std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 	std::vector<unsigned char>	result;
 	request.check = 0; 
 
+	if (client.httpRequestManager.getRequest().method == "POST")
+	{
+		std::string header = "<h1>405 Method Not Allowed</h1>";
+		std::string buffer = "<h1>405 Method Not Allowed</h1>";
+		request.header = build_header("405 Method Not Allowed", header.length(), "text/html");
+		request.ubuffer.insert(request.ubuffer.end(), buffer.begin(), buffer.end());
+		result.insert(result.end(), request.header.begin(), request.header.end());
+		result.insert(result.end(), request.ubuffer.begin(), request.ubuffer.end());
+		return (result);
+	}
+	
     if (S_ISDIR(stat_buf.st_mode) || (is_directory(request.file_name)))
 	{
         processDirectory(client);
@@ -22,7 +33,7 @@ std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 	}
 	else // warning 뜸 : Different  indentation for if  and corresponding else
 		std::cout << BOLDMAGENTA << "Is NOT DIRECTORY ---> " << request.file_name << RESET << std::endl;
-	
+
 	if (!(S_IRUSR & stat_buf.st_mode)) // chmod 등으로 권한이 없어진 파일
 	{
 		std::cout << "!S_IRUSR\n";
