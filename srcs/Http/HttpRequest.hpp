@@ -8,6 +8,9 @@
 #include <sstream>
 
 # define CRLF "\r\n"
+
+// extern std::string	prevString; 
+
 class HttpRequest
 {
 	public:

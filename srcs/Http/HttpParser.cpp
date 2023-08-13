@@ -14,6 +14,8 @@ HttpRequest	HttpParser::parse(Client& client, std::vector<std::string> List, int
 	result.method = request.method;
 	std::cout << BOLDMAGENTA << "METHOD : " << result.method << '\n';
 	
+	// std::cout << "PREV STRING : " << prevString << '\n';
+
 	result.indexList = List;
 	result.errnum = 0;
 	std::cout << "BLOCK : " << block << RESET << '\n';
@@ -22,14 +24,32 @@ HttpRequest	HttpParser::parse(Client& client, std::vector<std::string> List, int
 	if (request.requestTarget.find("cgi-bin") == std::string::npos)
 	{
 		// When static
+		struct stat stat_buf;
+		int	ret_stat;
 		result.is_static = true;
 		result.path = request.requestTarget;
 		std::cout << BOLDYELLOW << "URI(PATH) : " << request.requestTarget << '\n';
 		std::cout << BOLDYELLOW << "ROOT : " << result.root << '\n';
-		if (block == 1)
-			result.file_name = result.root + "/" + List[0]; // + result.path;
-		else
-			result.file_name = result.root;
+		// if (block == 1)
+		// {
+		// 	result.file_name = result.root + "/" + List[0];
+		// 	ret_stat = stat(result.file_name.c_str(), &stat_buf);
+		// 	if (S_ISDIR(stat_buf.st_mode))
+		// 	{
+		// 		result.file_name = result.root + "/" + List[0] + "/";
+		// 		result.root = result.root + "/" + List[0];
+		// 	}
+		// }
+		// else
+		// {
+			result.file_name = result.root + "/" + List[0];
+			ret_stat = stat(result.file_name.c_str(), &stat_buf);
+			if (S_ISDIR(stat_buf.st_mode))
+			{
+				result.file_name = result.root + "/" + List[0] + "/";
+				result.root = result.root + "/" + List[0];
+			}
+		// }
 		std::cout << BOLDGREEN << "FILE NAME : " << result.file_name << '\n';
 	}
 	else

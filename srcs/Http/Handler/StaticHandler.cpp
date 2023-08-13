@@ -1,10 +1,11 @@
 #include "StaticHandler.hpp"
 #include "ErrorHandler.hpp"
 
+// std::string prevString = "";
+
 std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request) const
 {
     struct stat stat_buf;
-	std::cout << "file_name" << request.file_name << std::endl;
     int ret_stat = stat(request.file_name.c_str(), &stat_buf);
 	std::vector<unsigned char>	result;
 	request.check = 0;
@@ -45,9 +46,6 @@ std::vector<unsigned char>	StaticHandler::handle(HttpRequest& request) const
 	{
 		MakeStaticResponse(request);
 	}
-	// std::cout << "header: ";
-	// for (size_t i = 0; i < request.header.size(); i++)
-	// 	std::cout << request.header[i];
     result.insert(result.end(), request.header.begin(), request.header.end());
     result.insert(result.end(), request.ubuffer.begin(), request.ubuffer.end());
 	return (result);
@@ -62,6 +60,11 @@ int	is_directory(std::string fileName)
 
 void	handleDirectoryListing(HttpRequest& request)
 {
+	// checkAutoIndex = 1;
+	// prevString = request.file_name;
+	// std::cout << "DIR LISTING : " << prevString << '\n';
+	
+	std::cout << "ROOOOOT : " << request.file_name << '\n';
 	DIR	*dir = opendir(request.file_name.c_str());
 	if (dir == NULL) 
 	// Error Handler를 호출해야 하는 첫 번째 경우 (errnum = 1), 
@@ -73,12 +76,13 @@ void	handleDirectoryListing(HttpRequest& request)
 		ErrorHandler err;
         return ;
 	}
-
+	struct stat	stat_buf;
 	std::string html = "<html><body><h1>Directory Listing</h1><ul>";
+
 	struct dirent* entry;
 
     while ((entry = readdir(dir)) != NULL) {
-        html += "<li><a href='" + std::string(entry->d_name) + "'>" + std::string(entry->d_name) + "</a></li>";
+		html += "<li><a href='" + std::string(entry->d_name) + "'>" + std::string(entry->d_name) + "</a></li>";
     }
 
     html += "</ul></body></html>";
@@ -132,6 +136,7 @@ void	processDirectory(HttpRequest& request)
 	}
 	if (compareStaticFile(fileList, request))
 	{
+		// prevString = "";
 		struct stat stat_index;
 		std::string path = request.file_name + "/" + request.target;
 		int indexStat = stat(path.c_str(), &stat_index);
@@ -165,6 +170,7 @@ void	processDirectory(HttpRequest& request)
 			// Error Handler를 호출해야 하는 세 번째 경우 (errnum = 3), 
 			// root 디렉토리 내에 conf 파일 index에 지정한 파일이 없으면서
 			// 동시에 auto index도 아닌 경우
+			// prevString = "";
 			std::cout << BOLDRED << "Call Error Handler 3\n" << RESET;
 			request.errnum = 3;
        		ErrorHandler	err;

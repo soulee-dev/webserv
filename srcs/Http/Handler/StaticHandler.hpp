@@ -2,6 +2,7 @@
 
 #include "Handler.hpp"
 
+// extern int	checkAutoIndex;
 class StaticHandler : public Handler
 {
 	public:
