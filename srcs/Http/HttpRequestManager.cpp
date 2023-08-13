@@ -9,6 +9,11 @@ void	HttpRequestManager::setHandler(std::vector<std::string> List)
 {
 	getFrontReq() = parse(List);
 
+	for (int i = 0; i == List.size(); i++)
+	{
+		std::cout << "LIST : " << List[i] << '\n';
+	}
+
 	if (getFrontReq().is_static)
 	{
 		std::cout << BOLDRED << " -- PROCESSING STATIC -- \n";
@@ -32,6 +37,7 @@ HttpRequest	HttpRequestManager::parse(std::vector<std::string> List)
 	List.pop_back();
 	iss >> result.isAutoIndex;
 	result.root = List.back();
+	std::cout << "ROOT : " << result.root << '\n';
 	List.pop_back();
 	result.method = request.method;
 	std::cout << BOLDMAGENTA << "METHOD : " << result.method << '\n';
@@ -45,7 +51,7 @@ HttpRequest	HttpRequestManager::parse(std::vector<std::string> List)
 		result.is_static = true;
 		result.path = request.uri;
 		std::cout << BOLDYELLOW << "URI(PATH) : " << request.uri << '\n';
-		result.file_name = result.root; // + result.path;
+		result.file_name = result.root + "/" + List[0]; // + result.path;
 		std::cout << BOLDGREEN << "FILE NAME : " << result.file_name << '\n';
 	}
 	else
