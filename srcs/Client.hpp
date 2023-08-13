@@ -1,7 +1,6 @@
 #pragma once
 #include "Event.hpp"
 #include "Location.hpp"
-#include "RequestMessage.hpp"
 #include "ResponseMessage.hpp"
 #include "Server.hpp"
 #include "Http/HttpRequestManager.hpp"
@@ -30,10 +29,7 @@ private:
     int client_fd;
     Server* server;
     // event 등록;
-
-    
     std::queue<ResponseMessage> queRes; // 가져갈땐 pop, 넣을땐 push
-
 	std::vector<unsigned char> readBuffer;
 	RequestMessageParseState parseState;
 
@@ -65,22 +61,17 @@ public:
 
     // getter
     ResponseMessage& getBackRes(void);
-
     ResponseMessage& getFrontRes(void);
-
     Server* getServer(void) const;
     SOCKET getClientFd(void) const;
 
     // functions
-
     ResponseMessage popRes(void);
     void errorEventProcess(void);
     bool readEventProcess(void);
     bool writeEventProcess(void);
-
     bool readMessage(void);
     bool isSendBufferEmpty(void);
-    
     void createResponse(void);
 
 };

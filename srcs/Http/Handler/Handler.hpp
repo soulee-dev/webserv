@@ -16,14 +16,10 @@
 
 class	Client;
 
-#define STATIC 0
-#define DYNAMIC 1
-
 class Handler
 {
 	public:
-		int			handlerType;
-		std::string	getFileType(std::string file_name);
+		std::string	getFileType(std::string file_name) const;
 		std::string	itos(int num);
 		std::vector<unsigned char>	stou(std::stringstream& ss);
 		// void		buildHeader(int status_code);

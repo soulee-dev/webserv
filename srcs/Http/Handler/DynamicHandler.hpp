@@ -14,5 +14,3 @@ class DynamicHandler : public Handler
 		void readFromCgi(Client& client);
 		~DynamicHandler();
 };
-
-std::string	getFileTypeD(std::string file_name);

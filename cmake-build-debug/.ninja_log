@@ -1,9 +1,0 @@
-# ninja log v5
-0	731	1691308685000000000	CMakeFiles/soulee_git.dir/srcs/ClientManager.cpp.o	f406b6f0f660bbb8
-0	851	1691308685000000000	CMakeFiles/soulee_git.dir/srcs/Client.cpp.o	6722fe54420ee4f
-851	1427	1691308685000000000	CMakeFiles/soulee_git.dir/srcs/main.cpp.o	426173ab5ec73bc4
-1	835	1691308685000000000	CMakeFiles/soulee_git.dir/srcs/ConfigFunctions.cpp.o	974b4919af690039
-1	1022	1691308685000000000	CMakeFiles/soulee_git.dir/srcs/ConfigParser.cpp.o	2019027eb562ad86
-732	1252	1691308685000000000	CMakeFiles/soulee_git.dir/srcs/Event.cpp.o	7ddab92a145eda22
-1022	1456	1691308685000000000	CMakeFiles/soulee_git.dir/srcs/Message.cpp.o	51f47c457892ca47
-1252	1569	1691308685000000000	CMakeFiles/soulee_git.dir/srcs/RequestMessage.cpp.o	1c0fe24656ff0e6

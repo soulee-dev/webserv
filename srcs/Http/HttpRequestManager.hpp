@@ -12,9 +12,7 @@ class Client;
 class HttpRequestManager
 {
 	private:
-		//HttpRequest	request;
 		std::queue<HttpRequest> queReq;  // 가져갈땐 pop, 넣을땐 push
-		// HttpParser	parser;
 		Handler*	handler;
 	public:
 		HttpRequestManager(); 
@@ -23,12 +21,11 @@ class HttpRequestManager
 		std::vector<unsigned char>	processRequest(Client& client);
 		~HttpRequestManager();
 		HttpRequest& getRequest();
-		int			getHandlerType();
 
-		void pushReq(void);
-		HttpRequest& getBackReq(void);
-		HttpRequest& getFrontReq(void);
-		HttpRequest popReq(void);
+		void			pushReq(void);
+		HttpRequest& 	getBackReq(void);
+		HttpRequest&	getFrontReq(void);
+		HttpRequest		popReq(void);
 
 		void dynamicOpenFd(Client& client); // dynamic
 		void sendReqtoEvent(Client& client); //for all(static and dynamic)
