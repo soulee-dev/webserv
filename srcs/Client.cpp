@@ -106,7 +106,7 @@ bool Client::readEventProcess(void) // RUN 5
 			else
 				std::cout << BOLDRED << "NO URI matching with sentence!!\n" << RESET;
 		}
-		std::cout << "No Uri : " << NoUri << '\n' << "No Uri 0이면 일치하는 블록 있는거고 1이면 없는 겁니다. 1일때 예외처리 해줘야 합니다.\n";
+		std::cout << "No Uri : " << NoUri << '\n' << "No Uri 0이면 일치하는 블록 있는거고 1이면 없는 겁니다.\n1일때 예외처리 해줘야 합니다.\n지금은 일단 URI를 \"/\"로 고정시키고.\n들어온 내용을 가지고 file을 찾습니다.\n";
 		std::cout << "----------------\n";
 		
 		if (NoUri == 0)
@@ -124,7 +124,13 @@ bool Client::readEventProcess(void) // RUN 5
 				std::cout << "FOUND FILE is " << foundFile << RESET << '\n';
 			}
 		}
-
+		else
+		{
+			foundUri = "/";
+			foundFile = toFindUri;
+			std::cout << BOLDCYAN << "FOUND URI is " << foundUri << '\n';
+			std::cout << "FOUND FILE is " << foundFile << RESET << '\n';
+		}
 		httpRequestManager.setHandler(*this, foundUri, foundFile);
 		httpRequestManager.dynamicOpenFd(*this);
 		httpRequestManager.sendReqtoEvent(*this);

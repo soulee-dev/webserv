@@ -10,13 +10,13 @@ std::vector<unsigned char>	DeleteHandler::handle(Client &client) const
 	
 	if (std::remove(request.file_name.c_str()) == 0)
 	{
-		std::cout << "DELETE SUCCESS\n";
+		std::cout << "DELETE SUCCESS\n" << RESET;
 		request.header = build_header("200 OK", header.length(), "text/html");
 		request.ubuffer.insert(request.ubuffer.end(), buffer.begin(), buffer.end());
 	}
 	else
 	{
-		std::cout << "DELETE FAILED\n";
+		std::cout << BOLDRED << "DELETE FAILED\n" << RESET;
 		request.header = build_header("404 Not Found", header.length(), "text/html");
 		request.ubuffer.insert(request.ubuffer.end(), buffer.begin(), buffer.end());
 	}
