@@ -6,6 +6,7 @@
 #include "Handler/StaticHandler.hpp"
 #include "Handler/DynamicHandler.hpp"
 #include "Handler/ErrorHandler.hpp"
+#include "Handler/DeleteHandler.hpp"
 
 class Client;
 

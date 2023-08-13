@@ -1,9 +1,7 @@
 #include "HttpRequestManager.hpp"
 #include "../Client.hpp"
 
-HttpRequestManager::HttpRequestManager()
-{
-}
+HttpRequestManager::HttpRequestManager() {}
 
 void	HttpRequestManager::setHandler(Client &client, std::string foundUri, std::string foundFile)
 {
@@ -11,6 +9,12 @@ void	HttpRequestManager::setHandler(Client &client, std::string foundUri, std::s
 
 	if (getFrontReq().is_static)
 	{
+		if (getFrontReq().method == "DELETE") // process Method DELETE
+		{
+			std::cout << "DELETE네?\n";
+			handler = new DeleteHandler();
+			return ;
+		}
 		std::cout << BOLDRED << " -- PROCESSING STATIC -- \n";
 		handler = new StaticHandler();
 	}
@@ -106,6 +110,11 @@ void HttpRequestManager::sendReqtoEvent(Client& client)
 
 	if (currHandler != NULL)
 		currHandler->sendReqtoCgi(client);
+	else if (getFrontReq().method == "DELETE")
+	{
+		DeleteHandler *currHandler = dynamic_cast<DeleteHandler*>(handler);
+		currHandler->sendReqtoDelete(client);
+	}
 	else
 	{
 		StaticHandler *currHandler = dynamic_cast<StaticHandler*>(handler);

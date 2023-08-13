@@ -6,7 +6,7 @@
 #    By: gyopark <gyopark@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/06/02 11:11:51 by jinam             #+#    #+#              #
-#    Updated: 2023/08/13 14:33:14 by gyopark          ###   ########.fr        #
+#    Updated: 2023/08/13 18:34:44 by gyopark          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,7 +23,8 @@ RMFLAGS		= -f
 OUT_DIR		= objs
 SRC_DIR		= srcs
 FILE		= Client ClientManager ConfigFunctions ConfigParser Event Location Message Http/Handler/Handler \
-				Http/Handler/ErrorHandler ResponseMessage Server ServerManager Http/HttpRequestManager Http/Handler/StaticHandler Http/Handler/DynamicHandler main
+				Http/Handler/ErrorHandler ResponseMessage Server ServerManager Http/HttpRequestManager \
+				Http/Handler/StaticHandler Http/Handler/DynamicHandler Http/Handler/DeleteHandler main
 OBJECTS		= $(addprefix $(OUT_DIR)/, $(addsuffix .o, $(FILE)))
 
 # Compile rules

@@ -120,8 +120,8 @@ bool Client::readEventProcess(void) // RUN 5
 			}
 			else
 			{
-				std::cout << BOLDCYAN << "FOUND URI : " << foundUri << '\n';
-				std::cout << "FOUND FILE : " << foundFile << RESET << '\n';
+				std::cout << BOLDCYAN << "FOUND URI is " << foundUri << '\n';
+				std::cout << "FOUND FILE is " << foundFile << RESET << '\n';
 			}
 		}
 
