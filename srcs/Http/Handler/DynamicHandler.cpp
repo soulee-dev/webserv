@@ -71,7 +71,7 @@ void DynamicHandler::makeResponse(Client& client)
 {
 	client.createResponse();
 	ResponseMessage& currRes = client.getBackRes();
-	currRes.startLine = "HTTP/1.1 200 OK";
+	currRes.startLine = "HTTP/1.1 200 OK\n";
 	currRes.headers["Server"] = "soulee king JJang";
 }
 

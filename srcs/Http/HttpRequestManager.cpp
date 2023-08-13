@@ -37,15 +37,20 @@ HttpRequest	HttpRequestManager::parse(Client &client, std::string foundUri, std:
 	std::cout << BOLDMAGENTA << "METHOD : " << result.method << '\n';
 	result.errnum = 0;
 
-	std::string	fileName;
-	if (foundFile.empty())
-		fileName = client.getServer()->getLocations()[foundUri].getIndex()[0];
-	else
-		fileName = foundFile;
 
 	if (request.uri.find("cgi-bin") == std::string::npos)
 	{
 		// When static
+		std::string	fileName;
+		if (foundFile.empty())
+		{
+			if (!client.getServer()->getLocations()[foundUri].getIndex().empty())
+				fileName = client.getServer()->getLocations()[foundUri].getIndex()[0];
+			else
+				fileName = "";
+		}
+		else
+			fileName = foundFile;
 		result.is_static = true;
 		result.path = request.uri;
 		std::cout << BOLDYELLOW << "URI(PATH) : " << request.uri << '\n';

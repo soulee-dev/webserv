@@ -124,7 +124,7 @@ bool Client::readEventProcess(void) // RUN 5
 				std::cout << "FOUND FILE is " << foundFile << RESET << '\n';
 			}
 		}
-		else
+		else if (NoUri == 1 && httpRequestManager.getFrontReq().method == "GET")
 		{
 			foundUri = "/";
 			foundFile = toFindUri;
