@@ -6,6 +6,7 @@ std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 {
     struct stat stat_buf;
 	HttpRequest&	request = client.httpRequestManager.getRequest();
+	std::cout << request.file_name.c_str() << '\n';
     int ret_stat = stat(request.file_name.c_str(), &stat_buf);
 	std::vector<unsigned char>	result;
 	request.check = 0;
@@ -20,19 +21,20 @@ std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 			return (result);
 		}
 	}
-	else
+	else // warning 뜸 : Different  indentation for if  and corresponding else
 		std::cout << BOLDMAGENTA << "Is NOT DIRECTORY ---> " << request.file_name << RESET << std::endl;
 	
-	std::cout << request.file_name.c_str() << '\n';
 	if (!(S_IRUSR & stat_buf.st_mode)) // chmod 등으로 권한이 없어진 파일
 	{
+		std::cout << "!S_IRUSR\n";
 		std::string header = "<h1>403 Forbidden</h1>";
 		std::string buffer = "<h1>403 Forbidden</h1>";
 		request.header = build_header("403 forbidden", header.length(), "text/html");
 	    request.ubuffer.insert(request.ubuffer.end(), buffer.begin(), buffer.end());
 	}
-	else if (S_ISREG(stat_buf.st_mode)) // 정규 파일이 아닌 경우(디렉토리, 파이프 등등)
+	else if (!S_ISREG(stat_buf.st_mode)) // 정규 파일이 아닌 경우(디렉토리, 파이프 등등)
 	{
+		std::cout << "!S_ISREG\n";
 		std::string header = "<h1>403 Forbidden</h1>";
 		std::string buffer = "<h1>403 Forbidden</h1>";
 		request.header = build_header("403 forbidden", header.length(), "text/html");
@@ -227,3 +229,9 @@ std::string	getFileType(std::string file_name)
 
 StaticHandler::~StaticHandler()
 {}
+
+void StaticHandler::sendReqtoEvent(Client &client)
+{
+	client.sendBuffer = handle(client);
+	client.events->changeEvents(client.getClientFd(), EVFILT_WRITE, EV_ENABLE | EV_ADD, 0, 0, &client);
+}

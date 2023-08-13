@@ -27,9 +27,9 @@ class HttpRequestManager
 		HttpRequest&	getFrontReq(void);
 		HttpRequest		popReq(void);
 
-		void dynamicOpenFd(Client& client);
-		void dynamicSendReqtoCgi(Client& client);
-		void dynamicRunCgi(Client& client);
+		void dynamicOpenFd(Client& client); // dynamic
+		void sendReqtoEvent(Client& client); //for all(static and dynamic)
+		void dynamicRunCgi(Client& client); //dynamic
 		void dynamicMakeResponse(Client& client);
 		void dynamicReadFromCgi(Client& client);
 };

@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: soulee <soulee@student.42seoul.kr>         +#+  +:+       +#+         #
+#    By: gyopark <gyopark@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/06/02 11:11:51 by jinam             #+#    #+#              #
-#    Updated: 2023/08/13 16:14:26 by soulee           ###   ########.fr        #
+#    Updated: 2023/08/13 14:33:14 by gyopark          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,7 @@ NAME = webserv
 # Cmd & Options
 CXX			= c++
 # CXXFLAGS	= -fsanitize=address -g -Wall -Werror -Wextra -std=c++98 -g3
-CXXFLAGS = -g3
+CXXFLAGS	= -g3
 RM 			= rm
 RMFLAGS		= -f
 OUT_DIR		= objs
