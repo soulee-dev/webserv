@@ -6,10 +6,9 @@ std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 {
     struct stat stat_buf;
 	HttpRequest&	request = client.httpRequestManager.getRequest();
-	std::cout << request.file_name.c_str() << '\n';
     int ret_stat = stat(request.file_name.c_str(), &stat_buf);
 	std::vector<unsigned char>	result;
-	request.check = 0;
+	request.check = 0; 
 
     if (S_ISDIR(stat_buf.st_mode) || (is_directory(request.file_name)))
 	{

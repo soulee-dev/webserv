@@ -80,7 +80,7 @@ bool Client::readEventProcess(void) // RUN 5
 		for (it = myLocations.begin(); it != myLocations.end(); ++it) 
 		{
 			std::cout << BOLDGREEN << "블록에 있는 URI 인자 : " << it->first << RESET << std::endl;
-			std::cout << "It->first : " << it->first << ' ' << " TOFINDURI : " << toFindUri << '\n';
+			std::cout << "it->first(블록 URI) : " << it->first << ' ' << " TOFINDURI : " << toFindUri << '\n';
 			if (it->first == "/" && toFindUri == "/")
 			{
 				foundUri = it->first;
@@ -100,11 +100,11 @@ bool Client::readEventProcess(void) // RUN 5
 			if (NoUri == 0)
 			{
 				foundUri = it->first;
-				std::cout << BOLDCYAN << "FOUND URI : " << foundUri << '\n';
+				std::cout << BOLDCYAN << "찾았다 URI!!!! => " << foundUri << RESET << '\n';
 				break ;
 			}
 			else
-				std::cout << "NO URI matching with sentence\n";
+				std::cout << BOLDRED << "NO URI matching with sentence!!\n" << RESET;
 		}
 		std::cout << "No Uri : " << NoUri << '\n' << "No Uri 0이면 일치하는 블록 있는거고 1이면 없는 겁니다. 1일때 예외처리 해줘야 합니다.\n";
 		std::cout << "----------------\n";
@@ -114,28 +114,18 @@ bool Client::readEventProcess(void) // RUN 5
 			int size = it->first.size();
 			foundFile = toFindUri.substr(size, 10240);
 			if (foundFile.empty())
-				std::cout << BOLDRED << "foundfile is empty...\n" << RESET;
+			{
+				std::cout << BOLDCYAN << "FOUND URI is " << foundUri << '\n';
+				std::cout << BOLDRED << "FOUND FILE is empty...\n" << RESET;
+			}
 			else
-				std::cout << BOLDCYAN << "FOUND FILE : " << foundFile << RESET << '\n';
+			{
+				std::cout << BOLDCYAN << "FOUND URI : " << foundUri << '\n';
+				std::cout << "FOUND FILE : " << foundFile << RESET << '\n';
+			}
 		}
 
-		int block = 0;
-		std::vector<std::string> list;
-		if (foundFile.empty())
-		{
-			list = this->getServer()->getLocations()[foundUri].getIndex();
-		}
-		else
-		{
-			block = 1;
-			list.push_back(foundFile);
-		}		
-		std::string rootie = this->getServer()->getLocations()[foundUri].getRoot();
-		bool isAutoIndex = this->getServer()->getLocations()[foundUri].getAutoIndex();
-		list.push_back(rootie);
-		list.push_back(std::to_string(isAutoIndex));
-
-		httpRequestManager.setHandler(list);
+		httpRequestManager.setHandler(*this, foundUri, foundFile);
 		httpRequestManager.dynamicOpenFd(*this);
 		httpRequestManager.sendReqtoEvent(*this);
 		httpRequestManager.dynamicRunCgi(*this);

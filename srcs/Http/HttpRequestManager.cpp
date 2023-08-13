@@ -1,17 +1,13 @@
 #include "HttpRequestManager.hpp"
+#include "../Client.hpp"
 
 HttpRequestManager::HttpRequestManager()
 {
 }
 
-void	HttpRequestManager::setHandler(std::vector<std::string> List)
+void	HttpRequestManager::setHandler(Client &client, std::string foundUri, std::string foundFile)
 {
-	getFrontReq() = parse(List);
-
-	for (int i = 0; i == List.size(); i++)
-	{
-		std::cout << "LIST : " << List[i] << '\n';
-	}
+	getFrontReq() = parse(client, foundUri, foundFile);
 
 	if (getFrontReq().is_static)
 	{
@@ -25,22 +21,23 @@ void	HttpRequestManager::setHandler(std::vector<std::string> List)
 	}
 }
 
-HttpRequest	HttpRequestManager::parse(std::vector<std::string> List)
+HttpRequest	HttpRequestManager::parse(Client &client, std::string foundUri, std::string foundFile)
 {
 	HttpRequest		result;
 	HttpRequest		request = getFrontReq();
 	
-	std::istringstream	iss(List.back());
-	List.pop_back();
-	iss >> result.isAutoIndex;
-	result.root = List.back();
-	std::cout << "ROOT : " << result.root << '\n';
-	List.pop_back();
+	result.isAutoIndex = client.getServer()->getLocations()[foundUri].getAutoIndex();
+	result.root = client.getServer()->getLocations()[foundUri].getRoot();
+	std::cout << BOLDBLUE << "ROOT : " << result.root << '\n';
 	result.method = request.method;
 	std::cout << BOLDMAGENTA << "METHOD : " << result.method << '\n';
-	
-	result.indexList = List;
 	result.errnum = 0;
+
+	std::string	fileName;
+	if (foundFile.empty())
+		fileName = client.getServer()->getLocations()[foundUri].getIndex()[0];
+	else
+		fileName = foundFile;
 
 	if (request.uri.find("cgi-bin") == std::string::npos)
 	{
@@ -48,7 +45,7 @@ HttpRequest	HttpRequestManager::parse(std::vector<std::string> List)
 		result.is_static = true;
 		result.path = request.uri;
 		std::cout << BOLDYELLOW << "URI(PATH) : " << request.uri << '\n';
-		result.file_name = result.root + "/" + List[0]; // + result.path;
+		result.file_name = result.root + "/" + fileName; // + result.path;
 		std::cout << BOLDGREEN << "FILE NAME : " << result.file_name << '\n';
 	}
 	else
