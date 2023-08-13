@@ -2,7 +2,6 @@
 
 HttpRequestManager::HttpRequestManager()
 {
-
 }
 
 void	HttpRequestManager::setHandler(std::vector<std::string> List)
@@ -13,13 +12,11 @@ void	HttpRequestManager::setHandler(std::vector<std::string> List)
 	{
 		std::cout << BOLDRED << " -- PROCESSING STATIC -- \n";
 		handler = new StaticHandler();
-		handler->handlerType = STATIC;
 	}
 	else
 	{
 		std::cout << BOLDBLUE << " -- PROCESSING DYNAMIC --\n";
 		handler = new DynamicHandler();
-		handler->handlerType = DYNAMIC;
 	}
 }
 
@@ -60,8 +57,6 @@ HttpRequest	HttpRequestManager::parse(std::vector<std::string> List)
 	return result;
 };
 
-
-
 HttpRequest& HttpRequestManager::getBackReq(void) { return queReq.back(); }
 
 HttpRequest& HttpRequestManager::getFrontReq(void) { return queReq.front(); }
@@ -72,7 +67,6 @@ HttpRequest HttpRequestManager::popReq(void)
     queReq.pop();
     return ret;
 }
-
 
 std::vector<unsigned char>	HttpRequestManager::processRequest(Client& client)
 {
@@ -95,11 +89,6 @@ void	HttpRequestManager::pushReq()
 	queReq.push(HttpRequest());
 }
 
-int		HttpRequestManager::getHandlerType()
-{
-	return handler->handlerType;
-}
-
 void HttpRequestManager::dynamicOpenFd(Client& client)
 {
 	DynamicHandler *currHandler = dynamic_cast<DynamicHandler*>(handler);
@@ -107,6 +96,7 @@ void HttpRequestManager::dynamicOpenFd(Client& client)
 	if (currHandler != NULL)
 		currHandler->openFd(client);
 }
+
 void HttpRequestManager::dynamicSendReqtoCgi(Client& client)
 {
 	DynamicHandler *currHandler = dynamic_cast<DynamicHandler*>(handler);
@@ -114,6 +104,7 @@ void HttpRequestManager::dynamicSendReqtoCgi(Client& client)
 	if (currHandler != NULL)
 		currHandler->sendReqtoCgi(client);
 }
+
 void HttpRequestManager::dynamicRunCgi(Client& client)
 {
 	DynamicHandler *currHandler = dynamic_cast<DynamicHandler*>(handler);
@@ -121,6 +112,7 @@ void HttpRequestManager::dynamicRunCgi(Client& client)
 	if (currHandler != NULL)
 		currHandler->runCgi(client);
 }
+
 void HttpRequestManager::dynamicMakeResponse(Client& client)
 {
 	DynamicHandler *currHandler = dynamic_cast<DynamicHandler*>(handler);
@@ -128,6 +120,7 @@ void HttpRequestManager::dynamicMakeResponse(Client& client)
 	if (currHandler != NULL)
 		currHandler->makeResponse(client);
 }
+
 void HttpRequestManager::dynamicReadFromCgi(Client& client)
 {
 	DynamicHandler *currHandler = dynamic_cast<DynamicHandler*>(handler);
