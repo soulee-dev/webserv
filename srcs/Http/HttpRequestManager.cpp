@@ -106,12 +106,18 @@ void HttpRequestManager::dynamicOpenFd(Client& client)
 	if (currHandler != NULL)
 		currHandler->openFd(client);
 }
-void HttpRequestManager::dynamicSendReqtoCgi(Client& client)
+void HttpRequestManager::sendReqtoEvent(Client& client)
 {
 	DynamicHandler *currHandler = dynamic_cast<DynamicHandler*>(handler);
 
 	if (currHandler != NULL)
 		currHandler->sendReqtoCgi(client);
+	else
+	{
+		StaticHandler *currHandler = dynamic_cast<StaticHandler*>(handler);
+		currHandler->sendReqtoEvent(client);
+	}
+
 }
 void HttpRequestManager::dynamicRunCgi(Client& client)
 {

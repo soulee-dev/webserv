@@ -7,6 +7,7 @@ class StaticHandler : public Handler
 	public:
 		std::vector<unsigned char>	handle(Client& client) const;
 		~StaticHandler();
+		void sendReqtoEvent(Client& client);
 };
 
 std::string	getFileType(std::string file_name);

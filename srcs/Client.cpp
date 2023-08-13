@@ -101,7 +101,7 @@ bool Client::readEventProcess(void) // RUN 5
         httpRequestManager.setHandler(list);
 
         httpRequestManager.dynamicOpenFd(*this);
-        httpRequestManager.dynamicSendReqtoCgi(*this);
+        httpRequestManager.sendReqtoEvent(*this);
         httpRequestManager.dynamicRunCgi(*this);
     
 

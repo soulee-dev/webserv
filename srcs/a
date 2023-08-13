@@ -1,0 +1,17 @@
+
+cgi 
+
+pipe 1  0 -> write
+pipe 2  1 -> read
+
+{
+-> ?????? fork()
+body.buffer pipe 1 0 -> write  --> kevent
+changeevent(); -> servermanager 
+execve();
+
+
+
+pipe2 1 -> read -> sendbuffer  --> kevent
+
+}

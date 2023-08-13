@@ -20,7 +20,7 @@ std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 			return (result);
 		}
 	}
-	else
+	else // warning 뜸 : Different  indentation for if  and corresponding else
 		std::cout << BOLDMAGENTA << "Is NOT DIRECTORY ---> " << request.file_name << RESET << std::endl;
 	
 	std::cout << request.file_name.c_str() << '\n';
@@ -227,3 +227,9 @@ std::string	getFileType(std::string file_name)
 
 StaticHandler::~StaticHandler()
 {}
+
+void StaticHandler::sendReqtoEvent(Client &client)
+{
+	client.sendBuffer = handle(client);
+	client.events->changeEvents(client.getClientFd(), EVFILT_WRITE, EV_ENABLE | EV_ADD, 0, 0, &client);
+}
