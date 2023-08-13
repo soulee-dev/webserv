@@ -101,7 +101,6 @@ void ServerManager::runEventProcess(struct kevent& currEvent) // RUN 2
 		timerEventProcess(currEvent);
 		break;
 	}
-	// std::cout << BOLDCYAN << " -- DEBUG 3 -- \n";
 }
 
 void ServerManager::runServerManager(void) // RUN 1
@@ -117,12 +116,8 @@ void ServerManager::runServerManager(void) // RUN 1
 		for (int i = 0; i != newEvent; i++)
 		{ 
 			runEventProcess(events[i]); // (RUN 2)
-			// std::cout << BOLDCYAN << " -- DEBUG 2 -- \n";
 		}
-		// in here blocked method error
-		// std::cout << BOLDCYAN << " -- DEBUG 1 -- \n";
 	}
-	// std::cout << BOLDCYAN << " -- DEBUG 0 -- \n"; // 출력 안됨
 }
 
 int ServerManager::acceptClient(SOCKET server_fd)
@@ -197,7 +192,7 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
         acceptClient(currEvent.ident);
     else if (clientManager.isClient(currEvent.ident) == true) // clinet
     {
-        //Timer 설정 
+        //Timer 설정
         events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_EOF, NOTE_SECONDS, 100, currEvent.udata);
         if (clientManager.readEventProcess(currEvent))
         {
@@ -211,19 +206,14 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
         ssize_t ret = clientManager.CgiToResReadProcess(currEvent); // -1: read error, 0 : read left 1 : read done
         if (ret != 0) // read error || read done
         {
-            //events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
             events.changeEvents(currEvent.ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
 			
 			close(currClient->httpRequestManager.getRequest().pipe_fd_back[0]);
-
-            // close(currEvent.ident);
         }
         if (ret == 1)
         {
             // cgi 에서 결과물을 받을때 response 가 완성 되어있다면, client 로 바로 전송 하도록 이벤트를 보냄
-            //Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
 			// TODO: CGI 리팩토링 후 buildResponse 함수 만들어서 다 붙여주기
-
 			currClient->sendBuffer.insert(currClient->sendBuffer.end(), currClient->getFrontRes().startLine.begin(), currClient->getFrontRes().startLine.end());
 			currClient->sendBuffer.insert(currClient->sendBuffer.end(), currClient->getFrontRes().body.begin(), currClient->getFrontRes().body.end());
 
@@ -233,8 +223,6 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
 			currClient->popRes();
             events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 			wait(NULL);
-            // close(currEvent.ident);
-
             // 위의 경우가 아닌 경우에는 client 의 response 메시지를 만드는 function 을 호출한다. 
             // 예 : currClient->getRes().buildResponse();
         }
@@ -250,7 +238,6 @@ void ServerManager::writeEventProcess(struct kevent& currEvent)
     }
     else
     {
-		std::cout << "REQTOCGI?" << std::endl;
         ssize_t res = clientManager.ReqToCgiWriteProcess(currEvent);
         if (res != 0)
 		{
@@ -261,8 +248,6 @@ void ServerManager::writeEventProcess(struct kevent& currEvent)
 			currClient->httpRequestManager.dynamicMakeResponse(*currClient);
 			close(currClient->httpRequestManager.getRequest().pipe_fd[1]);
 		} // -1 : write error, 1 : buffer->size == 0, 0 : buffer left
-                   // if (res == -1)
-        //     close(currEvent.ident);
         // BE에서 pipe fd 관리를 해주는 것이라면 여기에서 close하는게 맞나 싶음.. 중복 close로 엉뚱한 fd가 close되진 않을까..?
         // readEventProcess 에서도 동일한 이슈..
     }

@@ -6,10 +6,6 @@
 #include "Http/HttpRequestManager.hpp"
 #include <queue>
 
-#include <sys/stat.h> // for struct stat
-#include <dirent.h> // for directory listing
-
-
 enum RequestMessageParseState
 {
     READY,
@@ -52,7 +48,6 @@ public:
     Client& operator=(const Client& ref);
 
     ~Client();
-    // void runServer(void);
 
     // setter
     void setFd(int fd);
@@ -73,5 +68,4 @@ public:
     bool readMessage(void);
     bool isSendBufferEmpty(void);
     void createResponse(void);
-
 };

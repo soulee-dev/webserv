@@ -43,5 +43,4 @@ public:
     std::string getServerName() const;
 
     // function
-    void DebugPrint();
 };

@@ -126,7 +126,6 @@ void	processDirectory(Client& client)
 	while ((entry = readdir(dir)) != NULL)
 	{
 		fileList.push_back(entry->d_name);
-		// std::cout << BOLDBLACK << "ENTRY : " << fileList.back() << '\n'; 
 		// 디렉토리 내 파일 이름 확인
 	}
 	if (compareStaticFile(fileList, request))

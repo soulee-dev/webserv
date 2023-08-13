@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 
 class Server;
+
 class ClientManager
 {
 private:

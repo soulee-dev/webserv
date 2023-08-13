@@ -15,5 +15,4 @@ public:
     // -- gyopark ADDED -- //
     void    fillResponse(std::string &header, std::vector<char> buffer);
     std::vector<unsigned char>  getResponse() const;
-
 };

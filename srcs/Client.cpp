@@ -3,11 +3,9 @@
 #include "Server.hpp"
 #include <algorithm>
 #include <fcntl.h>
-// --- gyopark ADDED --- //
 #include "Color.hpp"
 #include "Http/HttpRequestManager.hpp"
 #include "Http/Handler/ErrorHandler.hpp"
-// --------------------- //
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
@@ -39,7 +37,6 @@ Client& Client::operator=(Client const& rhs)
 
 // getter
 ResponseMessage& Client::getBackRes(void) { return queRes.back(); }
-
 ResponseMessage& Client::getFrontRes(void) { return queRes.front(); }
 
 
@@ -51,18 +48,12 @@ void Client::setFd(int fd) { this->client_fd = fd; }
 void Client::setEvents(Event* event) { this->events = event; };
 // functions
 
-
 ResponseMessage Client::popRes(void)
 {
 	ResponseMessage ret = queRes.front();
 	queRes.pop();
 	return ret;
 }
-
-// void Client::runServer()
-// {
-//     this->server->runServer(this->req, this->res);
-// }
 
 void Client::errorEventProcess(void)
 {
@@ -145,15 +136,9 @@ bool Client::readEventProcess(void) // RUN 5
 		list.push_back(std::to_string(isAutoIndex));
 
 		httpRequestManager.setHandler(list);
-
 		httpRequestManager.dynamicOpenFd(*this);
 		httpRequestManager.sendReqtoEvent(*this);
 		httpRequestManager.dynamicRunCgi(*this);
-	
-		// std::vector<unsigned char>  buffer  = httpRequestManager.processRequest(*this);
-		// END Parse Request Message //
-
-		// sendBuffer.insert(sendBuffer.end(), buffer.begin(), buffer.end());
 		std::cout << BOLDCYAN << " -- SUCCESSFULLY SEND MESSAGE -- \n\n";
 		parseState = READY;
 		return true;
@@ -256,7 +241,6 @@ void Client::readHeader(const char* buffer)
 			}
 			else
 			{
-
 				// header Parsing이 끝난 후, flag를 done이나 BODY 가 아닌 CHUNKED 로
 				// 보내기 위한 로직
 				std::map<std::string, std::string>::iterator encodingIt =
@@ -491,7 +475,6 @@ void Client::readHttpVersion(const char* buffer)
 
 bool Client::isSendBufferEmpty(void)
 {
-
 	return (sendBuffer.size() == 0);
 }
 

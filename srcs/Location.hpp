@@ -29,7 +29,6 @@ public:
     Location();
     ~Location();
     bool fillLocationBlock(std::map<std::string, std::string>& mapSentence);
-    void DebugPrint();
 
     // getter
     std::string getRoot(void) const;
