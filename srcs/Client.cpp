@@ -66,10 +66,12 @@ bool Client::readEventProcess(void) // RUN 5
 	{
 		// 메시지 처리하여 버퍼에 입력해야함.
 		// events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
-		httpRequestManager.setHandler(*this);
-		httpRequestManager.dynamicOpenFd(*this);
-		httpRequestManager.sendReqtoEvent(*this);
-		httpRequestManager.dynamicRunCgi(*this);
+		HttpRequest&	request = this->httpRequestManager.getRequest();
+
+		httpRequestManager.SetHandler(*this);
+		httpRequestManager.DynamicOpenFd(*this);
+		httpRequestManager.SendReqtoEvent(*this);
+		httpRequestManager.DynamicRunCgi(*this);
 		std::cout << BOLDCYAN << " -- SUCCESSFULLY SEND MESSAGE -- \n\n";
 		parseState = READY;
 		return true;

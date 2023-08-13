@@ -242,8 +242,8 @@ void ServerManager::writeEventProcess(struct kevent& currEvent)
 			// close(currEvent.ident); // 아래에서 더욱 명시적으로 close를 했음
 			// events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata); // 이미 close한 fd에 대해서 이벤트를 조정하려고 하고 있음
 			Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
-			currClient->httpRequestManager.dynamicReadFromCgi(*currClient);
-			currClient->httpRequestManager.dynamicMakeResponse(*currClient);
+			currClient->httpRequestManager.DynamicReadFromCgi(*currClient);
+			currClient->httpRequestManager.DynamicMakeResponse(*currClient);
 			close(currClient->httpRequestManager.getRequest().pipe_fd[1]);
 		} // -1 : write error, 1 : buffer->size == 0, 0 : buffer left
         // BE에서 pipe fd 관리를 해주는 것이라면 여기에서 close하는게 맞나 싶음.. 중복 close로 엉뚱한 fd가 close되진 않을까..?

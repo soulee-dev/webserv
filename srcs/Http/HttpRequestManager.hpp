@@ -17,8 +17,8 @@ class HttpRequestManager
 		Handler*	handler;
 	public:
 		HttpRequestManager(); 
-		void	parse(Client& client);
-		void		setHandler(Client& client);
+		void		Parse(Client& client);
+		void		SetHandler(Client& client);
 		std::vector<unsigned char>	processRequest(Client& client);
 		~HttpRequestManager();
 		HttpRequest& getRequest();
@@ -28,9 +28,9 @@ class HttpRequestManager
 		HttpRequest&	getFrontReq(void);
 		HttpRequest		popReq(void);
 
-		void dynamicOpenFd(Client& client); // dynamic
-		void sendReqtoEvent(Client& client); //for all(static and dynamic)
-		void dynamicRunCgi(Client& client); //dynamic
-		void dynamicMakeResponse(Client& client);
-		void dynamicReadFromCgi(Client& client);
+		void DynamicOpenFd(Client& client); // dynamic
+		void SendReqtoEvent(Client& client); //for all(static and dynamic)
+		void DynamicRunCgi(Client& client); //dynamic
+		void DynamicMakeResponse(Client& client);
+		void DynamicReadFromCgi(Client& client);
 };

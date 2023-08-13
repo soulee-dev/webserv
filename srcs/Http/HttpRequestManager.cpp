@@ -6,9 +6,9 @@ HttpRequestManager::HttpRequestManager() : handler(NULL)
 {
 }
 
-void	HttpRequestManager::setHandler(Client& client)
+void	HttpRequestManager::SetHandler(Client& client)
 {
-	parse(client);
+	Parse(client);
 	if (getFrontReq().is_static)
 	{
 		std::cout << BOLDRED << " -- PROCESSING STATIC -- \n";
@@ -21,7 +21,7 @@ void	HttpRequestManager::setHandler(Client& client)
 	}
 }
 
-void	HttpRequestManager::parse(Client& client)
+void	HttpRequestManager::Parse(Client& client)
 {
 	HttpRequest&	request = getFrontReq();
 	bool			is_found;
@@ -74,8 +74,11 @@ void	HttpRequestManager::parse(Client& client)
 		request.is_static = false;
 		size_t	pos = request.uri.find('?');
 		if (pos != std::string::npos)
+		{
 			request.cgi_args = request.uri.substr(pos + 1);
-		request.file_name = "." + request.file_name.substr(0, pos);
+			request.cgi_args = request.cgi_args.erase(request.cgi_args.size() - 1);
+		}
+		request.file_name = request.file_name.substr(0, pos);
 	}
 	request.location_uri = found_uri;
 	request.location = client.getServer()->getLocations()[found_uri];
@@ -119,20 +122,20 @@ void	HttpRequestManager::pushReq()
 	queReq.push(HttpRequest());
 }
 
-void HttpRequestManager::dynamicOpenFd(Client& client)
+void HttpRequestManager::DynamicOpenFd(Client& client)
 {
 	DynamicHandler *currHandler = dynamic_cast<DynamicHandler*>(handler);
 
 	if (currHandler != NULL)
-		currHandler->openFd(client);
+		currHandler->OpenFd(client);
 }
 
-void HttpRequestManager::sendReqtoEvent(Client& client)
+void HttpRequestManager::SendReqtoEvent(Client& client)
 {
 	DynamicHandler *currHandler = dynamic_cast<DynamicHandler*>(handler);
 
 	if (currHandler != NULL)
-		currHandler->sendReqtoCgi(client);
+		currHandler->SendReqtoCgi(client);
 	else
 	{
 		StaticHandler *currHandler = dynamic_cast<StaticHandler*>(handler);
@@ -140,26 +143,26 @@ void HttpRequestManager::sendReqtoEvent(Client& client)
 	}
 }
 
-void HttpRequestManager::dynamicRunCgi(Client& client)
+void HttpRequestManager::DynamicRunCgi(Client& client)
 {
 	DynamicHandler *currHandler = dynamic_cast<DynamicHandler*>(handler);
 
 	if (currHandler != NULL)
-		currHandler->runCgi(client);
+		currHandler->RunCgi(client);
 }
 
-void HttpRequestManager::dynamicMakeResponse(Client& client)
+void HttpRequestManager::DynamicMakeResponse(Client& client)
 {
 	DynamicHandler *currHandler = dynamic_cast<DynamicHandler*>(handler);
 
 	if (currHandler != NULL)
-		currHandler->makeResponse(client);
+		currHandler->MakeResponse(client);
 }
 
-void HttpRequestManager::dynamicReadFromCgi(Client& client)
+void HttpRequestManager::DynamicReadFromCgi(Client& client)
 {
 	DynamicHandler *currHandler = dynamic_cast<DynamicHandler*>(handler);
 
 	if (currHandler != NULL)
-		currHandler->readFromCgi(client);
+		currHandler->ReadFromCgi(client);
 }
