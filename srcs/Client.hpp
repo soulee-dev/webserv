@@ -1,7 +1,6 @@
 #pragma once
 #include "Event.hpp"
 #include "Location.hpp"
-#include "RequestMessage.hpp"
 #include "ResponseMessage.hpp"
 #include "Server.hpp"
 #include "Http/HttpRequestManager.hpp"

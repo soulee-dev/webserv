@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Location.hpp"
-#include "RequestMessage.hpp"
 #include "ResponseMessage.hpp"
 #include <map>
 #include <string>
@@ -44,6 +43,5 @@ public:
     std::string getServerName() const;
 
     // function
-    int runServer(RequestMessage& req, ResponseMessage& res);
     void DebugPrint();
 };
