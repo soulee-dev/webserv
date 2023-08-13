@@ -49,27 +49,25 @@ void	HttpRequestManager::parse(Client& client)
 		{
 			if (tmp_uri == location->first)
 			{
-				std::cout << "LOCATION: " << location->first << std::endl; 
 				found_uri = location->first;
 				is_found = true;
-				request.location = client.getServer()->getLocations()[found_uri];
 				break;
 			}
 		}
 	}
 	if (is_found)
 	{
-		request.file_name = request.uri.substr(location_pos + 1);
+		request.file_name = request.uri.substr(location_pos);
 		// Remove last character slash
 		request.file_name.erase(request.file_name.size() - 1);
 	}
+	else
+		found_uri = "/";
+	std::cout << "LOCATION: " << found_uri << std::endl; 
 	if (request.uri.find("cgi-bin") == std::string::npos)
 	{
 		std::string	fileName;
 		request.is_static = true;
-		// request.path = request.location.getRoot() + ;
-		std::cout << BOLDYELLOW << "URI(PATH) : " << request.uri << '\n';
-		std::cout << BOLDGREEN << "FILE NAME : " << request.file_name << '\n';
 	}
 	else
 	{
@@ -79,6 +77,9 @@ void	HttpRequestManager::parse(Client& client)
 			request.cgi_args = request.uri.substr(pos + 1);
 		request.file_name = "." + request.file_name.substr(0, pos);
 	}
+	request.location_uri = found_uri;
+	request.location = client.getServer()->getLocations()[found_uri];
+	request.path = request.location.getRoot() + request.file_name;
 };
 
 HttpRequest& HttpRequestManager::getBackReq(void)

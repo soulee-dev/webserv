@@ -29,6 +29,7 @@ class HttpRequest
 		int pipe_fd[2], pipe_fd_back[2];
 
 		Location	location;
+		std::string	location_uri;
 
     	std::string uri;
 		enum ParseErrorCode errorCode;
@@ -38,10 +39,8 @@ class HttpRequest
 		std::map<std::string, std::string> headers;
 		std::vector<unsigned char> ubuffer;
 		std::vector<unsigned char> body;
-		std::vector<std::string> indexList;
-		std::string	root;
-		std::string target;
-		bool	isAutoIndex;
+		// std::vector<std::string> indexList;
+		// std::string	root;
 		int		check; // 파일이 존재하면서 동시에 autoindex on인 경우를 확인하기 위한 변수
 		// ----------------------------- //
 };

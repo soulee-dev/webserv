@@ -31,6 +31,7 @@ class Handler
 		static bool		IsRegularFile(std::string path);
 		static bool		IsFileReadble(std::string path);
 		static bool		IsFileExist(std::string path);
+		static std::vector<unsigned char>	ServeStatic(std::string& path);
 		virtual std::vector<unsigned char>	handle(Client& client) const = 0;
 		virtual ~Handler();
 };

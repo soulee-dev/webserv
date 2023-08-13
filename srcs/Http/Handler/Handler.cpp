@@ -1,5 +1,6 @@
 #include "Handler.hpp"
 #include "HttpStatusCodes.hpp"
+#include "ErrorHandler.hpp"
 
 std::string	Handler::GetFileType(std::string file_name)
 {
@@ -120,6 +121,21 @@ std::vector<unsigned char>	Handler::ReadStaticFile(std::string& file_name)
 	std::vector<unsigned char> buffer(length);
 	file.read(reinterpret_cast<char*>(&buffer[0]), length);
 	return buffer;
+}
+
+std::vector<unsigned char>	Handler::ServeStatic(std::string& path)
+{
+	std::vector<unsigned char>			body;
+	std::map<std::string, std::string>	headers;
+
+	if (!IsFileExist(path))
+		return ErrorHandler::handler(404);
+	if (!IsRegularFile(path) || !IsFileReadble(path))
+		return ErrorHandler::handler(403);
+	body = ReadStaticFile(path);
+	headers["Connection"] = "close";
+	headers["Content-Type"] = GetFileType(path);
+	return BuildResponse(200, headers, body);
 }
 
 Handler::~Handler()

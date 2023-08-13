@@ -9,7 +9,7 @@ class StaticHandler : public Handler
 		~StaticHandler();
 		void sendReqtoEvent(Client& client);
 		std::vector<unsigned char>	ProcessDirectory(Client& client) const;
-		std::vector<unsigned char>	HandleDirectoryListing(std::string& path) const;
+		std::vector<unsigned char>	HandleDirectoryListing(HttpRequest& request) const;
 };
 
 int	is_directory(std::string fileName);
