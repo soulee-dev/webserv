@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <queue>
+
 #include "Handler/Handler.hpp"
 #include "Handler/StaticHandler.hpp"
 #include "Handler/DynamicHandler.hpp"
@@ -16,8 +17,8 @@ class HttpRequestManager
 		Handler*	handler;
 	public:
 		HttpRequestManager(); 
-		HttpRequest	parse(std::vector<std::string> List);
-		void	setHandler(std::vector<std::string> List);
+		void	parse(Client& client);
+		void		setHandler(Client& client);
 		std::vector<unsigned char>	processRequest(Client& client);
 		~HttpRequestManager();
 		HttpRequest& getRequest();

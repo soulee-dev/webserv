@@ -46,9 +46,7 @@ std::vector<unsigned char>	StaticHandler::HandleDirectoryListing(std::string& pa
 	if (dir == NULL) 
 	// Error Handler를 호출해야 하는 첫 번째 경우 (errnum = 1), 
 	// 현재 default.conf의 root는 /html로 지정되어 있는데, 그 /html이 없는 경우이다.
-	{
 		return ErrorHandler::handler(404);
-	}
 
 	std::stringstream	ss;
 	ss << "<html><body><h1>Directory Listing</h1><ul>";
