@@ -10,8 +10,7 @@ public:
     ~ResponseMessage();
     ResponseMessage(ResponseMessage const& other);
     ResponseMessage& operator=(ResponseMessage const& rhs);
-    std::string statusCode;
-    std::string reasonPhrase;
+    int status_code;
     // -- gyopark ADDED -- //
     void    fillResponse(std::string &header, std::vector<char> buffer);
     std::vector<unsigned char>  getResponse() const;

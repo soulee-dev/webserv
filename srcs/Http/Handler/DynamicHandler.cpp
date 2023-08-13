@@ -63,7 +63,6 @@ void DynamicHandler::runCgi(Client &client)
 	{
 		close(currRequest.pipe_fd[0]); // Close unused read end
 		close(currRequest.pipe_fd_back[1]); // Close unused write end in parent
-		// wait(NULL);
 	}
 }
 
@@ -71,8 +70,7 @@ void DynamicHandler::makeResponse(Client& client)
 {
 	client.createResponse();
 	ResponseMessage& currRes = client.getBackRes();
-	currRes.startLine = "HTTP/1.1 200 OK";
-	currRes.headers["Server"] = "soulee king JJang";
+	currRes.status_code = 200;
 }
 
 void DynamicHandler::readFromCgi(Client& client)
@@ -81,13 +79,12 @@ void DynamicHandler::readFromCgi(Client& client)
     client.events->changeEvents(currRequest.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &client);
 }
 
-
 std::vector<unsigned char>	DynamicHandler::handle(Client& client) const
 {
 	HttpRequest&	request = client.httpRequestManager.getRequest();
 
 	std::vector<unsigned char> result;
-    std::string file_type = getFileType(request.file_name);
+    std::string file_type = GetFileType(request.file_name);
     std::ostringstream  header;
     std::vector<char> buffer;
     int pipe_fd[2], pipe_fd_back[2];

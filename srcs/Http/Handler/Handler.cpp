@@ -1,6 +1,7 @@
 #include "Handler.hpp"
+#include "HttpStatusCodes.hpp"
 
-std::string	Handler::getFileType(std::string file_name) const
+std::string	Handler::GetFileType(std::string file_name)
 {
 	std::string	file_type;
 
@@ -35,20 +36,32 @@ std::vector<unsigned char>	Handler::stou(std::stringstream& ss)
 	return result;
 }
 
-// void	Handler::buildHeader(int status_code)
-// {
-// 	std::stringstream			ss;
+std::vector<unsigned char>	Handler::BuildHeader(int status_code, std::map<std::string, std::string>& headers, bool include_crlf)
+{
+	std::stringstream			ss;
 
-// 	// start-line
-// 	ss << SERVER_HTTP_VERSION << SPACE << status_code << SPACE << get_status_codes().find(status_code)->second << CRLF;
-// 	ss << "Server:" << SPACE << SERVER_NAME << CRLF;
-// 	for (std::map<std::string, std::string>::iterator header = headers.begin(); header != headers.end(); ++header)
-// 	{
-// 		ss << header->first << COLON << SPACE << header->second << CRLF;
-// 	}
-// 	ss << CRLF;
-// 	header = stou(ss);
-// }
+	// start-line
+	ss << SERVER_HTTP_VERSION << SPACE << status_code << SPACE << get_status_codes().find(status_code)->second << CRLF;
+	ss << "Server:" << SPACE << SERVER_NAME << CRLF;
+	for (std::map<std::string, std::string>::iterator header = headers.begin(); header != headers.end(); ++header)
+	{
+		ss << header->first << COLON << SPACE << header->second << CRLF;
+	}
+	if (include_crlf)
+		ss << CRLF;
+	return stou(ss);
+}
+
+std::vector<unsigned char>	Handler::BuildResponse(int status_code, std::map<std::string, std::string>& headers, std::vector<unsigned char>& body)
+{
+	std::vector<unsigned char>	response;
+
+	headers["Content-Length"] = itos(body.size());
+	response = BuildHeader(status_code, headers);
+	response.insert(response.end(), body.begin(), body.end());
+	return response;
+}
+
 
 bool	Handler::IsDirectory(std::string path)
 {
@@ -74,6 +87,7 @@ bool	Handler::IsRegularFile(std::string path)
 	return false;
 }
 
+// Check permission file is readable
 bool	Handler::IsFileReadble(std::string path)
 {	
 	struct stat	buf;
@@ -93,6 +107,19 @@ bool	Handler::IsFileExist(std::string path)
 	if (stat(path.c_str(), &buf) == 0)
 		return true;
 	return false;
+}
+
+std::vector<unsigned char>	Handler::ReadStaticFile(std::string& file_name)
+{
+	std::ifstream	file(file_name.c_str(), std::ios::in | std::ios::binary);
+
+	file.seekg(0, std::ios::end);
+	int length = file.tellg();
+	file.seekg(0, std::ios::beg);
+
+	std::vector<unsigned char> buffer(length);
+	file.read(reinterpret_cast<char*>(&buffer[0]), length);
+	return buffer;
 }
 
 Handler::~Handler()

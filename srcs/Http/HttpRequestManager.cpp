@@ -1,6 +1,6 @@
 #include "HttpRequestManager.hpp"
 
-HttpRequestManager::HttpRequestManager()
+HttpRequestManager::HttpRequestManager() : handler(NULL)
 {
 }
 
@@ -86,8 +86,7 @@ HttpRequest& HttpRequestManager::getRequest()
 
 HttpRequestManager::~HttpRequestManager()
 {
-	// TODO: Segfault when destructing instance
-	// delete handler;
+	delete handler;
 }
 
 void	HttpRequestManager::pushReq()

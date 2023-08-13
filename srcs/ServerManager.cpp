@@ -1,5 +1,6 @@
 #include "ServerManager.hpp"
 #include "Color.hpp"
+#include "Http/Handler/Handler.hpp"
 
 // constructors
 ServerManager::~ServerManager(void) {}
@@ -213,11 +214,8 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
         if (ret == 1)
         {
             // cgi 에서 결과물을 받을때 response 가 완성 되어있다면, client 로 바로 전송 하도록 이벤트를 보냄
-			// TODO: CGI 리팩토링 후 buildResponse 함수 만들어서 다 붙여주기
-			currClient->sendBuffer.insert(currClient->sendBuffer.end(), currClient->getFrontRes().startLine.begin(), currClient->getFrontRes().startLine.end());
+			currClient->sendBuffer = Handler::BuildHeader(currClient->getFrontRes().status_code, currClient->getFrontRes().headers, false);
 			currClient->sendBuffer.insert(currClient->sendBuffer.end(), currClient->getFrontRes().body.begin(), currClient->getFrontRes().body.end());
-
-			// TODO: Header 붙이기
 			for (std::vector<unsigned char>::iterator it = currClient->sendBuffer.begin(); it != currClient->sendBuffer.end(); ++it)
 				std::cout << *it;
 			currClient->popRes();
@@ -241,8 +239,8 @@ void ServerManager::writeEventProcess(struct kevent& currEvent)
         ssize_t res = clientManager.ReqToCgiWriteProcess(currEvent);
         if (res != 0)
 		{
-			close(currEvent.ident);
-			events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata);
+			// close(currEvent.ident); // 아래에서 더욱 명시적으로 close를 했음
+			// events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata); // 이미 close한 fd에 대해서 이벤트를 조정하려고 하고 있음
 			Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
 			currClient->httpRequestManager.dynamicReadFromCgi(*currClient);
 			currClient->httpRequestManager.dynamicMakeResponse(*currClient);

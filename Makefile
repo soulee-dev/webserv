@@ -1,16 +1,3 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: gyopark <gyopark@student.42.fr>            +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2023/06/02 11:11:51 by jinam             #+#    #+#              #
-#    Updated: 2023/08/13 14:33:14 by gyopark          ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
-
 # Target
 NAME = webserv
 
@@ -22,7 +9,7 @@ RM 			= rm
 RMFLAGS		= -f
 OUT_DIR		= objs
 SRC_DIR		= srcs
-FILE		= Client ClientManager ConfigFunctions ConfigParser Event Location Message Http/Handler/Handler \
+FILE		= Client ClientManager ConfigFunctions ConfigParser Event Location Message Http/Handler/Handler Http/Handler/HttpStatusCodes \
 				Http/Handler/ErrorHandler ResponseMessage Server ServerManager Http/HttpRequestManager Http/Handler/StaticHandler Http/Handler/DynamicHandler main
 OBJECTS		= $(addprefix $(OUT_DIR)/, $(addsuffix .o, $(FILE)))
 

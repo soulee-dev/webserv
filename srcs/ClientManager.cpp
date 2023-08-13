@@ -91,7 +91,6 @@ int ClientManager::CgiToResReadProcess(struct kevent& currEvent)
     char buffer[BUFFER_SIZE];
 
     ssize_t ret = read(currEvent.ident, buffer, BUFFER_SIZE);
-    std::cout << "inCgiToResRead, ret : " << ret << std::endl;
     if (ret == -1)
         return -1;
     readBuffer.insert(readBuffer.end(), buffer, &buffer[ret]);
