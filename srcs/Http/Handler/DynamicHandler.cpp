@@ -44,7 +44,8 @@ void DynamicHandler::RunCgi(Client& client)
 		close(request.pipe_fd[1]); // Close unused read end
 		close(request.pipe_fd_back[0]); // Close unused write end in parent
 		
-		request.body.resize(100); // max body size
+		if (request.body.size() > 100)
+			request.body.resize(100); // max body size
 
 		int size = request.body.size();
 		std::string size_str = std::to_string(size); //c++ 11 

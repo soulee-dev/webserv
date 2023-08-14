@@ -202,7 +202,6 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
     }
     else // file Read event...
     {
-
         //Cgi에서 보내는 data 를 response의 body 에 저장 
         ssize_t ret = clientManager.CgiToResReadProcess(currEvent); // -1: read error, 0 : read left 1 : read done
         if (ret != 0) // read error || read done
