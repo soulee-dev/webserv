@@ -34,7 +34,7 @@ void	HttpRequestManager::Parse(Client& client)
 	std::map<std::string, Location> locations = client.getServer()->getLocations();
 	std::map<std::string, Location>::iterator location;
                                                                                                   
-	if (request.uri[request.uri.size() -1] != '/')
+	if (request.uri[request.uri.size() - 1] != '/')
 		request.uri += "/";
 	tmp_uri = request.uri;
 	while (tmp_uri != "/")
