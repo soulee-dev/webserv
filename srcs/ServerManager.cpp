@@ -213,12 +213,10 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
         if (ret == 1)
         {
             // cgi 에서 결과물을 받을때 response 가 완성 되어있다면, client 로 바로 전송 하도록 이벤트를 보냄
-			currClient->sendBuffer = Handler::BuildHeader(currClient->getFrontRes().status_code, currClient->getFrontRes().headers, true);
-			currClient->sendBuffer.insert(currClient->sendBuffer.end(), currClient->getFrontRes().body.begin(), currClient->getFrontRes().body.end());
+			currClient->sendBuffer = Handler::BuildResponse(currClient->getFrontRes().status_code, currClient->getFrontRes().headers, currClient->getFrontRes().body, true);
+			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), currClient->getFrontRes().body.begin(), currClient->getFrontRes().body.end());
 			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), CRLF[0], CRLF[2]);
 			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), CRLF[0], CRLF[2]);
-			for (std::vector<unsigned char>::iterator it = currClient->sendBuffer.begin(); it != currClient->sendBuffer.end(); ++it)
-				std::cout << *it;
 			currClient->popRes();
             events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 			wait(NULL);

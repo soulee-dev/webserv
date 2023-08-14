@@ -11,7 +11,6 @@ int main() {
 
     int content_length = atoi(content_length_str);
     printf("Connection: close\r\n");
-    printf("Content-length: %d\r\n", content_length);
     printf("Content-type: text/html\r\n\r\n");
     if (content_length <= 0) {
         printf("Invalid CONTENT_LENGTH.\n");
@@ -30,9 +29,7 @@ int main() {
     post_data[content_length] = '\0'; // Null-terminate the string
 
     // Print the POST data
-    printf("%s\n", post_data);
-
-    printf("\r\n\r\n");
+    printf("%s", post_data);
     // Free the buffer
     free(post_data);
 
