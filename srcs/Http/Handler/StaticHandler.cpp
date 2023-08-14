@@ -29,7 +29,8 @@ std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 		int res = file.is_open();
 		file.close();
 		headers["Connection"] = "close";
-		request.body.resize(100);
+		// TODO max body size
+		// request.body.resize(100);
 		if (res)
 			return BuildResponse(200, headers, request.body);
 		return BuildResponse(201, headers, request.body);
