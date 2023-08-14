@@ -26,21 +26,14 @@ class HttpRequest
 		std::string	file_name;
 		std::string	path;
 		std::string	cgi_args;
+		std::string	cgi_path_info;
 		int pipe_fd[2], pipe_fd_back[2];
-
 		Location	location;
 		std::string	location_uri;
-
     	std::string uri;
 		enum ParseErrorCode errorCode;
-		// ------- gyopark ADDED ------- //
 		std::string	method;
 		std::string	header;
 		std::map<std::string, std::string> headers;
-		std::vector<unsigned char> ubuffer;
 		std::vector<unsigned char> body;
-		// std::vector<std::string> indexList;
-		// std::string	root;
-		int		check; // 파일이 존재하면서 동시에 autoindex on인 경우를 확인하기 위한 변수
-		// ----------------------------- //
 };

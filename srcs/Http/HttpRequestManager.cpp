@@ -61,7 +61,6 @@ void	HttpRequestManager::Parse(Client& client)
 	if (is_found)
 	{
 		request.file_name = request.uri.substr(location_pos);
-		// Remove last character slash
 		request.file_name.erase(request.file_name.size() - 1);
 	}
 	else
@@ -77,6 +76,7 @@ void	HttpRequestManager::Parse(Client& client)
 	else
 	{
 		request.is_static = false;
+		request.cgi_path_info = "";
 		size_t	pos = request.uri.find('?');
 		if (pos != std::string::npos)
 		{
@@ -84,10 +84,19 @@ void	HttpRequestManager::Parse(Client& client)
 			request.cgi_args = request.cgi_args.erase(request.cgi_args.size() - 1);
 		}
 		request.file_name = request.file_name.substr(0, pos);
+		size_t	path_pos = request.file_name.find("/", 10);
+		if (path_pos != std::string::npos)
+		{
+			request.cgi_path_info = request.file_name.substr(path_pos);
+			request.file_name = request.file_name.substr(0, path_pos);
+		}
 	}
 	request.location_uri = found_uri;
 	request.location = client.getServer()->getLocations()[found_uri];
 	request.path = request.location.getRoot() + request.file_name;
+	std::cout << "FILENAME: " << request.file_name << std::endl;
+	std::cout << "PATH_INFO: " << request.cgi_path_info << std::endl;
+	std::cout << "PATH: " << request.path << std::endl;
 };
 
 HttpRequest& HttpRequestManager::getBackReq(void)
