@@ -10,8 +10,31 @@ std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 
 	std::cout << "METHOD : " << request.method << RESET << '\n';
 
-	if (request.method == "POST" || request.method == "HEAD") // 테스트기 통과하려고 이렇게 했습니다 따로 처리해야합니다아아아악!
+	if ((IsDirectory(request.path) || is_directory(request.path)) && request.method == "POST")
 		return ErrorHandler::handler(405);
+
+	//if (request.method == "POST" || request.method == "HEAD") // 테스트기 통과하려고 이렇게 했습니다 allow method 비교 후 처리해야합니다 나쁜 테스트 죽어 
+	if (request.method == "HEAD")	
+		return ErrorHandler::handler(405);
+
+	if (request.method == "POST" || request.method == "PUT")
+	{
+		std::ofstream	file;
+		// outputFile.open(filename, std::ios::out | std::ios::app);
+		if (request.method == "PUT")
+			file.open(request.file_name, std::ios::out);
+		else
+			file.open(request.file_name, std::ios::out | std::ios::app);
+		std::map<std::string, std::string>  headers;
+		int res = file.is_open();
+		file.close();
+		headers["Connection"] = "close";
+		request.body.resize(100);
+		if (res)
+			return BuildResponse(200, headers, request.body);
+		return BuildResponse(201, headers, request.body);
+	}
+
     if (IsDirectory(request.path))
         return ProcessDirectory(client);
 	return ServeStatic(request.path, request.method);

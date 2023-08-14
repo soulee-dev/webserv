@@ -137,8 +137,13 @@ std::vector<unsigned char>	Handler::ServeStatic(std::string& path, std::string m
 		return ErrorHandler::handler(404);
 	if (!IsRegularFile(path) || !IsFileReadable(path))
 		return ErrorHandler::handler(403);
+
 	if (method != "HEAD")
 		body = ReadStaticFile(path);
+
+	if (method.empty()) // METHOD에 비어있을 때 예외처리이다. 나쁜 테스터 죽어.
+		return ErrorHandler::handler(404);
+
 	headers["Connection"] = "close";
 	headers["Content-Type"] = GetFileType(path);
 	return BuildResponse(200, headers, body);

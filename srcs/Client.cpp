@@ -67,6 +67,7 @@ bool Client::readEventProcess(void) // RUN 5
 		// 메시지 처리하여 버퍼에 입력해야함.
 		// events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
 		HttpRequest&	request = this->httpRequestManager.getRequest();
+		std::cout << BOLDGREEN << "URI : " << request.uri << RESET << '\n';
 
 		httpRequestManager.SetHandler(*this);
 		httpRequestManager.DynamicOpenFd(*this);

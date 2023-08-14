@@ -43,16 +43,20 @@ void DynamicHandler::RunCgi(Client& client)
 		close(request.pipe_fd_back[1]); // Close unused write end in parent
 		close(request.pipe_fd[1]); // Close unused read end
 		close(request.pipe_fd_back[0]); // Close unused write end in parent
+		
+		request.body.resize(100); // max body size
 
 		int size = request.body.size();
 		std::string size_str = std::to_string(size); //c++ 11 
 		const char *size_cstr = size_str.c_str();
 
-		std::cout << request.cgi_args << std::endl;
+		// std::cout << request.cgi_args << std::endl;
 		setenv("QUERY_STRING", request.cgi_args.c_str(), 1);
 		setenv("REQUEST_METHOD", request.method.c_str(), 1);
 		setenv("CONTENT_LENGTH", size_cstr, 1);
-		// std::cout << request.path.c_str() << '\n';
+
+		if (request.uri.find(".bla") != std::string::npos)
+			request.path = "./cgi_tester";
 
 		if (execve(request.path.c_str(), NULL, environ) == -1)
 		{

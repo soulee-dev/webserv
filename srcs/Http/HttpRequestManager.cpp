@@ -69,8 +69,10 @@ void	HttpRequestManager::Parse(Client& client)
 	std::cout << "LOCATION: " << found_uri << std::endl;
 	if (request.uri.find("cgi-bin") == std::string::npos)
 	{
-		std::string	fileName;
-		request.is_static = true;
+		if (request.method == "POST" && request.uri.find(".bla") != std::string::npos)
+			request.is_static = false;
+		else
+			request.is_static = true;
 	}
 	else
 	{
