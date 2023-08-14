@@ -5,6 +5,7 @@
 #include <sstream>
 #include <vector>
 #define CONFIG_ERROR -1
+
 enum METHOD
 {
     GET = 0,
@@ -20,7 +21,6 @@ class ConfigParser
 public:
     std::map<int, Server> server;
     void parseConfig(std::string const& configFileName);
-    void DebugPrint();
     ~ConfigParser();
     ConfigParser();
 

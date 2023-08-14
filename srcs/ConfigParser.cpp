@@ -46,7 +46,7 @@ void ConfigParser::parseConfig(std::string const& configFileName)
     fileStream.open(configFileName.c_str(), std::ios::in);
     if (fileStream.fail())
     {
-        std::cout << "filed to open config file" << std::endl;
+        std::cout << "failed to open config file" << std::endl;
         exit(1);
     }
     while (fileStream.get(c))
@@ -79,8 +79,4 @@ void ConfigParser::parseConfig(std::string const& configFileName)
         exit(1);
     }
     std::cout << "config parse success!!" << std::endl;
-
-#ifdef DEBUG
-    this->DebugPrint();
-#endif
 }

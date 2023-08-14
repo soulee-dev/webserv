@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 
 class Server;
+
 class ClientManager
 {
 private:
@@ -22,5 +23,6 @@ public:
 
     bool readEventProcess(struct kevent& currEvent);
     bool writeEventProcess(struct kevent& currEvent);
-    bool nonClientWriteEventProcess(struct kevent& currEvent);
+    int ReqToCgiWriteProcess(struct kevent& currEvent);
+    int CgiToResReadProcess(struct kevent& currEvent);
 };
