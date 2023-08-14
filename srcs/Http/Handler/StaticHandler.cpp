@@ -8,7 +8,8 @@ std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 	HttpRequest&				request = client.httpRequestManager.getRequest();
 	std::vector<unsigned char>	result;
 
-	// is_directopy
+	if (request.method == "POST")
+		return ErrorHandler::handler(405);
     if (IsDirectory(request.path))
         return ProcessDirectory(client);
 	return ServeStatic(request.path);
@@ -56,25 +57,29 @@ std::vector<unsigned char>	StaticHandler::HandleDirectoryListing(HttpRequest& re
 	return BuildResponse(200, headers, body);
 }
 
-std::vector<unsigned char>	StaticHandler::ProcessDirectory(Client& client) const
+std::vector<unsigned char> StaticHandler::ProcessDirectory(Client& client) const
 {
-	HttpRequest&	request = client.httpRequestManager.getRequest();
-	std::vector<std::string>::iterator	it;
+    HttpRequest& request = client.httpRequestManager.getRequest();
+    std::vector<std::string> indexVec = request.location.getIndex(); // 벡터에 대한 참조
+    std::vector<std::string>::iterator it;
 
-	for (it = request.location.getIndex().begin(); it != request.location.getIndex().end(); ++it)
-	{
-		std::string index = *it;
-		std::string	path = request.path + "/" + index;
-		if (IsRegularFile(path) && IsFileReadble(path))
-		{
-			request.path = path;
-			std::cout << BOLDRED << "PATH : " << path << RESET << '\n';
-			return ServeStatic(request.path);
-		}
-	}
-	if (request.location.getAutoIndex())
-		return HandleDirectoryListing(request);
-	return ErrorHandler::handler(404);
+    if (!indexVec.empty()) // 벡터가 비어있지 않은지 확인
+    {
+        for (it = indexVec.begin(); it != indexVec.end(); ++it)
+        {
+            std::string index = *it;
+            std::string path = request.path + "/" + index;
+            if (IsRegularFile(path) && IsFileReadable(path))
+            {
+                request.path = path;
+                std::cout << BOLDRED << "PATH : " << path << RESET << '\n';
+                return ServeStatic(request.path);
+            }
+        }
+    }
+    if (request.location.getAutoIndex())
+        return HandleDirectoryListing(request);
+    return ErrorHandler::handler(404);
 }
 
 StaticHandler::~StaticHandler()

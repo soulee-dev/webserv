@@ -89,7 +89,7 @@ bool	Handler::IsRegularFile(std::string path)
 }
 
 // Check permission file is readable
-bool	Handler::IsFileReadble(std::string path)
+bool	Handler::IsFileReadable(std::string path)
 {	
 	struct stat	buf;
 
@@ -130,7 +130,7 @@ std::vector<unsigned char>	Handler::ServeStatic(std::string& path)
 
 	if (!IsFileExist(path))
 		return ErrorHandler::handler(404);
-	if (!IsRegularFile(path) || !IsFileReadble(path))
+	if (!IsRegularFile(path) || !IsFileReadable(path))
 		return ErrorHandler::handler(403);
 	body = ReadStaticFile(path);
 	headers["Connection"] = "close";

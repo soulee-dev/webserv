@@ -2,14 +2,17 @@
 #include "../Client.hpp"
 #include "../Location.hpp"
 
-HttpRequestManager::HttpRequestManager() : handler(NULL)
-{
-}
+HttpRequestManager::HttpRequestManager() : handler(NULL) {}
 
 void	HttpRequestManager::SetHandler(Client& client)
 {
 	Parse(client);
-	if (getFrontReq().is_static)
+	if (getFrontReq().method == "DELETE")
+	{
+		std::cout << BOLDRED << " -- PROCESS DELETING METHOD -- \n";
+		handler = new DeleteHandler();
+	}
+	else if (getFrontReq().is_static)
 	{
 		std::cout << BOLDRED << " -- PROCESSING STATIC -- \n";
 		handler = new StaticHandler();
@@ -136,6 +139,11 @@ void HttpRequestManager::SendReqtoEvent(Client& client)
 
 	if (currHandler != NULL)
 		currHandler->SendReqtoCgi(client);
+	else if (getFrontReq().method == "DELETE")
+	{
+		DeleteHandler *currHandler = dynamic_cast<DeleteHandler*>(handler);
+		currHandler->sendReqtoDelete(client);
+	}
 	else
 	{
 		StaticHandler *currHandler = dynamic_cast<StaticHandler*>(handler);

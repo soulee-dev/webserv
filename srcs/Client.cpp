@@ -72,7 +72,7 @@ bool Client::readEventProcess(void) // RUN 5
 		httpRequestManager.DynamicOpenFd(*this);
 		httpRequestManager.SendReqtoEvent(*this);
 		httpRequestManager.DynamicRunCgi(*this);
-		std::cout << BOLDCYAN << " -- SUCCESSFULLY SEND MESSAGE -- \n\n";
+		std::cout << BOLDCYAN << " -- SUCCESSFULLY SEND MESSAGE -- \n\n" << RESET;
 		parseState = READY;
 		return true;
 	}

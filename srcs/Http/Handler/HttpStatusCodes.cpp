@@ -8,6 +8,7 @@ std::map<int, std::string> get_status_codes()
         STATUS_CODES[200] = "OK";
 		STATUS_CODES[403] = "Forbidden";
 		STATUS_CODES[404] = "Not Found";
+        STATUS_CODES[405] = "Method Not Allowed";
     }
     return STATUS_CODES;
 }
