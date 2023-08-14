@@ -11,7 +11,7 @@ std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 	// is_directopy
     if (IsDirectory(request.path))
         return ProcessDirectory(client);
-	return ServeStatic(request.path);
+	return ServeStatic(client, request.path);
 }
 
 int	is_directory(std::string fileName)
@@ -21,7 +21,7 @@ int	is_directory(std::string fileName)
 	return (0);
 }
 
-std::vector<unsigned char>	StaticHandler::HandleDirectoryListing(HttpRequest& request) const
+std::vector<unsigned char>	StaticHandler::HandleDirectoryListing(Client& client, HttpRequest& request) const
 {	
 	std::vector<unsigned char>			body;
 	std::map<std::string, std::string>	headers;
@@ -30,7 +30,7 @@ std::vector<unsigned char>	StaticHandler::HandleDirectoryListing(HttpRequest& re
 	if (!dir) 
 	// Error Handler를 호출해야 하는 첫 번째 경우 (errnum = 1), 
 	// 현재 default.conf의 root는 /html로 지정되어 있는데, 그 /html이 없는 경우이다.
-		return ErrorHandler::handler(404);
+		return ErrorHandler::handler(client, 404);
 
 	std::stringstream	ss;
 	ss << "<!DOCTYPE html><head><title>Index of " << request.path;
@@ -69,12 +69,16 @@ std::vector<unsigned char>	StaticHandler::ProcessDirectory(Client& client) const
 		{
 			request.path = path;
 			std::cout << BOLDRED << "PATH : " << path << RESET << '\n';
-			return ServeStatic(request.path);
+			return ServeStatic(client, request.path);
 		}
 	}
 	if (request.location.getAutoIndex())
-		return HandleDirectoryListing(request);
-	return ErrorHandler::handler(404);
+		return HandleDirectoryListing(client, request);
+	return ErrorHandler::handler(client, 404);
+}
+
+StaticHandler::StaticHandler(Client const& client) : Handler(client)
+{
 }
 
 StaticHandler::~StaticHandler()

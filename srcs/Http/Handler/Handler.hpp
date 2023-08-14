@@ -21,6 +21,7 @@ class Handler
 {
 	private:
 	public:
+		Handler(Client const &);
 		static std::vector<unsigned char>	BuildHeader(int status_code, std::map<std::string, std::string>& headers, bool include_crlf=true);
 		static std::string	GetFileType(std::string file_name);
 		static std::string	itos(int num);
@@ -31,7 +32,7 @@ class Handler
 		static bool		IsRegularFile(std::string path);
 		static bool		IsFileReadble(std::string path);
 		static bool		IsFileExist(std::string path);
-		static std::vector<unsigned char>	ServeStatic(std::string& path);
+		static std::vector<unsigned char>	ServeStatic(Client& client, std::string& path);
 		virtual std::vector<unsigned char>	handle(Client& client) const = 0;
 		virtual ~Handler();
 };

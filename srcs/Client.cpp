@@ -19,7 +19,7 @@ Client::~Client() {}
 Client::Client(Client const& other)
 	: client_fd(other.client_fd), server(other.server),
 	  queRes(other.queRes), readBuffer(other.readBuffer),
-	  sendBuffer(other.sendBuffer), parseState(METHOD) {}
+	  parseState(READY), sendBuffer(other.sendBuffer){}
 // operators
 Client& Client::operator=(Client const& rhs)
 {
@@ -66,8 +66,6 @@ bool Client::readEventProcess(void) // RUN 5
 	{
 		// 메시지 처리하여 버퍼에 입력해야함.
 		// events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
-		HttpRequest&	request = this->httpRequestManager.getRequest();
-
 		httpRequestManager.SetHandler(*this);
 		httpRequestManager.DynamicOpenFd(*this);
 		httpRequestManager.SendReqtoEvent(*this);
@@ -231,7 +229,7 @@ void Client::readChunked(const char* buffer, size_t readSize)
 {
 	static const char* crlf = "\r\n";
 	static std::string strbodySize;
-	static long longBodySize;
+	static size_t longBodySize;
 	static bool haveToReadBody = false;
 	HttpRequest& req = httpRequestManager.getBackReq();
 

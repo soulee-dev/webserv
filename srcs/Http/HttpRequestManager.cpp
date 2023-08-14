@@ -12,12 +12,12 @@ void	HttpRequestManager::SetHandler(Client& client)
 	if (getFrontReq().is_static)
 	{
 		std::cout << BOLDRED << " -- PROCESSING STATIC -- \n";
-		handler = new StaticHandler();
+		handler = new StaticHandler(client);
 	}
 	else
 	{
 		std::cout << BOLDBLUE << " -- PROCESSING DYNAMIC --\n";
-		handler = new DynamicHandler();
+		handler = new DynamicHandler(client);
 	}
 }
 

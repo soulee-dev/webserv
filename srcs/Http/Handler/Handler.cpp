@@ -123,19 +123,24 @@ std::vector<unsigned char>	Handler::ReadStaticFile(std::string& file_name)
 	return buffer;
 }
 
-std::vector<unsigned char>	Handler::ServeStatic(std::string& path)
+std::vector<unsigned char>	Handler::ServeStatic(Client& client, std::string& path)
 {
 	std::vector<unsigned char>			body;
 	std::map<std::string, std::string>	headers;
 
 	if (!IsFileExist(path))
-		return ErrorHandler::handler(404);
+		return ErrorHandler::handler(client, 404);
 	if (!IsRegularFile(path) || !IsFileReadble(path))
-		return ErrorHandler::handler(403);
+		return ErrorHandler::handler(client, 403);
 	body = ReadStaticFile(path);
 	headers["Connection"] = "close";
 	headers["Content-Type"] = GetFileType(path);
 	return BuildResponse(200, headers, body);
+}
+
+Handler::Handler(Client const& client)
+{
+	static_cast<void>(client);
 }
 
 Handler::~Handler()

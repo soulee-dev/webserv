@@ -54,11 +54,7 @@ void DynamicHandler::RunCgi(Client& client)
 		setenv("CONTENT_LENGTH", size_cstr, 1);
 
 		if (execve(request.path.c_str(), NULL, environ) == -1)
-		{
-			// TODO: Handle Error
 			std::cerr << "execve error" << std::endl;
-			exit(0);
-		}
 	}
 	else
 	{
@@ -85,6 +81,10 @@ std::vector<unsigned char>	DynamicHandler::handle(Client& client) const
 	static_cast<void>(client);
 	std::vector<unsigned char> result;
 	return result;
+}
+
+DynamicHandler::DynamicHandler(Client const& client) : Handler(client)
+{
 }
 
 DynamicHandler::~DynamicHandler()
