@@ -51,7 +51,6 @@ void DynamicHandler::RunCgi(Client& client)
 		std::string size_str = std::to_string(size); //c++ 11 
 		const char *size_cstr = size_str.c_str();
 
-		// std::cout << request.cgi_args << std::endl;
 		setenv("QUERY_STRING", request.cgi_args.c_str(), 1);
 		setenv("REQUEST_METHOD", request.method.c_str(), 1);
 		setenv("CONTENT_LENGTH", size_cstr, 1);
