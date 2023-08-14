@@ -57,9 +57,14 @@ std::vector<unsigned char>	Handler::BuildResponse(int status_code, std::map<std:
 {
 	std::vector<unsigned char>	response;
 
+	std::cout << "CODE : " << status_code << "\n\n";
 	headers["Content-Length"] = itos(body.size());
 	response = BuildHeader(status_code, headers);
 	response.insert(response.end(), body.begin(), body.end());
+
+	for (size_t i = 0; i < response.size(); i++)
+		std::cout << response[i];
+	std::cout << '\n';
 	return response;
 }
 
@@ -123,7 +128,7 @@ std::vector<unsigned char>	Handler::ReadStaticFile(std::string& file_name)
 	return buffer;
 }
 
-std::vector<unsigned char>	Handler::ServeStatic(std::string& path)
+std::vector<unsigned char>	Handler::ServeStatic(std::string& path, std::string method)
 {
 	std::vector<unsigned char>			body;
 	std::map<std::string, std::string>	headers;
@@ -132,7 +137,8 @@ std::vector<unsigned char>	Handler::ServeStatic(std::string& path)
 		return ErrorHandler::handler(404);
 	if (!IsRegularFile(path) || !IsFileReadable(path))
 		return ErrorHandler::handler(403);
-	body = ReadStaticFile(path);
+	if (method != "HEAD")
+		body = ReadStaticFile(path);
 	headers["Connection"] = "close";
 	headers["Content-Type"] = GetFileType(path);
 	return BuildResponse(200, headers, body);

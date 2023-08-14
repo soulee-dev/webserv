@@ -8,11 +8,13 @@ std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 	HttpRequest&				request = client.httpRequestManager.getRequest();
 	std::vector<unsigned char>	result;
 
+	std::cout << "METHOD : " << request.method << RESET << '\n';
+
 	if (request.method == "POST")
 		return ErrorHandler::handler(405);
     if (IsDirectory(request.path))
         return ProcessDirectory(client);
-	return ServeStatic(request.path);
+	return ServeStatic(request.path, request.method);
 }
 
 int	is_directory(std::string fileName)
@@ -73,7 +75,7 @@ std::vector<unsigned char> StaticHandler::ProcessDirectory(Client& client) const
             {
                 request.path = path;
                 std::cout << BOLDRED << "PATH : " << path << RESET << '\n';
-                return ServeStatic(request.path);
+                return ServeStatic(request.path, request.method);
             }
         }
     }

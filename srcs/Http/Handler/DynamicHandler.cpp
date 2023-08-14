@@ -52,6 +52,7 @@ void DynamicHandler::RunCgi(Client& client)
 		setenv("QUERY_STRING", request.cgi_args.c_str(), 1);
 		setenv("REQUEST_METHOD", request.method.c_str(), 1);
 		setenv("CONTENT_LENGTH", size_cstr, 1);
+		// std::cout << request.path.c_str() << '\n';
 
 		if (execve(request.path.c_str(), NULL, environ) == -1)
 		{

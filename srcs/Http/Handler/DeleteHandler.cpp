@@ -9,7 +9,7 @@ std::vector<unsigned char>	DeleteHandler::handle(Client &client) const
     std::vector<unsigned char> emptyBody;
 
 	if (std::remove(path) == 0)
-	{
+	 {
 		std::cout << "DELETE SUCCESS\n" << RESET;
         headers["Connection"] = "close";
 	}

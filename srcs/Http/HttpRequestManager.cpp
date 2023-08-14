@@ -66,7 +66,7 @@ void	HttpRequestManager::Parse(Client& client)
 	}
 	else
 		found_uri = "/";
-	std::cout << "LOCATION: " << found_uri << std::endl; 
+	std::cout << "LOCATION: " << found_uri << std::endl;
 	if (request.uri.find("cgi-bin") == std::string::npos)
 	{
 		std::string	fileName;
