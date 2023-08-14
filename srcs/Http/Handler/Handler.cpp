@@ -53,13 +53,13 @@ std::vector<unsigned char>	Handler::BuildHeader(int status_code, std::map<std::s
 	return stou(ss);
 }
 
-std::vector<unsigned char>	Handler::BuildResponse(int status_code, std::map<std::string, std::string>& headers, std::vector<unsigned char>& body)
+std::vector<unsigned char>	Handler::BuildResponse(int status_code, std::map<std::string, std::string>& headers, std::vector<unsigned char>& body, bool include_crlf)
 {
 	std::vector<unsigned char>	response;
 
 	std::cout << "CODE : " << status_code << "\n\n";
 	headers["Content-Length"] = itos(body.size());
-	response = BuildHeader(status_code, headers);
+	response = BuildHeader(status_code, headers, include_crlf);
 	response.insert(response.end(), body.begin(), body.end());
 
 	for (size_t i = 0; i < response.size(); i++)

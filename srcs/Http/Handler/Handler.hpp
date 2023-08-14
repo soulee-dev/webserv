@@ -25,7 +25,7 @@ class Handler
 		static std::string	GetFileType(std::string file_name);
 		static std::string	itos(int num);
 		static std::vector<unsigned char>	stou(std::stringstream& ss);
-		static std::vector<unsigned char>	BuildResponse(int status_code, std::map<std::string, std::string>& headers, std::vector<unsigned char>& body);
+		static std::vector<unsigned char>	BuildResponse(int status_code, std::map<std::string, std::string>& headers, std::vector<unsigned char>& body, bool include_crlf=true);
 		static std::vector<unsigned char>	ReadStaticFile(std::string& file_name);
 		static bool		IsDirectory(std::string path);
 		static bool		IsRegularFile(std::string path);
