@@ -53,13 +53,23 @@ std::vector<unsigned char>	Handler::BuildHeader(int status_code, std::map<std::s
 	return stou(ss);
 }
 
-std::vector<unsigned char>	Handler::BuildResponse(int status_code, std::map<std::string, std::string>& headers, std::vector<unsigned char>& body, bool include_crlf)
+std::vector<unsigned char>	Handler::BuildResponse(int status_code, std::map<std::string, std::string>& headers, std::vector<unsigned char>& body, bool is_cgi)
 {
 	std::vector<unsigned char>	response;
-
+	std::string	body_str(body.begin(), body.end());
 	std::cout << "CODE : " << status_code << "\n\n";
-	headers["Content-Length"] = itos(body.size());
-	response = BuildHeader(status_code, headers, include_crlf);
+	
+	if (is_cgi)
+	{
+		size_t	pos = body_str.find("\r\n\r\n");
+		headers["Content-Length"] = itos(body.size() - pos - 4);
+		response = BuildHeader(status_code, headers, false);
+	}
+	else
+	{
+		headers["Content-Length"] = itos(body.size());
+		response = BuildHeader(status_code, headers, true);
+	}
 	response.insert(response.end(), body.begin(), body.end());
 
 	for (size_t i = 0; i < response.size(); i++)
