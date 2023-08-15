@@ -22,6 +22,7 @@ std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 		std::ifstream	ifs(request.path);
 		std::ofstream	ofs;
 		int res = ifs.is_open();
+		ifs.close();
 
 		if (request.method == "PUT")
 			ofs.open(request.path, std::ios::out | std::ios::trunc); // 출력 모드로, 이미 파일이 존재한다면 파일을 비우고 새로 엽니다.
