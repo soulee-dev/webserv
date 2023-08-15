@@ -168,7 +168,7 @@ void Client::readHeader(const char* buffer)
 				return;
 			}
 			else if (req.headers.find("content-length") == req.headers.end() &&
-					 (req.method == "GET" || req.method == "DELETE" || req.method == "HEAD" || req.method == "POST"))
+					 (req.method == "GET" || req.method == "DELETE" || req.method == "HEAD"))
 			{
 				parseState = DONE;
 				return;
@@ -254,8 +254,8 @@ void Client::readChunked(const char* buffer, size_t readSize)
 			if (longBodySize == 0)
 			{
 				parseState = DONE;
-                if (req.body.size() > server->getClientBodySize())
-                  req.body.resize(server->getClientBodySize());
+                // if (req.body.size() > server->getClientBodySize())
+                //   req.body.resize(server->getClientBodySize());
 				haveToReadBody = false;
 				return;
 			}

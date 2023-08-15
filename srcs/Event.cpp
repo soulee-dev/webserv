@@ -18,8 +18,7 @@ Event& Event::operator=(const Event& ref)
 }
 struct kevent& Event::operator[](int idx)
 {
-    if (0 <= idx && idx < EVENTLIST_SIZE)
-        return eventList[idx];
+    if (0 <= idx && idx < EVENTLIST_SIZE) return eventList[idx];
     else
     {
         std::cout << "eventList index Error" << std::endl;
@@ -61,4 +60,13 @@ int Event::newEvents(void)
 void Event::clearChangeEventList(void)
 {
     changeList.clear();
+}
+
+std::ostream& operator<<(std::ostream &out, struct kevent& val)
+{
+	out << "ident : " << val.ident 
+		<< " filter : " << val.filter
+		<< " flags : " << val.flags
+		<< std::endl;
+	return out;
 }

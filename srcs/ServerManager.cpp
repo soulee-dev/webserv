@@ -110,14 +110,17 @@ void ServerManager::runServerManager(void) // RUN 1
 
 	while (1)
 	{
+		std::cout << "START EVENT " << std::endl;
 		newEvent = events.newEvents();
 		if (newEvent == -1)
 			exitWebServer("kevent() error");
 		events.clearChangeEventList();
 		for (int i = 0; i != newEvent; i++)
 		{ 
+			std::cout << events[i] << std::endl;
 			runEventProcess(events[i]); // (RUN 2)
 		}
+		std::cout << "END EVENT " << std::endl;
 	}
 }
 
@@ -203,6 +206,7 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
     else // file Read event...
     {
         //Cgi에서 보내는 data 를 response의 body 에 저장 
+        events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
         ssize_t ret = clientManager.CgiToResReadProcess(currEvent); // -1: read error, 0 : read left 1 : read done
         if (ret != 0) // read error || read done
         {
@@ -218,7 +222,6 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
 			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), CRLF[0], CRLF[2]);
 			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), CRLF[0], CRLF[2]);
 			currClient->popRes();
-            events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 			wait(NULL);
             // 위의 경우가 아닌 경우에는 client 의 response 메시지를 만드는 function 을 호출한다. 
             // 예 : currClient->getRes().buildResponse();

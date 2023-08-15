@@ -66,14 +66,16 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
     Client* client = reinterpret_cast<Client*>(currEvent.udata);
     HttpRequest&    request = client->httpRequestManager.getRequest();
     std::vector<unsigned char>& buffer = request.body;
+	const int MAXSIZE = (buffer.size() > 10000) ? 10000 : buffer.size();
 
-    int writeSize = write(currEvent.ident, &buffer[0], buffer.size());
+    int writeSize = write(currEvent.ident, &buffer[0], MAXSIZE);
     if (writeSize == -1)
     {
         std::cout << "write() error" << std::endl;
         std::cout << "errno : " << errno << std::endl;
         return -1;
     }
+	std::cout << "WRITE SIZE : " << writeSize << std::endl;
     buffer.erase(buffer.begin(), buffer.begin() + writeSize);
     if (buffer.size() == 0)
         return 1;
