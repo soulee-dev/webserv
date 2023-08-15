@@ -1,2 +1,9 @@
 *.o
+objs
 webserv
+.clang-format
+.vscode
+.DS_Store
+cmake-build-debug
+CMakeLists.txt
+.idea
