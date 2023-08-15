@@ -111,8 +111,7 @@ std::vector<unsigned char> StaticHandler::ProcessDirectory(Client& client) const
     return ErrorHandler::handler(404);
 }
 
-StaticHandler::~StaticHandler()
-{}
+StaticHandler::~StaticHandler() {}
 
 void StaticHandler::sendReqtoEvent(Client &client)
 {

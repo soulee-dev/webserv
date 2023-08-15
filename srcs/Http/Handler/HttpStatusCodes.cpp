@@ -7,9 +7,11 @@ std::map<int, std::string> get_status_codes()
 	{
         STATUS_CODES[200] = "OK";
         STATUS_CODES[201] = "Created";
+        STATUS_CODES[400] = "Bad Request";
 		STATUS_CODES[403] = "Forbidden";
 		STATUS_CODES[404] = "Not Found";
         STATUS_CODES[405] = "Method Not Allowed";
+        STATUS_CODES[505] = "HTTP Version Not Supported";
     }
     return STATUS_CODES;
 }

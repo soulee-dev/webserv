@@ -62,17 +62,24 @@ void Client::errorEventProcess(void)
 
 bool Client::readEventProcess(void) // RUN 5
 {
-	if (parseState == DONE || parseState == ERROR)
+	HttpRequest&	request = this->httpRequestManager.getRequest();
+	if (parseState == DONE)
 	{
 		// 메시지 처리하여 버퍼에 입력해야함.
 		// events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
-		HttpRequest&	request = this->httpRequestManager.getRequest();
 		std::cout << BOLDGREEN << "URI : " << request.uri << RESET << '\n';
 
 		httpRequestManager.SetHandler(*this);
 		httpRequestManager.DynamicOpenFd(*this);
 		httpRequestManager.SendReqtoEvent(*this);
 		httpRequestManager.DynamicRunCgi(*this);
+		std::cout << BOLDCYAN << " -- SUCCESSFULLY SEND MESSAGE -- \n\n" << RESET;
+		parseState = READY;
+		return true;
+	}
+	else
+	{
+		ErrorHandler::sendReqtoError(*this);
 		std::cout << BOLDCYAN << " -- SUCCESSFULLY SEND MESSAGE -- \n\n" << RESET;
 		parseState = READY;
 		return true;
