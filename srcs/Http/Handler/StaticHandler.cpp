@@ -17,25 +17,36 @@ std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 	if (request.method == "HEAD")	
 		return ErrorHandler::handle(client, 405);
 
-	if (request.method == "POST" || request.method == "PUT")
+	if (request.method == "POST" || request.method == "PUT") // PUT 메서드 처리
 	{
-		std::ofstream	file;
-		// outputFile.open(filename, std::ios::out | std::ios::app);
+		std::ifstream	ifs(request.path);
+		std::ofstream	ofs;
+		int res = ifs.is_open();
+		ifs.close(); // infile close
+
 		if (request.method == "PUT")
-			file.open(request.file_name, std::ios::out);
+			ofs.open(request.path, std::ios::out | std::ios::trunc); // 출력 모드로, 이미 파일이 존재한다면 파일을 비우고 새로 엽니다.
 		else
-			file.open(request.file_name, std::ios::out | std::ios::app);
+			ofs.open(request.path, std::ios::out | std::ios::app); // 이건 append여서 put 아닙니다(따로 처리 필요).
+
 		std::map<std::string, std::string>  headers;
-		int res = file.is_open();
-		file.close();
+		if (ofs.fail()) // 파일 열기에 실패했으면
+			ErrorHandler::handler(404); // 404 에러를 호출합니다.
+		
 		headers["Connection"] = "close";
 		// TODO max body size
 		// request.body.resize(100);
+		for (size_t i = 0; i < request.body.size(); i++)
+			ofs << request.body[i];
+		ofs.close(); //outfile close
+
+		// curl -v -X DELETE -d "body" http://localhost/put_test/file_should_exist_after
+		// 파일 지우고 200, 201 테스트해보려면 위에 curl 입력하면 됩니다.
+
 		if (res)
 			return BuildResponse(200, headers, request.body);
 		return BuildResponse(201, headers, request.body);
 	}
-
     if (IsDirectory(request.path))
         return ProcessDirectory(client);
 	return ServeStatic(client, request.path, request.method);

@@ -254,6 +254,8 @@ void Client::readChunked(const char* buffer, size_t readSize)
 			if (longBodySize == 0)
 			{
 				parseState = DONE;
+                if (req.body.size() > server->getClientBodySize())
+                  req.body.resize(server->getClientBodySize());
 				haveToReadBody = false;
 				return;
 			}
@@ -276,6 +278,14 @@ void Client::readChunked(const char* buffer, size_t readSize)
 	}
 }
 
+size_t minLen(size_t a, size_t b)
+{
+  if (a > b)
+    return b;
+  else
+    return a;
+}
+
 void Client::readBody(const char* buffer, size_t readSize)
 {
 	std::vector<unsigned char>::iterator pos;
@@ -284,8 +294,10 @@ void Client::readBody(const char* buffer, size_t readSize)
 	readBuffer.insert(readBuffer.end(), buffer, buffer + readSize);
 	if (req.headers.find("content-length") != req.headers.end())
 	{
-		size_t lengthToRead =
-			atoi(req.headers["content-length"].c_str()) - req.body.size();
+        size_t contentLen = atoi(req.headers["content-length"].c_str());
+        size_t maxLen = minLen(contentLen, server->getClientBodySize());
+        size_t lengthToRead = maxLen - req.body.size();
+			// atoi(req.headers["content-length"].c_str()) - req.body.size();
 		if (lengthToRead > readBuffer.size())
 		{
 			req.body.insert(req.body.end(), readBuffer.begin(), readBuffer.end());
