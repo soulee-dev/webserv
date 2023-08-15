@@ -295,7 +295,7 @@ void Client::readBody(const char* buffer, size_t readSize)
 	if (req.headers.find("content-length") != req.headers.end())
 	{
         size_t contentLen = atoi(req.headers["content-length"].c_str());
-		size_t maxLen = minLen(contentLen, server->getClientBodySize());
+        size_t maxLen = minLen(contentLen, server->getClientBodySize());
         size_t lengthToRead = maxLen - req.body.size();
 			// atoi(req.headers["content-length"].c_str()) - req.body.size();
 		if (lengthToRead > readBuffer.size())

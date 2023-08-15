@@ -34,7 +34,6 @@ std::vector<unsigned char>	Handler::stou(std::stringstream& ss)
 {
 	std::string					tmp_string = ss.str();
 	std::vector<unsigned char>	result(tmp_string.begin(), tmp_string.end());
-    std::cout << tmp_string << std::endl;
 	return result;
 }
 
