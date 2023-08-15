@@ -72,9 +72,9 @@ std::vector<unsigned char>	Handler::BuildResponse(int status_code, std::map<std:
 	}
 	response.insert(response.end(), body.begin(), body.end());
 
-	for (size_t i = 0; i < response.size(); i++)
-		std::cout << response[i];
-	std::cout << '\n';
+	// for (size_t i = 0; i < response.size(); i++)
+	// 	std::cout << response[i];
+	// std::cout << '\n';
 	return response;
 }
 
