@@ -7,5 +7,6 @@ class ErrorHandler : public Handler
 	private:
 
 	public:
-		static std::vector<unsigned char>	handler(int status_code);
+		static std::vector<unsigned char>	handle(Client &client, int status_code);
+		std::vector<unsigned char>	handle(Client& client);
 };

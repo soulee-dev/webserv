@@ -1,6 +1,6 @@
 #include "ErrorHandler.hpp"
 
-std::vector<unsigned char>	ErrorHandler::handler(int status_code)
+std::vector<unsigned char>	ErrorHandler::handle(Client &client, int status_code)
 {
 	std::vector<unsigned char>			body;
 	std::map<std::string, std::string>	headers;
@@ -13,4 +13,9 @@ std::vector<unsigned char>	ErrorHandler::handler(int status_code)
 	headers["Connection"] = "close";
 	headers["Content-Type"] = GetFileType(file_name);
 	return BuildResponse(status_code, headers, body);
+}
+
+std::vector<unsigned char>	ErrorHandler::handle(Client& client)
+{
+	static_cast<void>(client);
 }
