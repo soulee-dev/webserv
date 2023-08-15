@@ -31,7 +31,7 @@ std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 
 		std::map<std::string, std::string>  headers;
 		if (ofs.fail()) // 파일 열기에 실패했으면
-			ErrorHandler::handler(404); // 404 에러를 호출합니다.
+			ErrorHandler::handle(client, 404); // 404 에러를 호출합니다.
 		
 		headers["Connection"] = "close";
 		// TODO max body size
