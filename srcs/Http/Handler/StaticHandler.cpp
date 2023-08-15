@@ -22,7 +22,7 @@ std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 		std::ifstream	ifs(request.path);
 		std::ofstream	ofs;
 		int res = ifs.is_open();
-		ifs.close();
+		ifs.close(); // infile close
 
 		if (request.method == "PUT")
 			ofs.open(request.path, std::ios::out | std::ios::trunc); // 출력 모드로, 이미 파일이 존재한다면 파일을 비우고 새로 엽니다.
@@ -38,7 +38,7 @@ std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 		// request.body.resize(100);
 		for (size_t i = 0; i < request.body.size(); i++)
 			ofs << request.body[i];
-		ofs.close();
+		ofs.close(); //outfile close
 
 		// curl -v -X DELETE -d "body" http://localhost/put_test/file_should_exist_after
 		// 파일 지우고 200, 201 테스트해보려면 위에 curl 입력하면 됩니다.
