@@ -8,10 +8,10 @@
 
 enum METHOD
 {
-    GET = 0,
-    POST = 1,
-    PUT = 2,
-    DELETE = 4
+    GET = 1,
+    POST = 2,
+    PUT = 4,
+    DELETE = 8,
 };
 
 class Location;
