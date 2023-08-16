@@ -1,5 +1,6 @@
 #include "DynamicHandler.hpp"
 #include "../../Client.hpp"
+#include <fcntl.h>
 
 extern char **environ;
 
@@ -12,6 +13,10 @@ void DynamicHandler::OpenFd(Client &client)
 		std::cerr << "Pipe error" << std::endl;
 		exit(0);
 	}
+	fcntl(currRequest.pipe_fd[0], F_SETFL, O_NONBLOCK);
+	fcntl(currRequest.pipe_fd_back[1], F_SETFL, O_NONBLOCK);
+	fcntl(currRequest.pipe_fd[1], F_SETFL, O_NONBLOCK);
+	fcntl(currRequest.pipe_fd_back[0], F_SETFL, O_NONBLOCK);
 }
 
 void DynamicHandler::SendReqtoCgi(Client &client)
@@ -19,8 +24,10 @@ void DynamicHandler::SendReqtoCgi(Client &client)
 	HttpRequest &request = client.httpRequestManager.getRequest();
 
     std::string body(request.body.begin(), request.body.end());
-	std::cout << BOLDGREEN << "BODY\n" << body << RESET << '\n';
+	// std::cout << BOLDGREEN << "BODY\n" << body << RESET << '\n';
+	client.createResponse();
     client.events->changeEvents(request.pipe_fd[1], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &client);
+    client.events->changeEvents(request.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &client);
 }
 
 void DynamicHandler::RunCgi(Client& client)
@@ -77,7 +84,6 @@ void DynamicHandler::RunCgi(Client& client)
 
 void DynamicHandler::MakeResponse(Client& client)
 {
-	client.createResponse();
 	ResponseMessage& currRes = client.getBackRes();
 	currRes.status_code = 200;
 }

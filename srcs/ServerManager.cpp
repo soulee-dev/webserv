@@ -110,14 +110,17 @@ void ServerManager::runServerManager(void) // RUN 1
 
 	while (1)
 	{
+		std::cout << "START EVENT " << std::endl;
 		newEvent = events.newEvents();
 		if (newEvent == -1)
 			exitWebServer("kevent() error");
 		events.clearChangeEventList();
 		for (int i = 0; i != newEvent; i++)
 		{ 
+			std::cout << events[i] << std::endl;
 			runEventProcess(events[i]); // (RUN 2)
 		}
+		std::cout << "END EVENT " << std::endl;
 	}
 }
 
@@ -214,11 +217,11 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
         {
             // cgi 에서 결과물을 받을때 response 가 완성 되어있다면, client 로 바로 전송 하도록 이벤트를 보냄
 			currClient->sendBuffer = Handler::BuildResponse(currClient->getFrontRes().status_code, currClient->getFrontRes().headers, currClient->getFrontRes().body, true);
+			events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), currClient->getFrontRes().body.begin(), currClient->getFrontRes().body.end());
 			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), CRLF[0], CRLF[2]);
 			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), CRLF[0], CRLF[2]);
 			currClient->popRes();
-            events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 			wait(NULL);
             // 위의 경우가 아닌 경우에는 client 의 response 메시지를 만드는 function 을 호출한다. 
             // 예 : currClient->getRes().buildResponse();
