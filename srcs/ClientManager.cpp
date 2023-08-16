@@ -74,6 +74,7 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
         std::cout << "write() error" << std::endl;
         std::cout << "errno : " << errno << std::endl;
         return -1;
+        
     }
 	std::cout << "WRITE SIZE : " << writeSize << std::endl;
     std::cout << "LEFT SIZE : " << buffer.size() << std::endl;

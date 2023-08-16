@@ -10,10 +10,10 @@ std::vector<unsigned char>	ErrorHandler::handle(Client &client, int status_code)
 
 	std::map<std::vector<int>, std::string> const& errorPage = client.getServer()->getErrorPage();
 	std::map<std::vector<int>, std::string>::const_iterator it = errorPage.begin();
-	for (; it != errorPage.end(); it++)
+	for (; it != errorPage.end(); ++it)
 	{
 		std::vector<int>::const_iterator it2 = it->first.begin();
-		for (; it2 != it->first.end(); it2++)
+		for (; it2 != it->first.end(); ++it2)
 		{
 			std::cout << "it2 : " << *it2 << std::endl;
 			if (status_code == *it2)
@@ -28,6 +28,7 @@ std::vector<unsigned char>	ErrorHandler::handle(Client &client, int status_code)
 	if (find_flag)
 	{
 		std::cout << "찾았어요!" << std::endl;
+		std::cout << BOLDCYAN << it->second << RESET << '\n';
 		file_name = "./error_pages/" + it->second;
 	}
 	else
@@ -47,7 +48,6 @@ std::vector<unsigned char>	ErrorHandler::handle(Client &client, int status_code)
 
 void ErrorHandler::sendReqtoError(Client &client)
 {
-	int err = client.httpRequestManager.getRequest().errorCode;
-	std::cout << BOLDRED << "ERR CODE : " << err << '\n';
-	client.sendBuffer = ErrorHandler::handle(client, err);
+	int errCode = client.httpRequestManager.getBackReq().errorCode;
+	client.sendBuffer = ErrorHandler::handle(client, errCode);
 }

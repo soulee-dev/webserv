@@ -17,6 +17,8 @@ void DynamicHandler::OpenFd(Client &client)
 	fcntl(currRequest.pipe_fd_back[1], F_SETFL, O_NONBLOCK);
 	fcntl(currRequest.pipe_fd[1], F_SETFL, O_NONBLOCK);
 	fcntl(currRequest.pipe_fd_back[0], F_SETFL, O_NONBLOCK);
+	// ADD TIMER IN CGI
+	client.events->changeEvents(currRequest.pipe_fd_back[0], EVFILT_TIMER, EV_ADD | EV_ENABLE, NOTE_SECONDS, 10, &client);
 }
 
 void DynamicHandler::SendReqtoCgi(Client &client)

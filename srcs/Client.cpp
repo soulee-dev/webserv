@@ -62,13 +62,13 @@ void Client::errorEventProcess(void)
 
 bool Client::readEventProcess(void) // RUN 5
 {
-	HttpRequest&	request = this->httpRequestManager.getRequest();
+	HttpRequest&	request = this->httpRequestManager.getBackReq();
 	if (parseState == DONE)
 	{
 		// 메시지 처리하여 버퍼에 입력해야함.
 		// events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
 		std::cout << BOLDGREEN << "URI : " << request.uri << RESET << '\n';
-
+		std::cout << BOLDYELLOW << "HTTP VERSION : " << request.httpVersion << RESET << '\n';
 		httpRequestManager.SetHandler(*this);
 		httpRequestManager.DynamicOpenFd(*this);
 		httpRequestManager.SendReqtoEvent(*this);
