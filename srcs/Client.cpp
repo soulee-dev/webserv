@@ -9,6 +9,7 @@
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
+#include "ConfigParser.hpp"
 
 // constructors
 Client::Client() : parseState(READY) {
@@ -176,6 +177,12 @@ void Client::readHeader(const char* buffer)
 				req.errorCode = BAD_REQUEST;
 				return;
 			}
+			else if (checkMethod(req.method))
+			{
+				parseState = ERROR;
+				req.errorCode = BAD_REQUEST;
+				return ;
+			}
 			else if (req.headers.find("content-length") == req.headers.end() &&
 					 (req.method == "GET" || req.method == "DELETE" || req.method == "HEAD"))
 			{
@@ -241,7 +248,7 @@ void Client::readHeader(const char* buffer)
 
 void Client::readChunked(const char* buffer, size_t readSize)
 {
-	static const char* crlf = "\r\n";
+	static const char* crlf = CRLF;
 	static std::string strbodySize;
 	static long longBodySize;
 	static bool haveToReadBody = false;
@@ -332,13 +339,78 @@ void Client::readBody(const char* buffer, size_t readSize)
 		parseState = DONE;
 	}
 }
+
+bool Client::checkMethod(std::string const& method)
+{
+	std::string tmp_uri;
+	std::string		found_uri;
+	bool is_found = false;
+	size_t			location_pos;
+	HttpRequest req = httpRequestManager.getBackReq();
+	std::map<std::string, Location> locations = getServer()->getLocations();
+	std::map<std::string, Location>::iterator location;
+	size_t allow_methods;
+
+	if (req.uri.size() == 0 || req.uri[req.uri.size() - 1] != '/')
+		req.uri += "/";
+	tmp_uri = req.uri;
+	while (tmp_uri != "/")
+	{
+		if (is_found)
+			break ;
+		location_pos = tmp_uri.find_last_of('/');
+		if (location_pos == std::string::npos)
+			break;
+		if (location_pos == 0)
+			tmp_uri = "/";
+		else
+			tmp_uri = std::string(tmp_uri.begin(), tmp_uri.begin() + location_pos);
+		for (location = locations.begin(); location != locations.end(); ++location)
+		{
+			if (tmp_uri == location->first)
+			{
+				found_uri = location->first;
+				is_found = true;
+				break;
+			}
+		}
+	}
+	if (is_found)
+	{
+		req.file_name = req.uri.substr(location_pos);
+		req.file_name.erase(req.file_name.size() - 1);
+	}
+	else
+		found_uri = "/";
+	
+	
+	
+	allow_methods = location->second.getAllowMethod();
+	size_t my_method;
+	if (req.method == "GET")
+		my_method = GET;
+	else if (req.method == "POST")
+		my_method = POST;
+	else if (req.method == "PUT")
+		my_method = PUT;
+	else if (req.method == "DELETE")
+		my_method = DELETE;
+	else
+		return true;
+	
+	if ((allow_methods & my_method) != 0)
+		return false;
+	else
+		return true;
+}
+
 void Client::readMethod(const char* buffer)
 {
 	std::vector<unsigned char>::iterator pos;
 	HttpRequest& req = httpRequestManager.getBackReq();
 
 	// 첫줄에 개행만 들어온 경우 무시
-	if (strcmp(buffer, "\n") == 0 || strcmp(buffer, "\r\n") == 0)
+	if (strcmp(buffer, "\n") == 0 || strcmp(buffer, CRLF) == 0)
 		return;
 	// 입력버퍼벡터 뒤에 방금읽은 버퍼를 덧붙임
 	readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
@@ -356,8 +428,8 @@ void Client::readMethod(const char* buffer)
 		if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ",
 							   &" "[1])) != readBuffer.end())
 			readUri("");
-		else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\r\n",
-									&"\r\n"[2])) != readBuffer.end())
+		else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
+									&CRLF[2])) != readBuffer.end())
 		{
 			parseState = ERROR;
 			std::cout << "DEBUG6\n";
@@ -365,8 +437,8 @@ void Client::readMethod(const char* buffer)
 		}
 	}
 	// 공백이 아닌 개행을 읽은 경우 파싱이 완료되지 못하기 때문에 에러
-	else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\r\n",
-								&"\r\n"[2])) != readBuffer.end())
+	else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
+								&CRLF[2])) != readBuffer.end())
 	{
 		parseState = ERROR;
 		std::cout << "DEBUG7\n";
@@ -388,8 +460,8 @@ void Client::readUri(const char* buffer)
 		req.startLine += " " + req.uri;
 		readBuffer.erase(readBuffer.begin(), pos + 1);
 		parseState = HTTP_VERSION;
-		if ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\r\n",
-							   &"\r\n"[2])) != readBuffer.end())
+		if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
+							   &CRLF[2])) != readBuffer.end())
 			readHttpVersion("");
 		else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ",
 									&" "[1])) != readBuffer.end())
@@ -399,8 +471,8 @@ void Client::readUri(const char* buffer)
 			req.errorCode = BAD_REQUEST;
 		}
 	}
-	else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\r\n",
-								&"\r\n"[2])) != readBuffer.end())
+	else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
+								&CRLF[2])) != readBuffer.end())
 	{
 		parseState = ERROR;
 		std::cout << "DEBUG9\n";
@@ -415,8 +487,8 @@ void Client::readHttpVersion(const char* buffer)
 	HttpRequest& req = httpRequestManager.getBackReq();
 
 	readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
-	if ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\r\n",
-						   &"\r\n"[2])) != readBuffer.end())
+	if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
+						   &CRLF[2])) != readBuffer.end())
 	{
 		req.httpVersion = std::string(readBuffer.begin(), pos);
 		readBuffer.erase(readBuffer.begin(), pos + 2);
@@ -429,8 +501,8 @@ void Client::readHttpVersion(const char* buffer)
 		}
 		req.startLine += " " + req.httpVersion;
 		parseState = HEADER;
-		if ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\r\n",
-							   &"\r\n"[2])) != readBuffer.end())
+		if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
+							   &CRLF[2])) != readBuffer.end())
 			readHeader("");
 		return;
 	}

@@ -66,6 +66,7 @@ public:
     bool readEventProcess(void);
     bool writeEventProcess(void);
     bool readMessage(void);
+    bool checkMethod(std::string const& method);
     bool isSendBufferEmpty(void);
     void createResponse(void);
 };
