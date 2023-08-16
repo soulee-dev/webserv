@@ -177,6 +177,12 @@ void Client::readHeader(const char* buffer)
 				req.errorCode = BAD_REQUEST;
 				return;
 			}
+			else if (checkMethod(req.method))
+			{
+				parseState = ERROR;
+				req.errorCode = BAD_REQUEST;
+				return ;
+			}
 			else if (req.headers.find("content-length") == req.headers.end() &&
 					 (req.method == "GET" || req.method == "DELETE" || req.method == "HEAD"))
 			{
@@ -304,13 +310,6 @@ void Client::readBody(const char* buffer, size_t readSize)
 	std::vector<unsigned char>::iterator pos;
 	HttpRequest& req = httpRequestManager.getBackReq();
 
-	// body를 읽기전에 먼저 URI를 기반으로 Method가 유효한지 판단합니다.
-	if (checkMethod(req.method))
-	{
-		parseState = ERROR;
-		req.errorCode = BAD_REQUEST;
-		return ;
-	}
 	readBuffer.insert(readBuffer.end(), buffer, buffer + readSize);
 	if (req.headers.find("content-length") != req.headers.end())
 	{
