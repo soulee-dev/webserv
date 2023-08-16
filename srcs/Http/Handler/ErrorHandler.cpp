@@ -45,38 +45,9 @@ std::vector<unsigned char>	ErrorHandler::handle(Client &client, int status_code)
 	return BuildResponse(status_code, headers, body);
 }
 
-std::string find_error_page(int status_code)
-{
-	std::string file_name;
-	switch (status_code)
-	{
-		case 400: // Bad Request
-			file_name = "./error_pages/400.html";
-			break ;
-		case 403: // Forbidden
-			file_name = "./error_pages/403.html";
-			break ;
-		case 404: // Not Found
-			file_name = "./error_pages/404.html";
-			break ;
-		case 405: // Method Not Allowed
-			file_name = "./error_pages/405.html";
-			break ;
-		case 505: // HTTP Version Not Supported
-			file_name = "./error_pages/505.html";
-			break ;	
-	}
-	return file_name;
-}
-
 void ErrorHandler::sendReqtoError(Client &client)
 {
 	int err = client.httpRequestManager.getRequest().errorCode;
+	std::cout << BOLDRED << "ERR CODE : " << err << '\n';
 	client.sendBuffer = ErrorHandler::handle(client, err);
-}
-
-std::vector<unsigned char>	ErrorHandler::handle(Client& client)
-{
-	static_cast<void>(client);
-	return std::vector<unsigned char>();
 }
