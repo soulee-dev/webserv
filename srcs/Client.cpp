@@ -234,7 +234,6 @@ void Client::readHeader(const char* buffer)
 		while (value[0] == ' ')
 			value.erase(value.begin());
 		for (size_t i = 0; i < key.size(); i++)
-
 			key[i] = tolower(key[i]);
 		req.headers[key] = value;
 	}
