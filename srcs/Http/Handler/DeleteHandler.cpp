@@ -16,7 +16,7 @@ std::vector<unsigned char>	DeleteHandler::handle(Client &client) const
 	else
 	{
         std::cout << "DELETE FAILED\n" << RESET;
-        return ErrorHandler::handler(404);
+        return ErrorHandler::handle(client, 404);
 	}
     return BuildResponse(200, headers, emptyBody);
 }
