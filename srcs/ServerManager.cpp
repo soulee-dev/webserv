@@ -199,7 +199,6 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
         events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_EOF, NOTE_SECONDS, 100, currEvent.udata);
         if (clientManager.readEventProcess(currEvent))
         {
-			
             events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_ENABLE, 0, 0, currEvent.udata);
         }
     }

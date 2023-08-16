@@ -12,6 +12,7 @@ enum METHOD
     POST = 2,
     PUT = 4,
     DELETE = 8,
+    HEAD = 16,
 };
 
 class Location;

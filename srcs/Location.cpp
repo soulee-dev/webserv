@@ -135,8 +135,7 @@ bool Location::setAllowMethod(std::string& sentence)
     sstream << sentence;
     while (sstream >> token)
         tokens.push_back(token);
-    for (size_t i = 1; i < tokens.size(); i++)
-
+    for (size_t i = 0; i < tokens.size(); i++)
     {
         if (tokens[i] == "GET")
             allowMethod |= GET;
@@ -146,6 +145,8 @@ bool Location::setAllowMethod(std::string& sentence)
             allowMethod |= PUT;
         else if (tokens[i] == "DELETE")
             allowMethod |= DELETE;
+        else if (tokens[i] == "HEAD")
+            allowMethod |= HEAD;
         else
             return true;
     }
