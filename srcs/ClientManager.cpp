@@ -61,6 +61,7 @@ bool ClientManager::writeEventProcess(struct kevent& currEvent)
     return false;
 }
 
+
 int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
 {
     Client* client = reinterpret_cast<Client*>(currEvent.udata);
@@ -74,6 +75,8 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
         std::cout << "errno : " << errno << std::endl;
         return -1;
     }
+	std::cout << "WRITE SIZE : " << writeSize << std::endl;
+    std::cout << "LEFT SIZE : " << buffer.size() << std::endl;
     buffer.erase(buffer.begin(), buffer.begin() + writeSize);
     if (buffer.size() == 0)
         return 1;

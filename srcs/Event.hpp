@@ -1,6 +1,7 @@
 #pragma once
 #include <sys/event.h>
 #include <vector>
+#include <ostream>
 #define EVENTLIST_SIZE 8
 
 class Event
@@ -22,3 +23,5 @@ public:
     void clearChangeEventList(void);
     bool initKqueue(void);
 };
+
+std::ostream& operator << (std::ostream &out, struct kevent& val);
