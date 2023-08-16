@@ -177,12 +177,6 @@ void Client::readHeader(const char* buffer)
 				req.errorCode = BAD_REQUEST;
 				return;
 			}
-			else if (checkMethod(req.method))
-			{
-				parseState = ERROR;
-				req.errorCode = BAD_REQUEST;
-				return ;
-			}
 			else if (req.headers.find("content-length") == req.headers.end() &&
 					 (req.method == "GET" || req.method == "DELETE" || req.method == "HEAD"))
 			{
