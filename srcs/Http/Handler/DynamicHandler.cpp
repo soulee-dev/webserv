@@ -15,6 +15,8 @@ void DynamicHandler::OpenFd(Client &client)
 	}
 	fcntl(currRequest.pipe_fd[0], F_SETFL, O_NONBLOCK);
 	fcntl(currRequest.pipe_fd_back[1], F_SETFL, O_NONBLOCK);
+	fcntl(currRequest.pipe_fd[1], F_SETFL, O_NONBLOCK);
+	fcntl(currRequest.pipe_fd_back[0], F_SETFL, O_NONBLOCK);
 }
 
 void DynamicHandler::SendReqtoCgi(Client &client)

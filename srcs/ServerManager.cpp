@@ -206,7 +206,6 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
     else // file Read event...
     {
         //Cgi에서 보내는 data 를 response의 body 에 저장 
-        events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
         ssize_t ret = clientManager.CgiToResReadProcess(currEvent); // -1: read error, 0 : read left 1 : read done
         if (ret != 0) // read error || read done
         {
@@ -218,6 +217,7 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
         {
             // cgi 에서 결과물을 받을때 response 가 완성 되어있다면, client 로 바로 전송 하도록 이벤트를 보냄
 			currClient->sendBuffer = Handler::BuildResponse(currClient->getFrontRes().status_code, currClient->getFrontRes().headers, currClient->getFrontRes().body, true);
+			events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), currClient->getFrontRes().body.begin(), currClient->getFrontRes().body.end());
 			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), CRLF[0], CRLF[2]);
 			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), CRLF[0], CRLF[2]);
