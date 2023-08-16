@@ -62,17 +62,25 @@ void Client::errorEventProcess(void)
 
 bool Client::readEventProcess(void) // RUN 5
 {
-	if (parseState == DONE || parseState == ERROR)
+	HttpRequest&	request = this->httpRequestManager.getRequest();
+	if (parseState == DONE)
 	{
 		// 메시지 처리하여 버퍼에 입력해야함.
 		// events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
-		HttpRequest&	request = this->httpRequestManager.getRequest();
 		std::cout << BOLDGREEN << "URI : " << request.uri << RESET << '\n';
 
 		httpRequestManager.SetHandler(*this);
 		httpRequestManager.DynamicOpenFd(*this);
 		httpRequestManager.SendReqtoEvent(*this);
 		httpRequestManager.DynamicRunCgi(*this);
+		std::cout << BOLDCYAN << " -- SUCCESSFULLY SEND MESSAGE -- \n\n" << RESET;
+		parseState = READY;
+		return true;
+	}
+	else if (parseState == ERROR)
+	{
+		std::cout << "ERROR : " << request.errorCode << '\n';
+		ErrorHandler::sendReqtoError(*this);
 		std::cout << BOLDCYAN << " -- SUCCESSFULLY SEND MESSAGE -- \n\n" << RESET;
 		parseState = READY;
 		return true;
@@ -164,6 +172,7 @@ void Client::readHeader(const char* buffer)
 			if (req.headers.find("host") == req.headers.end())
 			{
 				parseState = ERROR;
+				std::cout << "DEBUG1\n";
 				req.errorCode = BAD_REQUEST;
 				return;
 			}
@@ -197,7 +206,8 @@ void Client::readHeader(const char* buffer)
 		getline(headerSstream, key, ':');
 		if (key.size() == 0)
 		{
-			parseState = ERROR;
+			parseState = ERROR;;
+			std::cout << "DEBUG2\n";
 			req.errorCode = BAD_REQUEST;
 			return;
 		}
@@ -206,6 +216,7 @@ void Client::readHeader(const char* buffer)
 			if (isspace(key[i]))
 			{
 				parseState = ERROR;
+				std::cout << "DEBUG3\n";
 				req.errorCode = BAD_REQUEST;
 				return;
 			}
@@ -214,6 +225,7 @@ void Client::readHeader(const char* buffer)
 		if (value.size() == 0)
 		{
 			parseState = ERROR;
+			std::cout << "DEBUG4\n";
 			req.errorCode = BAD_REQUEST;
 			return;
 		}
@@ -268,6 +280,7 @@ void Client::readChunked(const char* buffer, size_t readSize)
 				readBuffer[longBodySize + 1] != '\n')
 			{
 				parseState = ERROR;
+				std::cout << "DEBUG5\n";
 				req.errorCode = BAD_REQUEST;
 				return;
 			}
@@ -348,6 +361,7 @@ void Client::readMethod(const char* buffer)
 									&"\r\n"[2])) != readBuffer.end())
 		{
 			parseState = ERROR;
+			std::cout << "DEBUG6\n";
 			req.errorCode = BAD_REQUEST;
 		}
 	}
@@ -356,6 +370,7 @@ void Client::readMethod(const char* buffer)
 								&"\r\n"[2])) != readBuffer.end())
 	{
 		parseState = ERROR;
+		std::cout << "DEBUG7\n";
 		req.errorCode = BAD_REQUEST;
 		readBuffer.erase(readBuffer.begin(), pos + 2);
 	}
@@ -380,7 +395,8 @@ void Client::readUri(const char* buffer)
 		else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ",
 									&" "[1])) != readBuffer.end())
 		{
-			parseState = ERROR;
+			
+			std::cout << "DEBUG8\n";
 			req.errorCode = BAD_REQUEST;
 		}
 	}
@@ -388,6 +404,7 @@ void Client::readUri(const char* buffer)
 								&"\r\n"[2])) != readBuffer.end())
 	{
 		parseState = ERROR;
+		std::cout << "DEBUG9\n";
 		req.errorCode = BAD_REQUEST;
 		readBuffer.erase(readBuffer.begin(), pos + 2);
 	}
@@ -407,6 +424,7 @@ void Client::readHttpVersion(const char* buffer)
 		if (req.httpVersion != "HTTP/1.1" && req.httpVersion != "HTTP/1.0")
 		{
 			parseState = ERROR;
+			std::cout << "DEBUG10\n";
 			req.errorCode = HTTP_VERSION_NOT_SUPPORT;
 			return;
 		}
