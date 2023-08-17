@@ -30,7 +30,7 @@ jobs:
 
     - name: Check for differences
       id: diff
-      run: git diff --exit-code || echo "clang-format::true" >> $GITHUB_ENV
+      run: git diff --exit-code || echo "clang-format=true" >> $GITHUB_ENV
       continue-on-error: true
 
     - name: Commit and push if changes
