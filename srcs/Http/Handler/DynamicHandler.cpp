@@ -66,6 +66,7 @@ void DynamicHandler::RunCgi(Client& client)
 		setenv("CONTENT_LENGTH", size_cstr, 1);
 		setenv("SERVER_PROTOCOL", SERVER_HTTP_VERSION, 1);
 		setenv("PATH_INFO", request.cgi_path_info.c_str(), 1);
+		setenv("HTTP_X_SECRET_HEADER_FOR_TEST", request.headers["x-secret-header-for-test"].c_str(), 1);
 
 		if (request.uri.find(".bla") != std::string::npos)
 			request.path = "./cgi_tester";

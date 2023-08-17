@@ -76,8 +76,6 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
         return -1;
         
     }
-	std::cout << "WRITE SIZE : " << writeSize << std::endl;
-    std::cout << "LEFT SIZE : " << buffer.size() << std::endl;
     buffer.erase(buffer.begin(), buffer.begin() + writeSize);
     if (buffer.size() == 0)
         return 1;

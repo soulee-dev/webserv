@@ -97,6 +97,12 @@ void	HttpRequestManager::Parse(Client& client)
 	std::cout << "FILENAME: " << request.file_name << std::endl;
 	std::cout << "PATH_INFO: " << request.cgi_path_info << std::endl;
 	std::cout << "PATH: " << request.path << std::endl;
+
+	std::map<std::string, std::string>::iterator it;
+	for (it = request.headers.begin(); it != request.headers.end(); ++it)
+	{
+		std::cout << BOLDGREEN << it->first << " : " << it->second << RESET << '\n'; 
+	}
 };
 
 HttpRequest& HttpRequestManager::getBackReq(void)
