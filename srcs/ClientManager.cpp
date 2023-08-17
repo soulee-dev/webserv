@@ -65,7 +65,7 @@ bool ClientManager::writeEventProcess(struct kevent& currEvent)
 int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
 {
     Client* client = reinterpret_cast<Client*>(currEvent.udata);
-    HttpRequest&    request = client->httpRequestManager.getRequest();
+    HttpRequest&    request = client->httpRequestManager.getBackReq();
     std::vector<unsigned char>& buffer = request.body;
 
     int writeSize = write(currEvent.ident, &buffer[0], buffer.size());

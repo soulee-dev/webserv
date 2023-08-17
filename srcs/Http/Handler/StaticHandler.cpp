@@ -5,18 +5,20 @@
 
 std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 {
-	HttpRequest&				request = client.httpRequestManager.getRequest();
+	HttpRequest&				request = client.httpRequestManager.getBackReq();
 	std::vector<unsigned char>	result;
 
 	std::cout << "METHOD : " << request.method << RESET << '\n';
 
-	if (request.method == "POST") // CGI-BIN 없는 POST 요청의 경우 일괄적으로 405를 띄워 줍니다.
-		return ErrorHandler::handle(client, 405);
-
+	std::cout << "SIZE : " << request.body.size() << " MAX BODY SIZE : " << request.location.getClientBodySize() << '\n';
+	if ((request.body.size() > request.location.getClientBodySize()) && request.method == "POST") // CGI-BIN 없는 POST 요청의 경우 일괄적으로 405를 띄워 줍니다.
+	{
+		return ErrorHandler::handle(client, 413);
+	}
 	// TODO: 현재 STATIC으로 들어오는 HEAD 요청에 대해 전부 405를 반환하는데 이것은 테스터가 URI "/"로 보내는 요청의
 	// allowed method가 GET 뿐이기 때문입니다. 현재 ServeStatic() 끝에 HEAD일 경우 바디 때는 처리가 되어있어서
 	// HEAD를 따로 구현할 건 없는데 allowed method 처리 되면 이 분기문은 없애야합니다.
-	else if (request.method == "HEAD")
+	if (request.method == "HEAD")
 		return ErrorHandler::handle(client, 405);
 
 	else if (request.method == "PUT") // POST와 PUT이 괴상하게 섞인 분기문을 정리했습니다.
@@ -90,7 +92,7 @@ std::vector<unsigned char>	StaticHandler::HandleDirectoryListing(Client& client,
 
 std::vector<unsigned char> StaticHandler::ProcessDirectory(Client& client) const
 {
-    HttpRequest& request = client.httpRequestManager.getRequest();
+    HttpRequest& request = client.httpRequestManager.getBackReq();
     std::vector<std::string> indexVec = request.location.getIndex(); // 벡터에 대한 참조
     std::vector<std::string>::iterator it;
 

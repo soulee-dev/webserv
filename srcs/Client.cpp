@@ -81,6 +81,7 @@ bool Client::readEventProcess(void) // RUN 5
 	}
 	else if (parseState == ERROR)
 	{
+		request.errorCode = METHOD_NOT_ALLOWED;
 		std::cout << "ERROR : " << request.errorCode << '\n';
 		ErrorHandler::sendReqtoError(*this);
 		std::cout << BOLDCYAN << " -- SUCCESSFULLY GET MESSAGE -- \n\n" << RESET;
@@ -174,6 +175,7 @@ void Client::readHeader(const char* buffer)
 			if (req.headers.find("host") == req.headers.end())
 			{
 				parseState = ERROR;
+				std::cout<<"DEBUG1\n";
 				req.errorCode = BAD_REQUEST;
 				return;
 			}
@@ -215,6 +217,7 @@ void Client::readHeader(const char* buffer)
 		if (key.size() == 0)
 		{
 			parseState = ERROR;
+			std::cout<<"DEBUG3\n";
 			req.errorCode = BAD_REQUEST;
 			return;
 		}
@@ -223,6 +226,7 @@ void Client::readHeader(const char* buffer)
 			if (isspace(key[i]))
 			{
 				parseState = ERROR;
+				std::cout<<"DEBUG4\n";
 				req.errorCode = BAD_REQUEST;
 				return;
 			}
@@ -231,6 +235,7 @@ void Client::readHeader(const char* buffer)
 		if (value.size() == 0)
 		{
 			parseState = ERROR;
+			std::cout<<"DEBUG5\n";
 			req.errorCode = BAD_REQUEST;
 			return;
 		}
@@ -284,6 +289,7 @@ void Client::readChunked(const char* buffer, size_t readSize)
 				readBuffer[longBodySize + 1] != '\n')
 			{
 				parseState = ERROR;
+				std::cout<<"DEBUG6\n";
 				req.errorCode = BAD_REQUEST;
 				return;
 			}
@@ -422,6 +428,7 @@ void Client::readMethod(const char* buffer)
 									&CRLF[2])) != readBuffer.end())
 		{
 			parseState = ERROR;
+			std::cout<<"DEBUG7\n";
 			req.errorCode = BAD_REQUEST;
 		}
 	}
@@ -433,6 +440,7 @@ void Client::readMethod(const char* buffer)
 		std::cout << "URI : " << req.uri << std::endl;
 		std::cout << "PROTO : " << req.httpVersion << std::endl;
 		parseState = ERROR;
+		std::cout<<"DEBUG8\n";
 		req.errorCode = BAD_REQUEST;
 		readBuffer.erase(readBuffer.begin(), pos + 2);
 	}
@@ -465,6 +473,7 @@ void Client::readUri(const char* buffer)
 								&CRLF[2])) != readBuffer.end())
 	{
 		parseState = ERROR;
+		std::cout<<"DEBUG9\n";
 		req.errorCode = BAD_REQUEST;
 		readBuffer.erase(readBuffer.begin(), pos + 2);
 	}
@@ -484,6 +493,7 @@ void Client::readHttpVersion(const char* buffer)
 		if (req.httpVersion != "HTTP/1.1" && req.httpVersion != "HTTP/1.0")
 		{
 			parseState = ERROR;
+			std::cout<<"DEBUG10\n";
 			req.errorCode = HTTP_VERSION_NOT_SUPPORT;
 			return;
 		}
