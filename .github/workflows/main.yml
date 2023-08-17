@@ -38,7 +38,7 @@ jobs:
       if: env.clang-format == 'true'
       run: |
         git checkout -b clang-format-branch
-
+    
     - name: Commit and push if changes
       if: env.clang-format == 'true'
       run: |
