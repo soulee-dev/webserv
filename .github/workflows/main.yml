@@ -23,7 +23,7 @@ jobs:
         git config --local user.name "GitHub Action"
 
     - name: Install clang-format
-      run: sudo apt-get install clang-format-10
+      run: sudo apt-get install clang-format
 
     - name: Run clang-format
       run: find . -name '*.cpp' -or -name '*.h' | xargs clang-format-10 -i
