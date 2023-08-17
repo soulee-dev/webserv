@@ -26,7 +26,7 @@ jobs:
       run: sudo apt-get install clang-format
 
     - name: Run clang-format
-      run: find . -name '*.cpp' -or -name '*.h' | xargs clang-format-10 -i
+      run: find . -name '*.cpp' -or -name '*.h' | xargs clang-format -i
 
     - name: Check for differences
       id: diff
