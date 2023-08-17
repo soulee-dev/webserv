@@ -210,9 +210,8 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
         {
 			events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_DELETE, NOTE_SECONDS, 10, NULL);
             events.changeEvents(currEvent.ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-			currClient->httpRequestManager.popReq();
 			close(currClient->httpRequestManager.getRequest().pipe_fd_back[0]);
-			
+			currClient->httpRequestManager.popReq();
         }
         if (ret == 1)
         {

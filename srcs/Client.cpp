@@ -385,7 +385,7 @@ bool Client::checkMethod(std::string const& method)
 		my_method = HEAD;
 	else
 		return true;
-	
+
 	if ((allow_methods & my_method) != 0)
 		return false;
 	else
@@ -397,11 +397,12 @@ void Client::readMethod(const char* buffer)
 	std::vector<unsigned char>::iterator pos;
 	HttpRequest& req = httpRequestManager.getBackReq();
 
-	// 첫줄에 개행만 들어온 경우 무시
-	if (strcmp(buffer, "\n") == 0 || strcmp(buffer, CRLF) == 0)
-		return;
 	// 입력버퍼벡터 뒤에 방금읽은 버퍼를 덧붙임
 	readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
+	while (readBuffer.size() > 1 && readBuffer[0] == '\r' && readBuffer[1] == '\n')
+		readBuffer.erase(readBuffer.begin(), readBuffer.begin() + 2);
+	if (readBuffer.size() == 0)
+		return ;
 	// 입력버퍼벡터에서 공백을 찾음
 	if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ", &" "[1])) !=
 		readBuffer.end())
@@ -455,7 +456,7 @@ void Client::readUri(const char* buffer)
 		else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ",
 									&" "[1])) != readBuffer.end())
 		{
-			
+
 			req.errorCode = BAD_REQUEST;
 		}
 	}

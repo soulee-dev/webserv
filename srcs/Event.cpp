@@ -64,9 +64,13 @@ void Event::clearChangeEventList(void)
 
 std::ostream& operator<<(std::ostream &out, struct kevent& val)
 {
+    std::stringstream   stream;
+    stream << std::hex << val.flags;
+
 	out << "ident : " << val.ident 
 		<< " filter : " << val.filter
-		<< " flags : " << val.flags
+		<< " flags : 0x" << stream.str()
+        << " data: " << val.data
 		<< std::endl;
 	return out;
 }

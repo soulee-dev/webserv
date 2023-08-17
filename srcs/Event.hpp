@@ -2,6 +2,7 @@
 #include <sys/event.h>
 #include <vector>
 #include <ostream>
+#include <sstream>
 #define EVENTLIST_SIZE 8
 
 class Event
