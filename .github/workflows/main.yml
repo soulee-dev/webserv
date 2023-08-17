@@ -34,24 +34,25 @@ jobs:
       run: git diff --exit-code || echo "clang-format=true" >> $GITHUB_ENV
       continue-on-error: true
 
-    - name: Create and check out a new branch
-      if: env.clang-format == 'true'
-      run: |
-        git checkout -b clang-format-branch
-    
+     - name: Create and check out a new branch
+    if: env.clang-format == 'true'
+    run: |
+      branch_name="clang-format-$(date +'%Y%m%d%H%M%S')"
+      echo "BRANCH_NAME=$branch_name" >> $GITHUB_ENV
+      git checkout -b $branch_name
+  
     - name: Commit and push if changes
       if: env.clang-format == 'true'
       run: |
         git add -A
         git commit -m "Apply clang-format"
-        git push origin clang-format-branch
-
+        git push origin $BRANCH_NAME
+    
     - name: Create Pull Request
       if: env.clang-format == 'true'
       uses: peter-evans/create-pull-request@v3
       with:
         title: Apply clang-format
         body: Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action
-        branch: clang-format-branch
-        base: master # or use 'master' if your default branch is named 'master'
-
+        branch: ${{ env.BRANCH_NAME }}
+        base: master
