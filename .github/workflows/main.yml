@@ -1,6 +1,7 @@
 name: Clang Formatter
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
