@@ -34,9 +34,11 @@ std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 		for (size_t i = 0; i < request.body.size(); i++)
 			ofs << request.body[i];
 		ofs.close();
+
+		std::vector<unsigned char> empty_body; // PUT 메서드에 응답용으로 만든 빈 body입니다. 이대로 보내면 빈 body를 보내게 됨니다.
 		if (res) // curl -v -X DELETE -d "body" http://localhost/put_test/file_should_exist_after
-			return BuildResponse(200, headers, request.body); // 파일 지우고 200, 201 테스트해보려면 위에 curl 입력하면 됩니다.
-		return BuildResponse(201, headers, request.body); // 200이면 이미 있는 파일을 연거고, 201이면 새로 만든 겁니다.
+			return BuildResponse(200, headers, empty_body); // 파일 지우고 200, 201 테스트해보려면 위에 curl 입력하면 됩니다.
+		return BuildResponse(201, headers, empty_body); // 200이면 이미 있는 파일을 연거고, 201이면 새로 만든 겁니다.
 	}
 
     if (IsDirectory(request.path)) // 나머지 GET 요청에 대한 처리입니다.
