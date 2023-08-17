@@ -28,19 +28,23 @@ jobs:
       run: sudo apt-get install clang-format
 
     - name: Run clang-format
-      run: find . -name '*.cpp' -or -name '*.h' | xargs clang-format -i
+      run: find . -name '*.cpp' -or -name '*.hpp' | xargs clang-format -i
 
     - name: Check for differences
-      id: diff
       run: git diff --exit-code || echo "clang-format=true" >> $GITHUB_ENV
       continue-on-error: true
+
+    - name: Create and check out a new branch
+      if: env.clang-format == 'true'
+      run: |
+        git checkout -b clang-format-branch
 
     - name: Commit and push if changes
       if: env.clang-format == 'true'
       run: |
         git add -A
         git commit -m "Apply clang-format"
-        git push
+        git push origin clang-format-branch
 
     - name: Create Pull Request
       if: env.clang-format == 'true'
