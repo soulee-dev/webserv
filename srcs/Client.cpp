@@ -177,6 +177,13 @@ void Client::readHeader(const char* buffer)
 				req.errorCode = BAD_REQUEST;
 				return;
 			}
+			else if (checkMethod(req.method))
+			{
+				parseState = ERROR;
+				std::cout << "DEBUG CHECKMETHOD\n";
+				req.errorCode = BAD_REQUEST;
+				return;
+			}
 			else if (req.headers.find("content-length") == req.headers.end() &&
 					 (req.method == "GET" || req.method == "DELETE" || req.method == "HEAD"))
 			{
@@ -344,17 +351,7 @@ bool Client::checkMethod(std::string const& method)
 	if (req.uri.size() == 0 || req.uri[req.uri.size() - 1] != '/')
 		req.uri += "/";
 	tmp_uri = req.uri;
-	while (tmp_uri != "/")
-	{
-		if (is_found)
-			break ;
-		location_pos = tmp_uri.find_last_of('/');
-		if (location_pos == std::string::npos)
-			break;
-		if (location_pos == 0)
-			tmp_uri = "/";
-		else
-			tmp_uri = std::string(tmp_uri.begin(), tmp_uri.begin() + location_pos);
+	do {
 		for (location = locations.begin(); location != locations.end(); ++location)
 		{
 			if (tmp_uri == location->first)
@@ -364,16 +361,16 @@ bool Client::checkMethod(std::string const& method)
 				break;
 			}
 		}
-	}
-	if (is_found)
-	{
-		req.file_name = req.uri.substr(location_pos);
-		req.file_name.erase(req.file_name.size() - 1);
-	}
-	else
-		found_uri = "/";
-
-
+		if (is_found)
+			break ;
+		location_pos = tmp_uri.find_last_of('/');
+		if (location_pos == std::string::npos)
+			break;
+		if (location_pos == 0)
+			tmp_uri = "/";
+		else
+			tmp_uri = std::string(tmp_uri.begin(), tmp_uri.begin() + location_pos);
+	} while (tmp_uri != "/");
 
 	allow_methods = location->second.getAllowMethod();
 	size_t my_method;
@@ -385,6 +382,8 @@ bool Client::checkMethod(std::string const& method)
 		my_method = PUT;
 	else if (req.method == "DELETE")
 		my_method = DELETE;
+	else if (req.method == "HEAD")
+		my_method = HEAD;
 	else
 		return true;
 
@@ -430,6 +429,9 @@ void Client::readMethod(const char* buffer)
 	else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
 								&CRLF[2])) != readBuffer.end())
 	{
+		std::cout << "METHOD : " << req.method << std::endl;
+		std::cout << "URI : " << req.uri << std::endl;
+		std::cout << "PROTO : " << req.httpVersion << std::endl;
 		parseState = ERROR;
 		req.errorCode = BAD_REQUEST;
 		readBuffer.erase(readBuffer.begin(), pos + 2);
