@@ -15,6 +15,11 @@ enum ParseErrorCode
     HTTP_VERSION_NOT_SUPPORT = 505,
 };
 
+enum ErrorCode
+{
+  INTERNAL_SERVER_ERROR = 500,
+};
+
 # define CRLF "\r\n"
 class HttpRequest
 {
@@ -31,7 +36,8 @@ class HttpRequest
 		Location	location;
 		std::string	location_uri;
     	std::string uri;
-		enum ParseErrorCode errorCode;
+		// enum ParseErrorCode errorCode; //이거 왜? enum ParseErrorCode type 일까용? 
+        int         errorCode;
 		std::string	method;
 		std::string	header;
 		std::map<std::string, std::string> headers;

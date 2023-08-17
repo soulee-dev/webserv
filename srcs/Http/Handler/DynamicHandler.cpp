@@ -1,5 +1,6 @@
 #include "DynamicHandler.hpp"
 #include "../../Client.hpp"
+#include "ErrorHandler.hpp"
 #include <fcntl.h>
 
 extern char **environ;
@@ -10,8 +11,11 @@ void DynamicHandler::OpenFd(Client &client)
 
 	if (pipe(currRequest.pipe_fd) == -1 || pipe(currRequest.pipe_fd_back) == -1)
 	{
-		std::cerr << "Pipe error" << std::endl;
-		exit(0);
+		// std::cerr << "Pipe error" << std::endl;
+		// exit(0);
+        currRequest.errorCode = INTERNAL_SERVER_ERROR;
+        ErrorHandler::sendReqtoError(client);
+        return ;
 	}
 	fcntl(currRequest.pipe_fd[0], F_SETFL, O_NONBLOCK);
 	fcntl(currRequest.pipe_fd_back[1], F_SETFL, O_NONBLOCK);
@@ -39,8 +43,10 @@ void DynamicHandler::RunCgi(Client& client)
 	pid_t	pid = fork();
 	if (pid == -1)
 	{
-		std::cerr << "Fork error" << std::endl;
-		exit(0);
+		// std::cerr << "Fork error" << std::endl;
+		// exit(0);
+        request.errorCode = INTERNAL_SERVER_ERROR;
+        ErrorHandler::sendReqtoError(client);
 	}
 	if (pid == 0) // 자식 코드
 	{
