@@ -203,6 +203,11 @@ void Client::readHeader(const char* buffer)
 					parseState = CHUNKED;
 					return (readChunked("", 0));
 				}
+				else if (req.method == "POST" && req.headers.find("content-length") == req.headers.end())
+				{
+					parseState = DONE;
+					return ;
+				}
 				else
 				{
 					parseState = BODY;
