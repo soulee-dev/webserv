@@ -66,9 +66,22 @@ std::ostream& operator<<(std::ostream &out, struct kevent& val)
 {
     std::stringstream   stream;
     stream << std::hex << val.flags;
+    std::string         _filter;
 
+    switch(val.filter)
+    {
+        case (EVFILT_READ):
+            _filter = "READ";
+            break ;
+        case (EVFILT_WRITE):
+            _filter = "WRITE";
+            break ;      
+        default:
+            _filter = "ERROR";
+            break ;  
+    }
 	out << "ident : " << val.ident 
-		<< " filter : " << val.filter
+		<< " filter : " << _filter
 		<< " flags : 0x" << stream.str()
         << " data: " << val.data
 		<< std::endl;

@@ -70,11 +70,12 @@ bool Client::readEventProcess(void) // RUN 5
 		// events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
 		std::cout << BOLDGREEN << "URI : " << request.uri << RESET << '\n';
 		std::cout << BOLDYELLOW << "HTTP VERSION : " << request.httpVersion << RESET << '\n';
+		
 		httpRequestManager.SetHandler(*this);
 		httpRequestManager.DynamicOpenFd(*this);
 		httpRequestManager.SendReqtoEvent(*this);
 		httpRequestManager.DynamicRunCgi(*this);
-		std::cout << BOLDCYAN << " -- SUCCESSFULLY SEND MESSAGE -- \n\n" << RESET;
+		std::cout << BOLDCYAN << " -- SUCCESSFULLY GET MESSAGE -- \n\n" << RESET;
 		parseState = READY;
 		return true;
 	}
@@ -82,7 +83,7 @@ bool Client::readEventProcess(void) // RUN 5
 	{
 		std::cout << "ERROR : " << request.errorCode << '\n';
 		ErrorHandler::sendReqtoError(*this);
-		std::cout << BOLDCYAN << " -- SUCCESSFULLY SEND MESSAGE -- \n\n" << RESET;
+		std::cout << BOLDCYAN << " -- SUCCESSFULLY GET MESSAGE -- \n\n" << RESET;
 		parseState = READY;
 		return true;
 	}
@@ -206,7 +207,7 @@ void Client::readHeader(const char* buffer)
 		getline(headerSstream, key, ':');
 		if (key.size() == 0)
 		{
-			parseState = ERROR;;
+			parseState = ERROR;
 			req.errorCode = BAD_REQUEST;
 			return;
 		}

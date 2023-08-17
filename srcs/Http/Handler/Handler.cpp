@@ -63,6 +63,7 @@ std::vector<unsigned char>	Handler::BuildResponse(int status_code, std::map<std:
 	{
 		size_t	pos = body_str.find("\r\n\r\n");
 		headers["Content-Length"] = itos(body.size() - pos - 4);
+		std::cout << "BUILD HEADER\n";
 		response = BuildHeader(status_code, headers, false);
 	}
 	else
@@ -70,6 +71,7 @@ std::vector<unsigned char>	Handler::BuildResponse(int status_code, std::map<std:
 		headers["Content-Length"] = itos(body.size());
 		response = BuildHeader(status_code, headers, true);
 	}
+	std::cout << "INSERT RESPONSE\n";
 	response.insert(response.end(), body.begin(), body.end());
 
 	// for (size_t i = 0; i < response.size(); i++)
