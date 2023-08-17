@@ -209,17 +209,10 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
         ssize_t ret = clientManager.CgiToResReadProcess(currEvent); // -1: read error, 0 : read left 1 : read done
         if (ret != 0) // read error || read done
         {
-<<<<<<< Updated upstream
-			events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_DELETE, NOTE_SECONDS, 10, NULL);
-            events.changeEvents(currEvent.ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-=======
 			// events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_DELETE, NOTE_SECONDS, 10, NULL);
             // events.changeEvents(currEvent.ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
 			close(currClient->httpRequestManager.getRequest().pipe_fd_back[0]);
->>>>>>> Stashed changes
 			currClient->httpRequestManager.popReq();
-			close(currClient->httpRequestManager.getRequest().pipe_fd_back[0]);
-			
         }
         if (ret == 1)
         {
