@@ -34,13 +34,13 @@ jobs:
       run: git diff --exit-code || echo "clang-format=true" >> $GITHUB_ENV
       continue-on-error: true
 
-     - name: Create and check out a new branch
-    if: env.clang-format == 'true'
-    run: |
-      branch_name="clang-format-$(date +'%Y%m%d%H%M%S')"
-      echo "BRANCH_NAME=$branch_name" >> $GITHUB_ENV
-      git checkout -b $branch_name
-  
+    - name: Create and check out a new branch
+      if: env.clang-format == 'true'
+      run: |
+        branch_name="clang-format-$(date +'%Y%m%d%H%M%S')"
+        echo "BRANCH_NAME=$branch_name" >> $GITHUB_ENV
+        git checkout -b $branch_name
+    
     - name: Commit and push if changes
       if: env.clang-format == 'true'
       run: |
