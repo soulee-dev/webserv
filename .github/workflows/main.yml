@@ -53,3 +53,5 @@ jobs:
         title: Apply clang-format
         body: Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action
         branch: clang-format-branch
+        base: master # or use 'master' if your default branch is named 'master'
+
