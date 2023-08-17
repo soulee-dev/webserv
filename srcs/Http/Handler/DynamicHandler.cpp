@@ -47,8 +47,9 @@ void DynamicHandler::RunCgi(Client& client)
 		// exit(0);
         request.errorCode = INTERNAL_SERVER_ERROR;
         ErrorHandler::sendReqtoError(client);
+	return ;
 	}
-	if (pid == 0) // 자식 코드
+	else if (pid == 0) // 자식 코드
 	{
 		// Child process
 		dup2(request.pipe_fd[0], STDIN_FILENO); // stdin을 pipe_fd[0]로 복제
