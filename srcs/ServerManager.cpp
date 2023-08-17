@@ -116,7 +116,7 @@ void ServerManager::runServerManager(void) // RUN 1
 			exitWebServer("kevent() error");
 		events.clearChangeEventList();
 		for (int i = 0; i != newEvent; i++)
-		{ 
+		{
 			std::cout << events[i] << std::endl;
 			runEventProcess(events[i]); // (RUN 2)
 		}
@@ -204,19 +204,19 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
     }
     else // file Read event...
     {
-        //Cgi에서 보내는 data 를 response의 body 에 저장 
+        //Cgi에서 보내는 data 를 response의 body 에 저장
         ssize_t ret = clientManager.CgiToResReadProcess(currEvent); // -1: read error, 0 : read left 1 : read done
         if (ret != 0) // read error || read done
         {
-			events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_DELETE, NOTE_SECONDS, 10, NULL);
-            events.changeEvents(currEvent.ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+			// events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_DELETE, NOTE_SECONDS, 10, NULL);
+            // events.changeEvents(currEvent.ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
 			close(currClient->httpRequestManager.getRequest().pipe_fd_back[0]);
 			currClient->httpRequestManager.popReq();
         }
         if (ret == 1)
         {
             // cgi 에서 결과물을 받을때 response 가 완성 되어있다면, client 로 바로 전송 하도록 이벤트를 보냄
-			
+
 			currClient->sendBuffer = Handler::BuildResponse(currClient->getFrontRes().status_code, currClient->getFrontRes().headers, currClient->getFrontRes().body, true);
 			events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), currClient->getFrontRes().body.begin(), currClient->getFrontRes().body.end());
@@ -224,7 +224,7 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
 			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), CRLF[0], CRLF[2]);
 			currClient->popRes();
 			wait(NULL);
-            // 위의 경우가 아닌 경우에는 client 의 response 메시지를 만드는 function 을 호출한다. 
+            // 위의 경우가 아닌 경우에는 client 의 response 메시지를 만드는 function 을 호출한다.
             // 예 : currClient->getRes().buildResponse();
         }
 		else
@@ -259,7 +259,7 @@ void ServerManager::writeEventProcess(struct kevent& currEvent)
 
 void ServerManager::timerEventProcess(struct kevent& currEvent)
 {
-	events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_DELETE, 0, 0, currEvent.udata);
+	// events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_DELETE, 0, 0, currEvent.udata);
 	clientManager.disconnectClient(currEvent.ident);
 }
 
