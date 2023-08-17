@@ -1,0 +1,45 @@
+name: Clang Formatter
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Git user
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+
+    - name: Install clang-format
+      run: sudo apt-get install clang-format-10
+
+    - name: Run clang-format
+      run: find . -name '*.cpp' -or -name '*.h' | xargs clang-format-10 -i
+
+    - name: Check for differences
+      id: diff
+      run: git diff --exit-code || echo "clang-format::true" >> $GITHUB_ENV
+      continue-on-error: true
+
+    - name: Commit and push if changes
+      if: env.clang-format == 'true'
+      run: |
+        git add -A
+        git commit -m "Apply clang-format"
+        git push
+
+    - name: Create Pull Request
+      if: env.clang-format == 'true'
+      uses: peter-evans/create-pull-request@v3
+      with:
+        title: Apply clang-format
+        body: Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action
+        branch: clang-format-branch
