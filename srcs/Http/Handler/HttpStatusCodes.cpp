@@ -11,6 +11,7 @@ std::map<int, std::string> get_status_codes()
 		STATUS_CODES[404] = "Not Found";
         STATUS_CODES[405] = "Method Not Allowed";
         STATUS_CODES[500] = "Internal Server Error";
+        STATUS_CODES[501] = "";
     }
     return STATUS_CODES;
 }
