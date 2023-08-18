@@ -152,7 +152,7 @@ bool HttpRequestManager::DynamicOpenFd(Client& client)
 
 	if (currHandler != NULL)
 		return currHandler->OpenFd(client);
-	return false;
+	return true;
 }
 
 void HttpRequestManager::SendReqtoEvent(Client& client)
