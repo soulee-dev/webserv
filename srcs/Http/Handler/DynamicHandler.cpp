@@ -5,7 +5,7 @@
 
 extern char **environ;
 
-void DynamicHandler::OpenFd(Client &client)
+bool	DynamicHandler::OpenFd(Client &client)
 {
 	HttpRequest &currRequest = client.httpRequestManager.getRequest();
 
@@ -15,7 +15,7 @@ void DynamicHandler::OpenFd(Client &client)
 		// exit(0);
         currRequest.errorCode = INTERNAL_SERVER_ERROR;
         ErrorHandler::sendReqtoError(client);
-        return ;
+        return false;
 	}
 	fcntl(currRequest.pipe_fd[0], F_SETFL, O_NONBLOCK);
 	fcntl(currRequest.pipe_fd_back[1], F_SETFL, O_NONBLOCK);
@@ -23,6 +23,7 @@ void DynamicHandler::OpenFd(Client &client)
 	fcntl(currRequest.pipe_fd_back[0], F_SETFL, O_NONBLOCK);
 	// ADD TIMER IN CGI
 	client.events->changeEvents(currRequest.pipe_fd_back[0], EVFILT_TIMER, EV_ADD | EV_ENABLE, NOTE_SECONDS, 10, &client);
+	return true;
 }
 
 void DynamicHandler::SendReqtoCgi(Client &client)

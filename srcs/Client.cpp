@@ -71,9 +71,11 @@ bool Client::readEventProcess(void) // RUN 5
 		std::cout << BOLDGREEN << "URI : " << request.uri << RESET << '\n';
 		std::cout << BOLDYELLOW << "HTTP VERSION : " << request.httpVersion << RESET << '\n';
 		httpRequestManager.SetHandler(*this);
-		httpRequestManager.DynamicOpenFd(*this);
-		httpRequestManager.SendReqtoEvent(*this);
-		httpRequestManager.DynamicRunCgi(*this);
+		if (httpRequestManager.DynamicOpenFd(*this))
+		{
+			httpRequestManager.SendReqtoEvent(*this);
+			httpRequestManager.DynamicRunCgi(*this);
+		}
 		std::cout << BOLDCYAN << " -- SUCCESSFULLY SEND MESSAGE -- \n\n" << RESET;
 		parseState = READY;
 		return true;
