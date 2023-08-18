@@ -25,7 +25,7 @@ private:
     ServerManager& operator=(ServerManager const& rhs);
 
 public:
-    static const int LISTENCAPACITY = 5;
+    static const int LISTENCAPACITY = 1000;
     ~ServerManager();
     ServerManager();
     void initServers(void);

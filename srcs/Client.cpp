@@ -12,7 +12,9 @@
 #include "ConfigParser.hpp"
 
 // constructors
-Client::Client() : parseState(READY) {
+Client::Client() : parseState(READY), haveToReadBody(false) {
+	readBuffer.reserve(100000000);
+	sendBuffer.reserve(100000000);
 }
 // destructor
 Client::~Client() {}
@@ -81,6 +83,7 @@ bool Client::readEventProcess(void) // RUN 5
 	}
 	else if (parseState == ERROR)
 	{
+		// request.errorCode = METHOD_NOT_ALLOWED;
 		std::cout << "ERROR : " << request.errorCode << '\n';
 		ErrorHandler::sendReqtoError(*this);
 		std::cout << BOLDCYAN << " -- SUCCESSFULLY GET MESSAGE -- \n\n" << RESET;
@@ -110,7 +113,7 @@ bool Client::writeEventProcess(void)
 
 bool Client::readMessage(void)
 {
-	const size_t BUFFER_SIZE = 1024;
+	const size_t BUFFER_SIZE = 65536;
 	char buffer[BUFFER_SIZE + 1];
 	ssize_t readSize = read(client_fd, buffer, BUFFER_SIZE);
 
@@ -174,6 +177,7 @@ void Client::readHeader(const char* buffer)
 			if (req.headers.find("host") == req.headers.end())
 			{
 				parseState = ERROR;
+				std::cout<<"DEBUG1\n";
 				req.errorCode = BAD_REQUEST;
 				return;
 			}
@@ -181,7 +185,7 @@ void Client::readHeader(const char* buffer)
 			{
 				parseState = ERROR;
 				std::cout << "DEBUG CHECKMETHOD\n";
-				req.errorCode = BAD_REQUEST;
+				req.errorCode = METHOD_NOT_ALLOWED; // 이 경우, 405번을 부여하지 않으면 테스트에서 통과가 불가능합니다(원래 400).
 				return;
 			}
 			else if (req.headers.find("content-length") == req.headers.end() &&
@@ -220,6 +224,7 @@ void Client::readHeader(const char* buffer)
 		if (key.size() == 0)
 		{
 			parseState = ERROR;
+			std::cout<<"DEBUG3\n";
 			req.errorCode = BAD_REQUEST;
 			return;
 		}
@@ -228,6 +233,7 @@ void Client::readHeader(const char* buffer)
 			if (isspace(key[i]))
 			{
 				parseState = ERROR;
+				std::cout<<"DEBUG4\n";
 				req.errorCode = BAD_REQUEST;
 				return;
 			}
@@ -236,6 +242,7 @@ void Client::readHeader(const char* buffer)
 		if (value.size() == 0)
 		{
 			parseState = ERROR;
+			std::cout<<"DEBUG5\n";
 			req.errorCode = BAD_REQUEST;
 			return;
 		}
@@ -252,9 +259,9 @@ void Client::readHeader(const char* buffer)
 void Client::readChunked(const char* buffer, size_t readSize)
 {
 	static const char* crlf = CRLF;
-	static std::string strbodySize;
-	static long longBodySize;
-	static bool haveToReadBody = false;
+	// static std::string strbodySize;
+	// static long longBodySize;
+	// static bool haveToReadBody = false;
 	HttpRequest& req = httpRequestManager.getBackReq();
 
 	readBuffer.insert(readBuffer.end(), buffer, buffer + readSize);
@@ -289,6 +296,7 @@ void Client::readChunked(const char* buffer, size_t readSize)
 				readBuffer[longBodySize + 1] != '\n')
 			{
 				parseState = ERROR;
+				std::cout<<"DEBUG6\n";
 				req.errorCode = BAD_REQUEST;
 				return;
 			}
@@ -426,6 +434,7 @@ void Client::readMethod(const char* buffer)
 									&CRLF[2])) != readBuffer.end())
 		{
 			parseState = ERROR;
+			std::cout<<"DEBUG7\n";
 			req.errorCode = BAD_REQUEST;
 		}
 	}
@@ -437,7 +446,8 @@ void Client::readMethod(const char* buffer)
 		std::cout << "URI : " << req.uri << std::endl;
 		std::cout << "PROTO : " << req.httpVersion << std::endl;
 		parseState = ERROR;
-		req.errorCode = BAD_REQUEST;
+		std::cout<<"DEBUG8\n";
+		req.errorCode = METHOD_NOT_ALLOWED; // 이 경우 또한 405번을 부여하지 않으면 테스트에서 통과가 불가능합니다(원래 400).
 		readBuffer.erase(readBuffer.begin(), pos + 2);
 	}
 }
@@ -468,6 +478,7 @@ void Client::readUri(const char* buffer)
 								&CRLF[2])) != readBuffer.end())
 	{
 		parseState = ERROR;
+		std::cout<<"DEBUG9\n";
 		req.errorCode = BAD_REQUEST;
 		readBuffer.erase(readBuffer.begin(), pos + 2);
 	}
@@ -487,6 +498,7 @@ void Client::readHttpVersion(const char* buffer)
 		if (req.httpVersion != "HTTP/1.1" && req.httpVersion != "HTTP/1.0")
 		{
 			parseState = ERROR;
+			std::cout<<"DEBUG10\n";
 			req.errorCode = HTTP_VERSION_NOT_SUPPORT;
 			return;
 		}

@@ -12,6 +12,7 @@
 enum ParseErrorCode
 {
     BAD_REQUEST = 400,
+	METHOD_NOT_ALLOWED = 405,
     HTTP_VERSION_NOT_SUPPORT = 505,
 };
 

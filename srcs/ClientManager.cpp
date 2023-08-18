@@ -65,7 +65,7 @@ bool ClientManager::writeEventProcess(struct kevent& currEvent)
 int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
 {
     Client* client = reinterpret_cast<Client*>(currEvent.udata);
-    HttpRequest&    request = client->httpRequestManager.getRequest();
+    HttpRequest&    request = client->httpRequestManager.getBackReq();
     std::vector<unsigned char>& buffer = request.body;
 
     int writeSize = write(currEvent.ident, &buffer[0], buffer.size());
@@ -85,7 +85,7 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
 
 int ClientManager::CgiToResReadProcess(struct kevent& currEvent)
 {
-    const size_t BUFFER_SIZE = 1024;
+    const size_t BUFFER_SIZE = 65536;
 
     Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
     std::vector<unsigned char>& readBuffer = currClient->getFrontRes().body;
