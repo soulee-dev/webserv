@@ -12,7 +12,9 @@
 #include "ConfigParser.hpp"
 
 // constructors
-Client::Client() : parseState(READY) {
+Client::Client() : parseState(READY), haveToReadBody(false) {
+	readBuffer.reserve(100000000);
+	sendBuffer.reserve(100000000);
 }
 // destructor
 Client::~Client() {}
@@ -110,7 +112,7 @@ bool Client::writeEventProcess(void)
 
 bool Client::readMessage(void)
 {
-	const size_t BUFFER_SIZE = 1024;
+	const size_t BUFFER_SIZE = 65536;
 	char buffer[BUFFER_SIZE + 1];
 	ssize_t readSize = read(client_fd, buffer, BUFFER_SIZE);
 
@@ -252,9 +254,9 @@ void Client::readHeader(const char* buffer)
 void Client::readChunked(const char* buffer, size_t readSize)
 {
 	static const char* crlf = CRLF;
-	static std::string strbodySize;
-	static long longBodySize;
-	static bool haveToReadBody = false;
+	// static std::string strbodySize;
+	// static long longBodySize;
+	// static bool haveToReadBody = false;
 	HttpRequest& req = httpRequestManager.getBackReq();
 
 	readBuffer.insert(readBuffer.end(), buffer, buffer + readSize);

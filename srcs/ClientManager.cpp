@@ -85,7 +85,7 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
 
 int ClientManager::CgiToResReadProcess(struct kevent& currEvent)
 {
-    const size_t BUFFER_SIZE = 1024;
+    const size_t BUFFER_SIZE = 65536;
 
     Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
     std::vector<unsigned char>& readBuffer = currClient->getFrontRes().body;
