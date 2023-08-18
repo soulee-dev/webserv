@@ -10,7 +10,7 @@ std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 
 	std::cout << "METHOD : " << request.method << RESET << '\n';
 
-	std::cout << "SIZE : " << request.body.size() << " MAX BODY SIZE : " << request.location.getClientBodySize() << '\n';
+	std::cout << "SIZE : " << request.body.size() << "\nMAX BODY SIZE : " << request.location.getClientBodySize() << '\n';
 	if ((request.body.size() > request.location.getClientBodySize()) && request.method == "POST") // CGI-BIN 없는 POST 요청의 경우 일괄적으로 405를 띄워 줍니다.
 	{
 		return ErrorHandler::handle(client, 413);

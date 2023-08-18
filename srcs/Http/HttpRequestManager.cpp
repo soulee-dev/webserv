@@ -34,8 +34,6 @@ void	HttpRequestManager::Parse(Client& client)
 	std::map<std::string, Location> locations = client.getServer()->getLocations();
 	std::map<std::string, Location>::iterator location;
 
-	std::cout << BOLDGREEN << "METHOD : " << request.method << " PATH : " << request.path << RESET << '\n';
-
 	if (request.uri[request.uri.size() - 1] != '/')
 		request.uri += "/";
 	tmp_uri = request.uri;

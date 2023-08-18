@@ -57,7 +57,7 @@ std::vector<unsigned char>	Handler::BuildResponse(int status_code, std::map<std:
 {
 	std::vector<unsigned char>	response;
 	std::string	body_str(body.begin(), body.end());
-	std::cout << "CODE : " << status_code << "\n\n";
+	std::cout << BOLDGREEN << "CODE : " << status_code << RESET << "\n";
 	
 	if (is_cgi)
 	{
