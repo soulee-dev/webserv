@@ -12,6 +12,7 @@
 enum ParseErrorCode
 {
     BAD_REQUEST = 400,
+	METHOD_NOT_ALLOWED = 405,
     HTTP_VERSION_NOT_SUPPORT = 505,
 };
 
@@ -25,7 +26,6 @@ class HttpRequest
 {
 	public:
 	    std::vector<unsigned char> raw;
-    	std::string startLine;
     	std::string	httpVersion;
 		bool		is_static;
 		std::string	file_name;
@@ -39,7 +39,6 @@ class HttpRequest
 		// enum ParseErrorCode errorCode; //이거 왜? enum ParseErrorCode type 일까용? 
         int         errorCode;
 		std::string	method;
-		std::string	header;
 		std::map<std::string, std::string> headers;
 		std::vector<unsigned char> body;
 };

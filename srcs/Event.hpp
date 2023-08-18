@@ -3,7 +3,7 @@
 #include <vector>
 #include <ostream>
 #include <sstream>
-#define EVENTLIST_SIZE 8
+#define EVENTLIST_SIZE 1000
 
 class Event
 {

@@ -1,0 +1,58 @@
+name: Clang Formatter
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.MY_GITHUB_TOKEN }}
+
+    - name: Set up Git user
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+
+    - name: Install clang-format
+      run: sudo apt-get install clang-format
+
+    - name: Run clang-format
+      run: find . -name '*.cpp' -or -name '*.hpp' | xargs clang-format -i
+
+    - name: Check for differences
+      run: git diff --exit-code || echo "clang-format=true" >> $GITHUB_ENV
+      continue-on-error: true
+
+    - name: Create and check out a new branch
+      if: env.clang-format == 'true'
+      run: |
+        branch_name="clang-format-$(date +'%Y%m%d%H%M%S')"
+        echo "BRANCH_NAME=$branch_name" >> $GITHUB_ENV
+        git checkout -b $branch_name
+    
+    - name: Commit and push if changes
+      if: env.clang-format == 'true'
+      run: |
+        git add -A
+        git commit -m "Apply clang-format"
+        git push origin $BRANCH_NAME
+    
+    - name: Create Pull Request
+      if: env.clang-format == 'true'
+      uses: peter-evans/create-pull-request@v3
+      with:
+        title: Apply clang-format
+        body: Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action
+        branch: ${{ env.BRANCH_NAME }}
+        base: master

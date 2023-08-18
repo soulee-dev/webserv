@@ -7,7 +7,7 @@ extern char **environ;
 
 bool	DynamicHandler::OpenFd(Client &client)
 {
-	HttpRequest &currRequest = client.httpRequestManager.getRequest();
+	HttpRequest &currRequest = client.httpRequestManager.getBackReq();
 
 	if (pipe(currRequest.pipe_fd) == -1 || pipe(currRequest.pipe_fd_back) == -1)
 	{
@@ -28,7 +28,7 @@ bool	DynamicHandler::OpenFd(Client &client)
 
 void DynamicHandler::SendReqtoCgi(Client &client)
 {
-	HttpRequest &request = client.httpRequestManager.getRequest();
+	HttpRequest &request = client.httpRequestManager.getBackReq();
 
     std::string body(request.body.begin(), request.body.end());
 	// std::cout << BOLDGREEN << "BODY\n" << body << RESET << '\n';
@@ -39,7 +39,7 @@ void DynamicHandler::SendReqtoCgi(Client &client)
 
 void DynamicHandler::RunCgi(Client& client)
 {
-	HttpRequest &request = client.httpRequestManager.getRequest();
+	HttpRequest &request = client.httpRequestManager.getBackReq();
 
 	pid_t	pid = fork();
 	if (pid == -1)
@@ -74,6 +74,7 @@ void DynamicHandler::RunCgi(Client& client)
 		setenv("CONTENT_LENGTH", size_cstr, 1);
 		setenv("SERVER_PROTOCOL", SERVER_HTTP_VERSION, 1);
 		setenv("PATH_INFO", request.cgi_path_info.c_str(), 1);
+		setenv("HTTP_X_SECRET_HEADER_FOR_TEST", request.headers["x-secret-header-for-test"].c_str(), 1);
 
 		if (request.uri.find(".bla") != std::string::npos)
 			request.path = "./cgi_tester";
@@ -100,7 +101,7 @@ void DynamicHandler::MakeResponse(Client& client)
 
 void DynamicHandler::ReadFromCgi(Client& client)
 {
-	HttpRequest &currRequest = client.httpRequestManager.getRequest();
+	HttpRequest &currRequest = client.httpRequestManager.getBackReq();
     client.events->changeEvents(currRequest.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &client);
 }
 

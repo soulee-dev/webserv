@@ -57,12 +57,13 @@ std::vector<unsigned char>	Handler::BuildResponse(int status_code, std::map<std:
 {
 	std::vector<unsigned char>	response;
 	std::string	body_str(body.begin(), body.end());
-	std::cout << "CODE : " << status_code << "\n\n";
+	std::cout << BOLDGREEN << "CODE : " << status_code << RESET << "\n";
 	
 	if (is_cgi)
 	{
 		size_t	pos = body_str.find("\r\n\r\n");
 		headers["Content-Length"] = itos(body.size() - pos - 4);
+		std::cout << "BUILD HEADER\n";
 		response = BuildHeader(status_code, headers, false);
 	}
 	else
@@ -72,6 +73,7 @@ std::vector<unsigned char>	Handler::BuildResponse(int status_code, std::map<std:
 	}
 	response.insert(response.end(), body.begin(), body.end());
 
+	std::cout << "\n  -- <RESPONSE> -- \n";
 	// for (size_t i = 0; i < response.size(); i++)
 	// 	std::cout << response[i];
 	// std::cout << '\n';
@@ -154,7 +156,7 @@ std::vector<unsigned char>	Handler::ServeStatic(Client& client, std::string& pat
 	if (method.empty()) // METHOD에 비어있을 때 예외처리이다. 나쁜 테스터 죽어.
 		return ErrorHandler::handle(client, 404);
 
-	headers["Connection"] = "close";
+	headers["Connection"] = "keep-alive";
 	headers["Content-Type"] = GetFileType(path);
 	return BuildResponse(200, headers, body);
 }

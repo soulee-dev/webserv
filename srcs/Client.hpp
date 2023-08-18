@@ -29,6 +29,10 @@ private:
 	std::vector<unsigned char> readBuffer;
 	RequestMessageParseState parseState;
 
+	std::string strbodySize;
+	long longBodySize;
+	bool haveToReadBody;
+
     void createRequest(void);
     void readMethod(const char* buffer);
     void readUri(const char* buffer);
