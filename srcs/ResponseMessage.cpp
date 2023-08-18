@@ -5,15 +5,20 @@ ResponseMessage::ResponseMessage() {}
 // destructor
 ResponseMessage::~ResponseMessage() {}
 // copy constructors
-ResponseMessage::ResponseMessage(ResponseMessage const& other) : Message(other)
+ResponseMessage::ResponseMessage(ResponseMessage const& other)
 {
+    res = other.res;
     status_code = other.status_code;
+    headers = other.headers;
+    body = other.body;
 }
 // operators
 ResponseMessage& ResponseMessage::operator=(ResponseMessage const& rhs)
 {
+    res = rhs.res;
     status_code = rhs.status_code;
-    Message::operator=(rhs);
+    headers = rhs.headers;
+    body = rhs.body;
     return *this;
 }
 
