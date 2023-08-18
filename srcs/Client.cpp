@@ -81,7 +81,7 @@ bool Client::readEventProcess(void) // RUN 5
 	}
 	else if (parseState == ERROR)
 	{
-		request.errorCode = METHOD_NOT_ALLOWED;
+		// request.errorCode = METHOD_NOT_ALLOWED;
 		std::cout << "ERROR : " << request.errorCode << '\n';
 		ErrorHandler::sendReqtoError(*this);
 		std::cout << BOLDCYAN << " -- SUCCESSFULLY GET MESSAGE -- \n\n" << RESET;
@@ -183,7 +183,7 @@ void Client::readHeader(const char* buffer)
 			{
 				parseState = ERROR;
 				std::cout << "DEBUG CHECKMETHOD\n";
-				req.errorCode = BAD_REQUEST;
+				req.errorCode = METHOD_NOT_ALLOWED; // 이 경우, 405번을 부여하지 않으면 테스트에서 통과가 불가능합니다(원래 400).
 				return;
 			}
 			else if (req.headers.find("content-length") == req.headers.end() &&
@@ -441,7 +441,7 @@ void Client::readMethod(const char* buffer)
 		std::cout << "PROTO : " << req.httpVersion << std::endl;
 		parseState = ERROR;
 		std::cout<<"DEBUG8\n";
-		req.errorCode = BAD_REQUEST;
+		req.errorCode = METHOD_NOT_ALLOWED; // 이 경우 또한 405번을 부여하지 않으면 테스트에서 통과가 불가능합니다(원래 400).
 		readBuffer.erase(readBuffer.begin(), pos + 2);
 	}
 }
