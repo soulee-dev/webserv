@@ -7,12 +7,12 @@ HttpRequestManager::HttpRequestManager() : handler(NULL) {}
 void	HttpRequestManager::SetHandler(Client& client)
 {
 	Parse(client);
-	if (getFrontReq().method == "DELETE")
+	if (getBackReq().method == "DELETE")
 	{
 		std::cout << BOLDRED << " -- PROCESS DELETING METHOD -- \n";
 		handler = new DeleteHandler();
 	}
-	else if (getFrontReq().is_static)
+	else if (getBackReq().is_static)
 	{
 		std::cout << BOLDRED << " -- PROCESSING STATIC -- \n";
 		handler = new StaticHandler();
@@ -26,14 +26,14 @@ void	HttpRequestManager::SetHandler(Client& client)
 
 void	HttpRequestManager::Parse(Client& client)
 {
-	HttpRequest&	request = getFrontReq();
+	HttpRequest&	request = getBackReq();
 	bool			is_found;
 	size_t			location_pos;
 	std::string		found_uri;
 	std::string		tmp_uri;
 	std::map<std::string, Location> locations = client.getServer()->getLocations();
 	std::map<std::string, Location>::iterator location;
-                                                                                                  
+
 	if (request.uri[request.uri.size() - 1] != '/')
 		request.uri += "/";
 	tmp_uri = request.uri;
@@ -65,14 +65,18 @@ void	HttpRequestManager::Parse(Client& client)
 	}
 	else
 		found_uri = "/";
-	std::cout << "LOCATION: " << found_uri << std::endl;
+	std::cout << "LOCATION: " << found_uri << '\n';
 	request.cgi_path_info = "/";
 	if (request.uri.find("cgi-bin") == std::string::npos)
 	{
 		if (request.method == "POST" && request.uri.find(".bla") != std::string::npos)
+		{
 			request.is_static = false;
+		}
 		else
+		{
 			request.is_static = true;
+		}
 	}
 	else
 	{
@@ -156,7 +160,7 @@ void HttpRequestManager::SendReqtoEvent(Client& client)
 
 	if (currHandler != NULL)
 		currHandler->SendReqtoCgi(client);
-	else if (getFrontReq().method == "DELETE")
+	else if (getBackReq().method == "DELETE")
 	{
 		DeleteHandler *currHandler = dynamic_cast<DeleteHandler*>(handler);
 		currHandler->sendReqtoDelete(client);
