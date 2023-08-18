@@ -25,7 +25,6 @@ enum ErrorCode
 class HttpRequest
 {
 	public:
-	    std::vector<unsigned char> raw;
     	std::string	httpVersion;
 		bool		is_static;
 		std::string	file_name;
