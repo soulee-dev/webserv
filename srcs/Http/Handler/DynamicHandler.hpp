@@ -7,7 +7,7 @@ class DynamicHandler : public Handler
 {
 	public:
 		std::vector<unsigned char>	handle(Client& client) const;
-		void OpenFd(Client& client);
+		bool OpenFd(Client& client);
 		void SendReqtoCgi(Client& client);
 		void RunCgi(Client& client);
 		void MakeResponse(Client& client);

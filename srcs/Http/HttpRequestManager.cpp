@@ -146,12 +146,13 @@ void	HttpRequestManager::pushReq()
 	queReq.push(HttpRequest());
 }
 
-void HttpRequestManager::DynamicOpenFd(Client& client)
+bool HttpRequestManager::DynamicOpenFd(Client& client)
 {
 	DynamicHandler *currHandler = dynamic_cast<DynamicHandler*>(handler);
 
 	if (currHandler != NULL)
-		currHandler->OpenFd(client);
+		return currHandler->OpenFd(client);
+	return false;
 }
 
 void HttpRequestManager::SendReqtoEvent(Client& client)
