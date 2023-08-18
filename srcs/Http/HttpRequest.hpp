@@ -20,7 +20,6 @@ class HttpRequest
 {
 	public:
 	    std::vector<unsigned char> raw;
-    	std::string startLine;
     	std::string	httpVersion;
 		bool		is_static;
 		std::string	file_name;
@@ -33,7 +32,6 @@ class HttpRequest
     	std::string uri;
 		enum ParseErrorCode errorCode;
 		std::string	method;
-		std::string	header;
 		std::map<std::string, std::string> headers;
 		std::vector<unsigned char> body;
 };

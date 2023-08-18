@@ -414,7 +414,6 @@ void Client::readMethod(const char* buffer)
 		readBuffer.end())
 	{
 		req.method = std::string(readBuffer.begin(), pos);
-		req.startLine = req.method;
 		readBuffer.erase(readBuffer.begin(), pos + 1);
 		parseState = URI;
 		// 또 다른 공백을 찾은 경우 다음 파싱으로 넘어감.
@@ -453,7 +452,6 @@ void Client::readUri(const char* buffer)
 		readBuffer.end())
 	{
 		req.uri = std::string(readBuffer.begin(), pos);
-		req.startLine += " " + req.uri;
 		readBuffer.erase(readBuffer.begin(), pos + 1);
 		parseState = HTTP_VERSION;
 		if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
@@ -492,7 +490,6 @@ void Client::readHttpVersion(const char* buffer)
 			req.errorCode = HTTP_VERSION_NOT_SUPPORT;
 			return;
 		}
-		req.startLine += " " + req.httpVersion;
 		parseState = HEADER;
 		if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
 							   &CRLF[2])) != readBuffer.end())

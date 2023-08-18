@@ -11,7 +11,6 @@ public:
     Message(Message const& other);
     Message& operator=(Message const& rhs);
     std::vector<unsigned char> raw;
-    std::string startLine;
     int         status_code;
     std::string httpVersion;
     std::map<std::string, std::string> headers;
