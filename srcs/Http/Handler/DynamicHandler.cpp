@@ -6,7 +6,7 @@ extern char **environ;
 
 void DynamicHandler::OpenFd(Client &client)
 {
-	HttpRequest &currRequest = client.httpRequestManager.getBackReq();
+	HttpRequest &currRequest = client.req;
 
 	if (pipe(currRequest.pipe_fd) == -1 || pipe(currRequest.pipe_fd_back) == -1)
 	{
@@ -23,18 +23,17 @@ void DynamicHandler::OpenFd(Client &client)
 
 void DynamicHandler::SendReqtoCgi(Client &client)
 {
-	HttpRequest &request = client.httpRequestManager.getBackReq();
+	HttpRequest &request = client.req;
 
     std::string body(request.body.begin(), request.body.end());
 	// std::cout << BOLDGREEN << "BODY\n" << body << RESET << '\n';
-	client.createResponse();
     client.events->changeEvents(request.pipe_fd[1], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &client);
     client.events->changeEvents(request.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &client);
 }
 
 void DynamicHandler::RunCgi(Client& client)
 {
-	HttpRequest &request = client.httpRequestManager.getBackReq();
+	HttpRequest &request = client.req;
 
 	pid_t	pid = fork();
 	if (pid == -1)
@@ -87,13 +86,13 @@ void DynamicHandler::RunCgi(Client& client)
 
 void DynamicHandler::MakeResponse(Client& client)
 {
-	ResponseMessage& currRes = client.getBackRes();
+	ResponseMessage& currRes = client.res;
 	currRes.status_code = 200;
 }
 
 void DynamicHandler::ReadFromCgi(Client& client)
 {
-	HttpRequest &currRequest = client.httpRequestManager.getBackReq();
+	HttpRequest &currRequest = client.req;
     client.events->changeEvents(currRequest.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &client);
 }
 

@@ -48,6 +48,6 @@ std::vector<unsigned char>	ErrorHandler::handle(Client &client, int status_code)
 
 void ErrorHandler::sendReqtoError(Client &client)
 {
-	int errCode = client.httpRequestManager.getBackReq().errorCode;
+	int errCode = client.req.errorCode;
 	client.sendBuffer = ErrorHandler::handle(client, errCode);
 }

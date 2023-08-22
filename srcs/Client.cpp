@@ -20,28 +20,27 @@ Client::Client() : parseState(READY), haveToReadBody(false), writeIndex(0) {
 Client::~Client() {}
 // copy constructors
 Client::Client(Client const& other)
-	: client_fd(other.client_fd), server(other.server),
-	  queRes(other.queRes), readBuffer(other.readBuffer),
+	: client_fd(other.client_fd), server(other.server), req(other.req), res(other.res),
+	  readBuffer(other.readBuffer),
 	  sendBuffer(other.sendBuffer), parseState(METHOD), writeIndex(other.writeIndex) {}
 // operators
 Client& Client::operator=(Client const& rhs)
 {
-	if (this != &rhs)
-	{
-		this->queRes = rhs.queRes;
-		this->client_fd = rhs.client_fd;
-		this->server = rhs.server;
-		this->readBuffer = rhs.readBuffer;
-		this->sendBuffer = rhs.sendBuffer;
-		this->parseState = rhs.parseState;
-		this->writeIndex = rhs.writeIndex;
-	}
+  if (this != &rhs)
+  {
+    this->client_fd = rhs.client_fd;
+    this->server = rhs.server;
+    this->readBuffer = rhs.readBuffer;
+    this->sendBuffer = rhs.sendBuffer;
+    this->parseState = rhs.parseState;
+    this->writeIndex = rhs.writeIndex;
+    this->req = rhs.req;
+    this->res = rhs.res;
+  }
 	return *this;
 }
 
 // getter
-ResponseMessage& Client::getBackRes(void) { return queRes.back(); }
-ResponseMessage& Client::getFrontRes(void) { return queRes.front(); }
 
 
 Server* Client::getServer(void) const { return this->server; }
@@ -52,13 +51,6 @@ void Client::setFd(int fd) { this->client_fd = fd; }
 void Client::setEvents(Event* event) { this->events = event; };
 // functions
 
-ResponseMessage Client::popRes(void)
-{
-	ResponseMessage ret = queRes.front();
-	queRes.pop();
-	return ret;
-}
-
 void Client::errorEventProcess(void)
 {
 	std::cout << "errorEventProcess" << std::endl;
@@ -66,7 +58,7 @@ void Client::errorEventProcess(void)
 
 bool Client::readEventProcess(void) // RUN 5
 {
-	HttpRequest&	request = this->httpRequestManager.getBackReq();
+	HttpRequest&	request = req;
 	if (parseState == DONE)
 	{
 		// 메시지 처리하여 버퍼에 입력해야함.
@@ -136,7 +128,7 @@ bool Client::readMessage(void)
 	switch (parseState)
 	{
 	case READY:
-		createRequest();
+        req.clear();
 	case METHOD:
 		readMethod(buffer);
 		break;
@@ -168,7 +160,6 @@ void Client::readHeader(const char* buffer)
 	std::string key;
 	std::string value;
 	std::vector<unsigned char>::iterator pos;
-	HttpRequest& req = httpRequestManager.getBackReq();
 
 	readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
 
@@ -269,7 +260,6 @@ void Client::readChunked(const char* buffer, size_t readSize)
 	// static std::string strbodySize;
 	// static long longBodySize;
 	// static bool haveToReadBody = false;
-	HttpRequest& req = httpRequestManager.getBackReq();
 
 	readBuffer.insert(readBuffer.end(), buffer, buffer + readSize);
 
@@ -325,7 +315,6 @@ size_t minLen(size_t a, size_t b)
 void Client::readBody(const char* buffer, size_t readSize)
 {
 	std::vector<unsigned char>::iterator pos;
-	HttpRequest& req = httpRequestManager.getBackReq();
 
 	readBuffer.insert(readBuffer.end(), buffer, buffer + readSize);
 	if (req.headers.find("content-length") != req.headers.end())
@@ -363,7 +352,6 @@ bool Client::checkMethod(std::string const& method)
 	std::string		found_uri;
 	bool is_found = false;
 	size_t			location_pos;
-	HttpRequest req = httpRequestManager.getBackReq();
 	std::map<std::string, Location> locations = getServer()->getLocations();
 	std::map<std::string, Location>::iterator location;
 	size_t allow_methods;
@@ -416,7 +404,6 @@ bool Client::checkMethod(std::string const& method)
 void Client::readMethod(const char* buffer)
 {
 	std::vector<unsigned char>::iterator pos;
-	HttpRequest& req = httpRequestManager.getBackReq();
 
 	// 입력버퍼벡터 뒤에 방금읽은 버퍼를 덧붙임
 	readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
@@ -463,7 +450,6 @@ void Client::readMethod(const char* buffer)
 void Client::readUri(const char* buffer)
 {
 	std::vector<unsigned char>::iterator pos;
-	HttpRequest& req = httpRequestManager.getBackReq();
 
 	readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
 	if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ", &" "[1])) !=
@@ -496,7 +482,6 @@ void Client::readUri(const char* buffer)
 void Client::readHttpVersion(const char* buffer)
 {
 	std::vector<unsigned char>::iterator pos;
-	HttpRequest& req = httpRequestManager.getBackReq();
 
 	readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
 	if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
@@ -525,12 +510,12 @@ bool Client::isSendBufferEmpty(void)
 	return (sendBuffer.size() == 0);
 }
 
-void Client::createRequest(void)
+void Client::clearReq(void)
 {
-	httpRequestManager.pushReq();
+  req.clear();
 }
 
-void Client::createResponse(void)
+void Client::clearRes(void)
 {
-	queRes.push(ResponseMessage());
+  res.clear();
 }

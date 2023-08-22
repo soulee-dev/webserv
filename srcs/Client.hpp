@@ -25,7 +25,7 @@ private:
     int client_fd;
     Server* server;
     // event 등록;
-    std::queue<ResponseMessage> queRes; // 가져갈땐 pop, 넣을땐 push
+    // std::queue<ResponseMessage> queRes; // 가져갈땐 pop, 넣을땐 push
 	std::vector<unsigned char> readBuffer;
 	RequestMessageParseState parseState;
 
@@ -33,7 +33,6 @@ private:
 	long longBodySize;
 	bool haveToReadBody;
 
-    void createRequest(void);
     void readMethod(const char* buffer);
     void readUri(const char* buffer);
     void readHttpVersion(const char* buffer);
@@ -42,6 +41,8 @@ private:
     void readChunked(const char* buffer, size_t readSize);
 
 public:
+    ResponseMessage res;
+    HttpRequest req;
     Event* events;
     HttpRequestManager httpRequestManager;
 	std::vector<unsigned char> sendBuffer;
@@ -60,18 +61,16 @@ public:
     void setEvents(Event* event);
 
     // getter
-    ResponseMessage& getBackRes(void);
-    ResponseMessage& getFrontRes(void);
     Server* getServer(void) const;
     SOCKET getClientFd(void) const;
 
     // functions
-    ResponseMessage popRes(void);
     void errorEventProcess(void);
     bool readEventProcess(void);
     bool writeEventProcess(void);
     bool readMessage(void);
     bool checkMethod(std::string const& method);
     bool isSendBufferEmpty(void);
-    void createResponse(void);
+    void clearRes(void);
+    void clearReq(void);
 };
