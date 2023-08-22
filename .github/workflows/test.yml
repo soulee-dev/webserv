@@ -19,22 +19,4 @@ jobs:
 
     - name: Execute tester
       run: |
-        # Define a function to press enter when prompted
-        press_enter() {
-          while true; do
-            sleep 1
-            printf '\n'
-          done
-        }
-        
-        # Run the press_enter function in the background
-        press_enter &
-
-        # Store the PID of the background process
-        PRESS_ENTER_PID=$!
-
-        # Run the tester script
-        ./tester http://localhost:80
-
-        # Kill the press_enter function
-        kill $PRESS_ENTER_PID
+            { echo; echo; echo; echo; echo; echo; echo; echo; } | ./tester http://localhost:80
