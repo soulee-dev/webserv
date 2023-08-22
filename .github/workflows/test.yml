@@ -1,0 +1,29 @@
+name: Test webserv
+
+on:
+  push: # Trigger this action on every push
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out the code
+      uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: sudo apt-get install -y libkqueue-dev
+
+    - name: Build the project
+      run: make
+
+    - name: Start the webserver
+      run: ./webserver &
+      # Assuming the executable for the webserver is called 'webserver'
+      # Running it in the background to allow the next steps to execute
+
+    - name: Wait for the webserver to start
+      run: sleep 5 # Give the webserver a few seconds to start
+
+    - name: Test the webserver
+      run: ./tester http://localhost:80
