@@ -5,14 +5,11 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest # Change to macOS runner
 
     steps:
     - name: Check out the code
       uses: actions/checkout@v2
-
-    - name: Install dependencies
-      run: sudo apt-get install -y libkqueue-dev
 
     - name: Build the project
       run: make
