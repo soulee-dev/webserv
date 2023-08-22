@@ -119,11 +119,14 @@ HttpRequest& HttpRequestManager::getFrontReq(void)
 	return queReq.front();
 }
 
-HttpRequest HttpRequestManager::popReq(void)
+void HttpRequestManager::popFrontReq(void)
 {
-    HttpRequest	ret = queReq.front();
-    queReq.pop();
-    return ret;
+    queReq.pop_front();
+}
+
+void HttpRequestManager::popBackReq(void)
+{
+	queReq.pop_back();
 }
 
 std::vector<unsigned char>	HttpRequestManager::processRequest(Client& client)
@@ -143,7 +146,7 @@ HttpRequestManager::~HttpRequestManager()
 
 void	HttpRequestManager::pushReq()
 {
-	queReq.push(HttpRequest());
+	queReq.push_back(HttpRequest());
 }
 
 void HttpRequestManager::DynamicOpenFd(Client& client)
