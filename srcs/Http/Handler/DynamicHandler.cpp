@@ -87,7 +87,7 @@ void DynamicHandler::RunCgi(Client& client)
 
 void DynamicHandler::MakeResponse(Client& client)
 {
-	ResponseMessage& currRes = client.getBackRes();
+	ResponseMessage& currRes = client.getFrontRes();
 	currRes.status_code = 200;
 }
 

@@ -121,5 +121,6 @@ StaticHandler::~StaticHandler()
 void StaticHandler::sendReqtoEvent(Client &client)
 {
 	client.sendBuffer = handle(client);
+	client.httpRequestManager.popBackReq();
 	client.events->changeEvents(client.getClientFd(), EVFILT_WRITE, EV_ENABLE | EV_ADD, 0, 0, &client);
 }
