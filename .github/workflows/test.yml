@@ -7,25 +7,34 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - name: Check out the code
+    - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Build the project
+    - name: Build project
       run: make
 
-    - name: Start the webserv
+    - name: Start web server
       run: ./webserv &
+      continue-on-error: true
 
-    - name: Wait for the webserv to start
-      run: sleep 5
-
-    - name: Run tester
+    - name: Execute tester
       run: |
-        ./tester http://localhost:80 &
-        TESTER_PID=$!
-        sleep 1
-        for i in {1..60}; do
-          osascript -e 'tell application "System Events" to key code 36'
-          sleep 1
-        done
-        wait $TESTER_PID
+        # Define a function to press enter when prompted
+        press_enter() {
+          while true; do
+            sleep 1
+            printf '\n'
+          done
+        }
+        
+        # Run the press_enter function in the background
+        press_enter &
+
+        # Store the PID of the background process
+        PRESS_ENTER_PID=$!
+
+        # Run the tester script
+        ./tester http://localhost:80
+
+        # Kill the press_enter function
+        kill $PRESS_ENTER_PID
