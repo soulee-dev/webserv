@@ -528,7 +528,7 @@ bool Client::isSendBufferEmpty(void)
 
 void Client::createRequest(void)
 {
-	httpRequestManager.pushReq();
+	httpRequestManager.pushBackReq();
 }
 
 void Client::createResponse(void)
