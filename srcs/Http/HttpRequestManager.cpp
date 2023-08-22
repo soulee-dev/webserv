@@ -105,7 +105,7 @@ void	HttpRequestManager::Parse(Client& client)
 	std::map<std::string, std::string>::iterator it;
 	for (it = request.headers.begin(); it != request.headers.end(); ++it)
 	{
-		std::cout << BOLDGREEN << it->first << " : " << it->second << RESET << '\n'; 
+		std::cout << BOLDGREEN << it->first << " : " << it->second << RESET << '\n';
 	}
 };
 
@@ -121,9 +121,7 @@ HttpRequest& HttpRequestManager::getFrontReq(void)
 
 HttpRequest HttpRequestManager::popReq(void)
 {
-    HttpRequest	ret = queReq.front();
     queReq.pop();
-    return ret;
 }
 
 std::vector<unsigned char>	HttpRequestManager::processRequest(Client& client)
