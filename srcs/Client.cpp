@@ -363,24 +363,16 @@ bool Client::checkMethod(std::string const& method)
 	std::string		found_uri;
 	bool is_found = false;
 	size_t			location_pos;
-	HttpRequest req = httpRequestManager.getBackReq();
+	HttpRequest request = httpRequestManager.getBackReq();
 	std::map<std::string, Location> locations = getServer()->getLocations();
 	std::map<std::string, Location>::iterator location;
 	size_t allow_methods;
 
-	if (req.uri.size() == 0 || req.uri[req.uri.size() - 1] != '/')
-		req.uri += "/";
-	tmp_uri = req.uri;
-	do {
-		for (location = locations.begin(); location != locations.end(); ++location)
-		{
-			if (tmp_uri == location->first)
-			{
-				found_uri = location->first;
-				is_found = true;
-				break;
-			}
-		}
+	if (request.uri[request.uri.size() - 1] != '/')
+		request.uri += "/";
+	tmp_uri = request.uri;
+	while (tmp_uri != "/")
+	{
 		if (is_found)
 			break ;
 		location_pos = tmp_uri.find_last_of('/');
@@ -390,19 +382,30 @@ bool Client::checkMethod(std::string const& method)
 			tmp_uri = "/";
 		else
 			tmp_uri = std::string(tmp_uri.begin(), tmp_uri.begin() + location_pos);
-	} while (tmp_uri != "/");
+		for (location = locations.begin(); location != locations.end(); ++location)
+		{
+			if (tmp_uri == location->first)
+			{
+				found_uri = location->first;
+				is_found = true;
+				break;
+			}
+		}
+	}
+	if (!is_found)
+		found_uri = "/";
 
-	allow_methods = location->second.getAllowMethod();
+	allow_methods = getServer()->getLocations()[found_uri].getAllowMethod();
 	size_t my_method;
-	if (req.method == "GET")
+	if (request.method == "GET")
 		my_method = GET;
-	else if (req.method == "POST")
+	else if (request.method == "POST")
 		my_method = POST;
-	else if (req.method == "PUT")
+	else if (request.method == "PUT")
 		my_method = PUT;
-	else if (req.method == "DELETE")
+	else if (request.method == "DELETE")
 		my_method = DELETE;
-	else if (req.method == "HEAD")
+	else if (request.method == "HEAD")
 		my_method = HEAD;
 	else
 		return true;
