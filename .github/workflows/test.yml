@@ -1,11 +1,11 @@
 name: Test webserv
 
 on:
-  push: # Trigger this action on every push
+  push:
 
 jobs:
   build-and-test:
-    runs-on: macos-latest # Change to macOS runner
+    runs-on: macos-latest
 
     steps:
     - name: Check out the code
@@ -18,7 +18,14 @@ jobs:
       run: ./webserv &
 
     - name: Wait for the webserv to start
-      run: sleep 5 # Give the webserv a few seconds to start
+      run: sleep 5
 
-    - name: Test the webserv
-      run: ./tester http://localhost:80
+    - name: Test the webserv with continuous Enter key presses
+      run: |
+        expect -c "
+        spawn ./tester http://localhost:80
+        while {1} {
+          send \"\r\"
+          sleep 1
+        }
+        "
