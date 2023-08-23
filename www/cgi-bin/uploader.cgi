@@ -23,8 +23,9 @@ if fileitem.filename:
 else:
     message = 'No file was uploaded'
 
+print("""Connection: close\r\nContent-Type: text/html\r\n\r\n""", end="")
+
 print("""\
-Content-Type: text/html\n
 <html>
 <head>
     <title>File Upload Result</title>
@@ -32,5 +33,4 @@ Content-Type: text/html\n
 <body>
     <h1>{}</h1>
 </body>
-</html>
-""".format(message))
+</html>""".format(message))
