@@ -1,6 +1,7 @@
 #include "Handler.hpp"
 #include "HttpStatusCodes.hpp"
 #include "ErrorHandler.hpp"
+#include <algorithm>
 
 std::string	Handler::GetFileType(std::string file_name)
 {
@@ -56,12 +57,12 @@ std::vector<unsigned char>	Handler::BuildHeader(int status_code, std::map<std::s
 std::vector<unsigned char>	Handler::BuildResponse(int status_code, std::map<std::string, std::string>& headers, std::vector<unsigned char>& body, bool is_cgi)
 {
 	std::vector<unsigned char>	response;
-	std::string	body_str(body.begin(), body.end());
 	std::cout << BOLDGREEN << "CODE : " << status_code << RESET << "\n";
 	
 	if (is_cgi)
 	{
-		size_t	pos = body_str.find("\r\n\r\n");
+		char const * const CRLFCRLF = "\r\n\r\n";
+		int pos = std::search(body.begin(), body.end(), &CRLFCRLF[0], &CRLFCRLF[4]) - body.begin();
 		headers["Content-Length"] = itos(body.size() - pos - 4);
 		std::cout << "BUILD HEADER\n";
 		response = BuildHeader(status_code, headers, false);
