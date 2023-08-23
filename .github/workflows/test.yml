@@ -14,9 +14,12 @@ jobs:
       run: make
 
     - name: Start web server
-      run: ./webserv &
+      run: ./webserv > webserv.log 2>&1 &
       continue-on-error: true
 
     - name: Execute tester
       run: |
             { echo; echo; echo; echo; echo; echo; echo; echo; } | ./tester http://localhost:80
+
+    - name: Print web server log
+      run: cat webserv.log
