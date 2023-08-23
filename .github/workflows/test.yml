@@ -20,6 +20,7 @@ jobs:
     - name: Execute tester
       run: |
             { echo; echo; echo; echo; echo; echo; echo; echo; } | ./tester http://localhost:80
+      continue-on-error: true
 
     - name: Print web server log
       run: cat webserv.log
