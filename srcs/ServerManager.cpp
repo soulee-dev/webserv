@@ -207,19 +207,19 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
         {
 			// events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_DELETE, NOTE_SECONDS, 10, NULL);
             // events.changeEvents(currEvent.ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-			close(currClient->httpRequestManager.getBackReq().pipe_fd_back[0]);
-			currClient->httpRequestManager.popFrontReq();
+			close(currClient->request.pipe_fd_back[0]);
+			currClient->request.clear();
         }
         if (ret == 1)
         {
             // cgi 에서 결과물을 받을때 response 가 완성 되어있다면, client 로 바로 전송 하도록 이벤트를 보냄
 
-			currClient->sendBuffer = Handler::BuildResponse(currClient->getFrontRes().status_code, currClient->getFrontRes().headers, currClient->getFrontRes().body, true);
+			currClient->sendBuffer = Handler::BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, true);
 			events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), currClient->getFrontRes().body.begin(), currClient->getFrontRes().body.end());
 			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), CRLF[0], CRLF[2]);
 			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), CRLF[0], CRLF[2]);
-			currClient->popRes();
+			currClient->response.clear();
 			wait(NULL);
             // 위의 경우가 아닌 경우에는 client 의 response 메시지를 만드는 function 을 호출한다.
             // 예 : currClient->getRes().buildResponse();
@@ -244,7 +244,7 @@ void ServerManager::writeEventProcess(struct kevent& currEvent)
 			// close(currEvent.ident); // 아래에서 더욱 명시적으로 close를 했음
 			// events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata); // 이미 close한 fd에 대해서 이벤트를 조정하려고 하고 있음
 			Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
-			close(currClient->httpRequestManager.getBackReq().pipe_fd[1]);
+			close(currClient->request.pipe_fd[1]);
 			currClient->httpRequestManager.DynamicReadFromCgi(*currClient);
 			currClient->httpRequestManager.DynamicMakeResponse(*currClient);
 

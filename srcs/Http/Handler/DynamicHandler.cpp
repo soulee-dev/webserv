@@ -6,35 +6,34 @@ extern char **environ;
 
 void DynamicHandler::OpenFd(Client &client)
 {
-	HttpRequest &currRequest = client.httpRequestManager.getBackReq();
+	HttpRequest &request = client.request;
 
-	if (pipe(currRequest.pipe_fd) == -1 || pipe(currRequest.pipe_fd_back) == -1)
+	if (pipe(request.pipe_fd) == -1 || pipe(request.pipe_fd_back) == -1)
 	{
 		std::cerr << "Pipe error" << std::endl;
 		exit(0);
 	}
-	fcntl(currRequest.pipe_fd[0], F_SETFL, O_NONBLOCK);
-	fcntl(currRequest.pipe_fd_back[1], F_SETFL, O_NONBLOCK);
-	fcntl(currRequest.pipe_fd[1], F_SETFL, O_NONBLOCK);
-	fcntl(currRequest.pipe_fd_back[0], F_SETFL, O_NONBLOCK);
+	fcntl(request.pipe_fd[0], F_SETFL, O_NONBLOCK);
+	fcntl(request.pipe_fd_back[1], F_SETFL, O_NONBLOCK);
+	fcntl(request.pipe_fd[1], F_SETFL, O_NONBLOCK);
+	fcntl(request.pipe_fd_back[0], F_SETFL, O_NONBLOCK);
 	// ADD TIMER IN CGI
 	// client.events->changeEvents(currRequest.pipe_fd_back[0], EVFILT_TIMER, EV_ADD | EV_ENABLE, NOTE_SECONDS, 10, &client);
 }
 
 void DynamicHandler::SendReqtoCgi(Client &client)
 {
-	HttpRequest &request = client.httpRequestManager.getBackReq();
+	HttpRequest &request = client.request;
 
     std::string body(request.body.begin(), request.body.end());
 	// std::cout << BOLDGREEN << "BODY\n" << body << RESET << '\n';
-	client.createResponse();
     client.events->changeEvents(request.pipe_fd[1], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &client);
     client.events->changeEvents(request.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &client);
 }
 
 void DynamicHandler::RunCgi(Client& client)
 {
-	HttpRequest &request = client.httpRequestManager.getBackReq();
+	HttpRequest &request = client.request;
 
 	pid_t	pid = fork();
 	if (pid == -1)
@@ -88,14 +87,14 @@ void DynamicHandler::RunCgi(Client& client)
 
 void DynamicHandler::MakeResponse(Client& client)
 {
-	ResponseMessage& currRes = client.getBackRes();
-	currRes.status_code = 200;
+	ResponseMessage& response = client.response;
+	response.status_code = 200;
 }
 
 void DynamicHandler::ReadFromCgi(Client& client)
 {
-	HttpRequest &currRequest = client.httpRequestManager.getBackReq();
-    client.events->changeEvents(currRequest.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &client);
+	HttpRequest&	request = client.request;
+    client.events->changeEvents(request.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &client);
 }
 
 std::vector<unsigned char>	DynamicHandler::handle(Client& client) const

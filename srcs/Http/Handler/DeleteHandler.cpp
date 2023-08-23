@@ -3,7 +3,7 @@
 
 std::vector<unsigned char>	DeleteHandler::handle(Client &client) const
 {
-	HttpRequest&	request = client.httpRequestManager.getBackReq();
+	HttpRequest&	request = client.request;
     const char *path = request.path.c_str();
     std::map<std::string, std::string>  headers;
     std::vector<unsigned char> emptyBody;

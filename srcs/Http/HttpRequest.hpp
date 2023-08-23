@@ -11,6 +11,7 @@
 
 enum ParseErrorCode
 {
+	NOT_ERROR = 0,
     BAD_REQUEST = 400,
 	METHOD_NOT_ALLOWED = 405,
     HTTP_VERSION_NOT_SUPPORT = 505,
@@ -20,6 +21,7 @@ enum ParseErrorCode
 class HttpRequest
 {
 	public:
+		HttpRequest(void);
 		int			writeIndex;
 	    std::vector<unsigned char> raw;
     	std::string startLine;
@@ -38,5 +40,6 @@ class HttpRequest
 		std::string	header;
 		std::map<std::string, std::string> headers;
 		std::vector<unsigned char> body;
-		HttpRequest() : writeIndex(0) {};
+
+		void	clear(void);
 };

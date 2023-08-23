@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <deque>
 
 #include "Handler/Handler.hpp"
 #include "Handler/StaticHandler.hpp"
@@ -14,7 +13,6 @@ class Client;
 class HttpRequestManager
 {
 	private:
-		std::deque<HttpRequest> queReq;  // 가져갈땐 pop, 넣을땐 push
 		Handler*	handler;
 	public:
 		HttpRequestManager();
@@ -23,12 +21,6 @@ class HttpRequestManager
 		std::vector<unsigned char>	processRequest(Client& client);
 		~HttpRequestManager();
 		HttpRequest& getRequest();
-
-		void			pushBackReq(void);
-		HttpRequest& 	getBackReq(void);
-		HttpRequest&	getFrontReq(void);
-		void			popFrontReq(void);
-		void			popBackReq(void);
 
 		void DynamicOpenFd(Client& client); // dynamic
 		void SendReqtoEvent(Client& client); //for all(static and dynamic)

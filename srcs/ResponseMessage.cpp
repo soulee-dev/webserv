@@ -29,3 +29,12 @@ void    ResponseMessage::fillResponse(std::string &header, std::vector<char> buf
 	res.insert(res.end(), buffer.begin(), buffer.end());
 }
 // functions
+void ResponseMessage::clear(void)
+{
+  raw.clear();
+  startLine.clear();
+  status_code = 0;
+  httpVersion.clear();
+  headers.clear();
+  body.clear();
+}

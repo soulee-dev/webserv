@@ -7,12 +7,12 @@ HttpRequestManager::HttpRequestManager() : handler(NULL) {}
 void	HttpRequestManager::SetHandler(Client& client)
 {
 	Parse(client);
-	if (getBackReq().method == "DELETE")
+	if (client.request.method == "DELETE")
 	{
 		std::cout << BOLDRED << " -- PROCESS DELETING METHOD -- \n";
 		handler = new DeleteHandler();
 	}
-	else if (getBackReq().is_static)
+	else if (client.request.is_static)
 	{
 		std::cout << BOLDRED << " -- PROCESSING STATIC -- \n";
 		handler = new StaticHandler();
@@ -26,7 +26,7 @@ void	HttpRequestManager::SetHandler(Client& client)
 
 void	HttpRequestManager::Parse(Client& client)
 {
-	HttpRequest&	request = getBackReq();
+	HttpRequest&	request = client.request;
 	bool			is_found;
 	size_t			location_pos;
 	std::string		found_uri;
@@ -109,44 +109,14 @@ void	HttpRequestManager::Parse(Client& client)
 	}
 };
 
-HttpRequest& HttpRequestManager::getBackReq(void)
-{
-	return queReq.back();
-}
-
-HttpRequest& HttpRequestManager::getFrontReq(void)
-{
-	return queReq.front();
-}
-
-void HttpRequestManager::popFrontReq(void)
-{
-    queReq.pop_front();
-}
-
-void HttpRequestManager::popBackReq(void)
-{
-	queReq.pop_back();
-}
-
 std::vector<unsigned char>	HttpRequestManager::processRequest(Client& client)
 {
 	return handler->handle(client);
 }
 
-HttpRequest& HttpRequestManager::getRequest()
-{
-	return getFrontReq();
-}
-
 HttpRequestManager::~HttpRequestManager()
 {
 	delete handler;
-}
-
-void	HttpRequestManager::pushBackReq()
-{
-	queReq.push_back(HttpRequest());
 }
 
 void HttpRequestManager::DynamicOpenFd(Client& client)
@@ -163,7 +133,7 @@ void HttpRequestManager::SendReqtoEvent(Client& client)
 
 	if (currHandler != NULL)
 		currHandler->SendReqtoCgi(client);
-	else if (getBackReq().method == "DELETE")
+	else if (client.request.method == "DELETE")
 	{
 		DeleteHandler *currHandler = dynamic_cast<DeleteHandler*>(handler);
 		currHandler->sendReqtoDelete(client);

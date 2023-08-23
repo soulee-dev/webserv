@@ -10,7 +10,7 @@ RMFLAGS		= -f
 OUT_DIR		= objs
 SRC_DIR		= srcs
 FILE		= Client ClientManager ConfigFunctions ConfigParser Event Location Message Http/Handler/Handler Http/Handler/HttpStatusCodes \
-				Http/Handler/ErrorHandler ResponseMessage Server ServerManager Http/HttpRequestManager \
+				Http/Handler/ErrorHandler ResponseMessage Server ServerManager Http/HttpRequestManager Http/HttpRequest \
 				Http/Handler/StaticHandler Http/Handler/DynamicHandler Http/Handler/DeleteHandler main
 OBJECTS		= $(addprefix $(OUT_DIR)/, $(addsuffix .o, $(FILE)))
 
