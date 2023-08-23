@@ -71,6 +71,7 @@ std::vector<unsigned char>	Handler::BuildResponse(int status_code, std::map<std:
 		headers["Content-Length"] = itos(body.size());
 		response = BuildHeader(status_code, headers, true);
 	}
+	// 이렇게 하면 바디 계속 복사됨 -> 걍sendbuffer에 바로 꽂는게 나을듯? 
 	response.insert(response.end(), body.begin(), body.end());
 
 	std::cout << "\n  -- <RESPONSE> -- \n";

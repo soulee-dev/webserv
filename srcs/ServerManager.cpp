@@ -213,13 +213,12 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
         if (ret == 1)
         {
             // cgi 에서 결과물을 받을때 response 가 완성 되어있다면, client 로 바로 전송 하도록 이벤트를 보냄
-
-			currClient->sendBuffer = Handler::BuildResponse(currClient->res.status_code, currClient->res.headers, currClient->res.body, true);
-			events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
+			wait(NULL);
 			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), currClient->getFrontRes().body.begin(), currClient->getFrontRes().body.end());
 			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), CRLF[0], CRLF[2]);
 			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), CRLF[0], CRLF[2]);
-			wait(NULL);
+			currClient->sendBuffer = Handler::BuildResponse(200, currClient->res.headers, currClient->res.body, true);
+			events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
             // 위의 경우가 아닌 경우에는 client 의 response 메시지를 만드는 function 을 호출한다.
             // 예 : currClient->getRes().buildResponse();
         }
