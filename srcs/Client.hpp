@@ -66,7 +66,7 @@ public:
     SOCKET getClientFd(void) const;
 
     // functions
-    ResponseMessage popRes(void);
+    void popRes(void);
     void errorEventProcess(void);
     bool readEventProcess(void);
     bool writeEventProcess(void);

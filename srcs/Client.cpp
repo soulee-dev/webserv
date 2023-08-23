@@ -52,11 +52,9 @@ void Client::setFd(int fd) { this->client_fd = fd; }
 void Client::setEvents(Event* event) { this->events = event; };
 // functions
 
-ResponseMessage Client::popRes(void)
+void Client::popRes(void)
 {
-	ResponseMessage ret = queRes.front();
 	queRes.pop();
-	return ret;
 }
 
 void Client::errorEventProcess(void)
@@ -73,7 +71,7 @@ bool Client::readEventProcess(void) // RUN 5
 		// events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
 		std::cout << BOLDGREEN << "URI : " << request.uri << RESET << '\n';
 		std::cout << BOLDYELLOW << "HTTP VERSION : " << request.httpVersion << RESET << '\n';
-		
+
 		httpRequestManager.SetHandler(*this);
 		httpRequestManager.DynamicOpenFd(*this);
 		httpRequestManager.SendReqtoEvent(*this);
@@ -530,7 +528,7 @@ bool Client::isSendBufferEmpty(void)
 
 void Client::createRequest(void)
 {
-	httpRequestManager.pushReq();
+	httpRequestManager.pushBackReq();
 }
 
 void Client::createResponse(void)
