@@ -1,6 +1,6 @@
 #include "ConfigParser.hpp"
-#include "Location.hpp"
-#include "Server.hpp"
+#include "../Location.hpp"
+#include "../Server.hpp"
 
 int ConfigParser::parse_action_0(struct s_info& parse_info, mapPortServer& servers)
 {

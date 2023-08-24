@@ -1,6 +1,6 @@
 #include "ConfigParser.hpp"
-#include "Location.hpp"
-#include "Server.hpp"
+#include "../Location.hpp"
+#include "../Server.hpp"
 #include <fstream>
 
 // constructors

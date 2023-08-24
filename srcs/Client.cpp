@@ -1,15 +1,14 @@
 #include "Client.hpp"
-#include "Http/HttpRequestManager.hpp"
 #include "Server.hpp"
-#include <algorithm>
-#include <fcntl.h>
 #include "Color.hpp"
 #include "Http/HttpRequestManager.hpp"
 #include "Http/Handler/ErrorHandler.hpp"
+#include "Config/ConfigParser.hpp"
+#include <algorithm>
+#include <fcntl.h>
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
-#include "ConfigParser.hpp"
 
 Client::Client() : parseState(READY), haveToReadBody(false), writeIndex(0) {
 	readBuffer.reserve(100000000);

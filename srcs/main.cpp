@@ -1,4 +1,4 @@
-#include "ConfigParser.hpp"
+#include "Config/ConfigParser.hpp"
 #include "ServerManager.hpp"
 #include "Color.hpp"
 #include <iostream>
