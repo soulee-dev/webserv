@@ -1,7 +1,8 @@
 #pragma once
+
 #include "Event.hpp"
 #include "Location.hpp"
-#include "ResponseMessage.hpp"
+#include "Message/Response.hpp"
 #include "Server.hpp"
 #include "Http/HttpRequestManager.hpp"
 
@@ -39,8 +40,8 @@ private:
     void readChunked(const char* buffer, size_t readSize);
 
 public:
-    HttpRequest     request;
-    ResponseMessage response;
+    Request request;
+    Response response;
     Event* events;
     HttpRequestManager httpRequestManager;
 	std::vector<unsigned char> sendBuffer;
@@ -48,21 +49,15 @@ public:
     typedef int PORT;
     typedef int SOCKET;
     Client();
-    Client(const Client& ref);
-    Client& operator=(const Client& ref);
-
     ~Client();
 
-    // setter
     void setFd(int fd);
     void setServer(Server* server);
     void setEvents(Event* event);
 
-    // getter
     Server* getServer(void) const;
     SOCKET getClientFd(void) const;
 
-    // functions
     void errorEventProcess(void);
     bool readEventProcess(void);
     bool writeEventProcess(void);

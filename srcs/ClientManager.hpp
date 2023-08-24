@@ -11,8 +11,7 @@ private:
     typedef int PORT;
     typedef int SOCKET;
     std::map<SOCKET, Client> clients;
-    // ClientManager(ClientManager const& other);
-    // ClientManager& operator=(ClientManager const& rhs);
+
 public:
     ClientManager();
     ~ClientManager();

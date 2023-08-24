@@ -5,7 +5,7 @@
 
 std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 {
-	HttpRequest&				request = client.request;
+	Request&				request = client.request;
 	std::vector<unsigned char>	result;
 
 	std::cout << "METHOD : " << request.method << RESET << '\n';
@@ -55,7 +55,7 @@ int	is_directory(std::string fileName)
 	return (0);
 }
 
-std::vector<unsigned char>	StaticHandler::HandleDirectoryListing(Client& client, HttpRequest& request) const
+std::vector<unsigned char>	StaticHandler::HandleDirectoryListing(Client& client, Request& request) const
 {
 	std::vector<unsigned char>			body;
 	std::map<std::string, std::string>	headers;
@@ -92,7 +92,7 @@ std::vector<unsigned char>	StaticHandler::HandleDirectoryListing(Client& client,
 
 std::vector<unsigned char> StaticHandler::ProcessDirectory(Client& client) const
 {
-    HttpRequest& request = client.request;
+    Request& request = client.request;
     std::vector<std::string> indexVec = request.location.getIndex(); // 벡터에 대한 참조
     std::vector<std::string>::iterator it;
 

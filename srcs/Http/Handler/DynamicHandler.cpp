@@ -6,7 +6,7 @@ extern char **environ;
 
 void DynamicHandler::OpenFd(Client &client)
 {
-	HttpRequest &request = client.request;
+	Request &request = client.request;
 
 	if (pipe(request.pipe_fd) == -1 || pipe(request.pipe_fd_back) == -1)
 	{
@@ -23,7 +23,7 @@ void DynamicHandler::OpenFd(Client &client)
 
 void DynamicHandler::SendReqtoCgi(Client &client)
 {
-	HttpRequest &request = client.request;
+	Request &request = client.request;
 
     std::string body(request.body.begin(), request.body.end());
 	// std::cout << BOLDGREEN << "BODY\n" << body << RESET << '\n';
@@ -33,7 +33,7 @@ void DynamicHandler::SendReqtoCgi(Client &client)
 
 void DynamicHandler::RunCgi(Client& client)
 {
-	HttpRequest &request = client.request;
+	Request &request = client.request;
 
 	pid_t	pid = fork();
 	if (pid == -1)
@@ -87,13 +87,13 @@ void DynamicHandler::RunCgi(Client& client)
 
 void DynamicHandler::MakeResponse(Client& client)
 {
-	ResponseMessage& response = client.response;
+	Response& response = client.response;
 	response.status_code = 200;
 }
 
 void DynamicHandler::ReadFromCgi(Client& client)
 {
-	HttpRequest&	request = client.request;
+	Request&	request = client.request;
     client.events->changeEvents(request.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &client);
 }
 

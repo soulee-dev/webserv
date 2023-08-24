@@ -19,35 +19,13 @@ Client::Client() : parseState(READY), haveToReadBody(false), writeIndex(0) {
 // destructor
 Client::~Client() {}
 // copy constructors
-Client::Client(Client const& other)
-	: client_fd(other.client_fd), server(other.server),
-	  request(other.request), response(other.response), readBuffer(other.readBuffer),
-	  sendBuffer(other.sendBuffer), parseState(METHOD), writeIndex(other.writeIndex) {}
-// operators
-Client& Client::operator=(Client const& rhs)
-{
-	if (this != &rhs)
-	{
-		this->client_fd = rhs.client_fd;
-		this->server = rhs.server;
-		this->readBuffer = rhs.readBuffer;
-		this->sendBuffer = rhs.sendBuffer;
-		this->parseState = rhs.parseState;
-		this->writeIndex = rhs.writeIndex;
-		this->request = rhs.request;
-		this->response = rhs.response;
-	}
-	return *this;
-}
 
-// getter
+
 Server* Client::getServer(void) const { return this->server; }
-// setter
+
 void Client::setServer(Server* server) { this->server = server; }
 void Client::setFd(int fd) { this->client_fd = fd; }
-
 void Client::setEvents(Event* event) { this->events = event; };
-// functions
 
 void Client::errorEventProcess(void)
 {
@@ -61,7 +39,7 @@ bool Client::readEventProcess(void) // RUN 5
 		// 메시지 처리하여 버퍼에 입력해야함.
 		// events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
 		std::cout << BOLDGREEN << "URI : " << request.uri << RESET << '\n';
-		std::cout << BOLDYELLOW << "HTTP VERSION : " << request.httpVersion << RESET << '\n';
+		std::cout << BOLDYELLOW << "HTTP VERSION : " << request.http_version << RESET << '\n';
 
 		httpRequestManager.SetHandler(*this);
 		httpRequestManager.DynamicOpenFd(*this);
@@ -409,7 +387,6 @@ void Client::readMethod(const char* buffer)
 		readBuffer.end())
 	{
 		request.method = std::string(readBuffer.begin(), pos);
-		request.startLine = request.method;
 		readBuffer.erase(readBuffer.begin(), pos + 1);
 		parseState = URI;
 		// 또 다른 공백을 찾은 경우 다음 파싱으로 넘어감.
@@ -432,7 +409,7 @@ void Client::readMethod(const char* buffer)
 	{
 		std::cout << "METHOD : " << request.method << std::endl;
 		std::cout << "URI : " << request.uri << std::endl;
-		std::cout << "PROTO : " << request.httpVersion << std::endl;
+		std::cout << "PROTO : " << request.http_version << std::endl;
 		parseState = ERROR;
 		std::cout<<"DEBUG8\n";
 		request.errorCode = METHOD_NOT_ALLOWED; // 이 경우 또한 405번을 부여하지 않으면 테스트에서 통과가 불가능합니다(원래 400).
@@ -449,7 +426,6 @@ void Client::readUri(const char* buffer)
 		readBuffer.end())
 	{
 		request.uri = std::string(readBuffer.begin(), pos);
-		request.startLine += " " + request.uri;
 		readBuffer.erase(readBuffer.begin(), pos + 1);
 		parseState = HTTP_VERSION;
 		if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
@@ -479,16 +455,15 @@ void Client::readHttpVersion(const char* buffer)
 	if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
 						   &CRLF[2])) != readBuffer.end())
 	{
-		request.httpVersion = std::string(readBuffer.begin(), pos);
+		request.http_version = std::string(readBuffer.begin(), pos);
 		readBuffer.erase(readBuffer.begin(), pos + 2);
-		if (request.httpVersion != "HTTP/1.1" && request.httpVersion != "HTTP/1.0")
+		if (request.http_version != "HTTP/1.1" && request.http_version != "HTTP/1.0")
 		{
 			parseState = ERROR;
 			std::cout<<"DEBUG10\n";
 			request.errorCode = HTTP_VERSION_NOT_SUPPORT;
 			return;
 		}
-		request.startLine += " " + request.httpVersion;
 		parseState = HEADER;
 		if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
 							   &CRLF[2])) != readBuffer.end())

@@ -20,7 +20,7 @@ class HttpRequestManager
 		void		SetHandler(Client& client);
 		std::vector<unsigned char>	processRequest(Client& client);
 		~HttpRequestManager();
-		HttpRequest& getRequest();
+		Request& getRequest();
 
 		void DynamicOpenFd(Client& client); // dynamic
 		void SendReqtoEvent(Client& client); //for all(static and dynamic)

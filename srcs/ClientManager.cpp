@@ -3,7 +3,7 @@
 #include <sys/event.h>
 #include <unistd.h>
 #include <vector>
-#include "Http/HttpRequest.hpp"
+#include "Message/Request.hpp"
 
 // constructors
 ClientManager::ClientManager(){};
@@ -64,7 +64,7 @@ bool ClientManager::writeEventProcess(struct kevent& currEvent)
 int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
 {
     Client* client = reinterpret_cast<Client*>(currEvent.udata);
-    HttpRequest&    request = client->request;
+    Request&    request = client->request;
     std::vector<unsigned char>& buffer = request.body;
     const int   size = buffer.size() - request.writeIndex;
 

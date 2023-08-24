@@ -1,18 +1,20 @@
-#include "HttpRequest.hpp"
+#include "Request.hpp"
 #include <cstring>
 
-HttpRequest::HttpRequest()
+Request::Request()
   : writeIndex(0)
 {
 
 }
 
-void HttpRequest::clear(void)
+void Request::clear(void)
 {
+	status_code = 0;
+	method = "";
+	http_version = "";
+	headers.clear();
+	body.clear();
 	writeIndex = 0;
-	raw.clear();
-	startLine.clear();
-	httpVersion.clear();
 	is_static = true;
 	file_name.clear();
 	path.clear();
@@ -25,7 +27,6 @@ void HttpRequest::clear(void)
 	uri.clear();
 	errorCode = NOT_ERROR;
 	method.clear();
-	header.clear();
 	headers.clear();
 	body.clear();
 }

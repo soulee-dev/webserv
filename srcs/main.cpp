@@ -1,8 +1,8 @@
 #include "ConfigParser.hpp"
 #include "ServerManager.hpp"
+#include "Color.hpp"
 #include <iostream>
 #include <fstream>
-#include "Color.hpp"
 
 int main(int argc, char** argv)
 {

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "../HttpRequest.hpp"
+#include "../../Message/Request.hpp"
 #include <vector>
-#include "../../Color.hpp" // for debug
-#include <iostream> // for debug
-#include <sstream> // for stringstream
-#include <fstream> // for ifstream
-#include <sys/stat.h> // for struct stat
-#include <dirent.h> // for directory listing/entrying
+#include "../../Color.hpp"
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <sys/stat.h>
+#include <dirent.h>
 
 # define SPACE " "
 # define CRLF "\r\n"

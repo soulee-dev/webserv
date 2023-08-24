@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Location.hpp"
-#include "ResponseMessage.hpp"
 #include <map>
 #include <string>
 class Server
