@@ -20,11 +20,10 @@ class HttpRequestManager
 		void		SetHandler(Client& client);
 		std::vector<unsigned char>	processRequest(Client& client);
 		~HttpRequestManager();
-		Request& getRequest();
 
-		void DynamicOpenFd(Client& client); // dynamic
-		void SendReqtoEvent(Client& client); //for all(static and dynamic)
-		void DynamicRunCgi(Client& client); //dynamic
+		void DynamicOpenFd(Client& client);
+		void SendReqtoEvent(Client& client);
+		void DynamicRunCgi(Client& client);
 		void DynamicMakeResponse(Client& client);
 		void DynamicReadFromCgi(Client& client);
 };
