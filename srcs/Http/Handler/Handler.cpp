@@ -42,7 +42,6 @@ std::vector<unsigned char>	Handler::BuildHeader(int status_code, std::map<std::s
 {
 	std::stringstream			ss;
 
-	// start-line
 	ss << SERVER_HTTP_VERSION << SPACE << status_code << SPACE << get_status_codes().find(status_code)->second << CRLF;
 	ss << "Server:" << SPACE << SERVER_NAME << CRLF;
 	for (std::map<std::string, std::string>::iterator header = headers.begin(); header != headers.end(); ++header)
@@ -75,9 +74,6 @@ std::vector<unsigned char>	Handler::BuildResponse(int status_code, std::map<std:
 	response.insert(response.end(), body.begin(), body.end());
 
 	std::cout << "\n  -- <RESPONSE> -- \n";
-	// for (size_t i = 0; i < response.size(); i++)
-	// 	std::cout << response[i];
-	// std::cout << '\n';
 	return response;
 }
 
@@ -106,7 +102,6 @@ bool	Handler::IsRegularFile(std::string path)
 	return false;
 }
 
-// Check permission file is readable
 bool	Handler::IsFileReadable(std::string path)
 {	
 	struct stat	buf;
@@ -154,7 +149,7 @@ std::vector<unsigned char>	Handler::ServeStatic(Client& client, std::string& pat
 	if (method != "HEAD")
 		body = ReadStaticFile(path);
 
-	if (method.empty()) // METHOD에 비어있을 때 예외처리이다. 나쁜 테스터 죽어.
+	if (method.empty())
 		return ErrorHandler::handle(client, 404);
 
 	headers["Connection"] = "keep-alive";

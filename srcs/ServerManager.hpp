@@ -32,16 +32,13 @@ public:
     void exitWebServer(std::string msg);
     int openPort(ServerManager::PORT port, Server& firstServer);
     void runServerManager(void);
-    int acceptClient(SOCKET server_fd); // return new client fd;
+    int acceptClient(SOCKET server_fd);
 
-    // getter
     Client& getClient(SOCKET client_fd);
     Server* getClientServer(SOCKET client_fd);
 
-    // setter
     void setServers(std::map<PORT, Server>& servers);
 
-    // functions
     void runEventProcess(struct kevent& currEvent);
     void errorEventProcess(struct kevent& currEvent);
     bool isResponseToServer(struct kevent& currEvent);

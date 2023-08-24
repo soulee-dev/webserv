@@ -3,31 +3,11 @@
 #include <sstream>
 #include <vector>
 
-// constructors
 Server::Server()
     : listen(80), serverName(""), root("/"), autoIndex(false), clientBodySize(10240) {}
-// destructor
+
 Server::~Server() {}
-// copy constructors
 
-Server::Server(Server const& other) : listen(other.listen), serverName(other.serverName),
-                                      root(other.root), errorPage(other.errorPage), redirection(other.redirection),
-                                      autoIndex(other.autoIndex), clientBodySize(other.clientBodySize), locations(other.locations) {}
-// operators
-Server& Server::operator=(Server const& rhs)
-{
-    listen = rhs.listen;
-    serverName = rhs.serverName;
-    root = rhs.root;
-    errorPage = rhs.errorPage;
-    redirection = rhs.redirection;
-    autoIndex = rhs.autoIndex;
-    clientBodySize = rhs.clientBodySize;
-    locations = rhs.locations;
-    return *this;
-}
-
-// getter
 int Server::getListen() const
 {
     return this->listen;
@@ -68,7 +48,6 @@ unsigned int Server::getClientBodySize(void) const
     return this->clientBodySize;
 }
 
-// setter
 bool Server::fillServer(std::map<std::string, Location>& mapLocations, std::map<std::string, std::string>& mapSentence)
 {
     std::map<std::string, std::string>::iterator it = mapSentence.begin();
