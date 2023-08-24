@@ -8,6 +8,6 @@ class ErrorHandler : public Handler
 
 	public:
 		static std::vector<unsigned char>	handle(Client &client, int status_code);
-		std::vector<unsigned char>	handle(Client& client);
+		std::vector<unsigned char>			handle(Client& client) const;
 		static void sendReqtoError(Client &client);
 };

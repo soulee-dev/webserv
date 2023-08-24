@@ -18,7 +18,7 @@ class Request : public Message
 {
 	public:
 		Request(void);
-		int			writeIndex;
+		size_t			writeIndex;
 		bool		is_static;
 		std::string	file_name;
 		std::string	path;

@@ -1,9 +1,9 @@
 #include "ClientManager.hpp"
-#include <iostream>
+#include "Message/Request.hpp"
 #include <sys/event.h>
 #include <unistd.h>
 #include <vector>
-#include "Message/Request.hpp"
+#include <iostream>
 
 
 ClientManager::ClientManager(){};
@@ -86,7 +86,7 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
 
 int ClientManager::CgiToResReadProcess(struct kevent& currEvent)
 {
-    const size_t BUFFER_SIZE = 65536;
+    const ssize_t BUFFER_SIZE = 65536;
 
     Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
     std::vector<unsigned char>& readBuffer = currClient->response.body;

@@ -29,7 +29,7 @@ private:
 	RequestMessageParseState parseState;
 
 	std::string strbodySize;
-	long longBodySize;
+	size_t  longBodySize;
 	bool haveToReadBody;
 
     void readMethod(const char* buffer);
@@ -45,7 +45,7 @@ public:
     Event* events;
     HttpRequestManager httpRequestManager;
 	std::vector<unsigned char> sendBuffer;
-    int         writeIndex;
+    size_t writeIndex;
     typedef int PORT;
     typedef int SOCKET;
     Client();
@@ -62,6 +62,6 @@ public:
     bool readEventProcess(void);
     bool writeEventProcess(void);
     bool readMessage(void);
-    bool checkMethod(std::string const& method);
+    bool checkMethod(void);
     bool isSendBufferEmpty(void);
 };

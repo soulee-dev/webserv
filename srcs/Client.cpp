@@ -145,7 +145,7 @@ void Client::readHeader(const char* buffer)
 				request.errorCode = BAD_REQUEST;
 				return;
 			}
-			else if (checkMethod(request.method))
+			else if (checkMethod())
 			{
 				parseState = ERROR;
 				std::cout << "DEBUG CHECKMETHOD\n";
@@ -301,7 +301,7 @@ void Client::readBody(const char* buffer, size_t readSize)
 	}
 }
 
-bool Client::checkMethod(std::string const& method)
+bool Client::checkMethod(void)
 {
 	std::string tmp_uri;
 	std::string		found_uri;
