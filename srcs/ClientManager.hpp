@@ -23,6 +23,6 @@ public:
 
     bool readEventProcess(struct kevent& currEvent);
     bool writeEventProcess(struct kevent& currEvent);
-    int ReqToCgiWriteProcess(struct kevent& currEvent);
+    int FdWriteProcess(struct kevent& currEvent);
     int CgiToResReadProcess(struct kevent& currEvent);
 };

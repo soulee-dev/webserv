@@ -199,7 +199,11 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
             events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_ENABLE, 0, 0, currEvent.udata);
         }
     }
-    else // file Read event...
+	else if (currClient->request.pipe_fd_back[0] == -1) // static file read event
+	{
+
+	}
+    else // cgi file Read event...
     {
         //Cgi에서 보내는 data 를 response의 body 에 저장
         ssize_t ret = clientManager.CgiToResReadProcess(currEvent); // -1: read error, 0 : read left 1 : read done
@@ -213,7 +217,7 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
         if (ret == 1)
         {
             // cgi 에서 결과물을 받을때 response 가 완성 되어있다면, client 로 바로 전송 하도록 이벤트를 보냄
-
+			
 			currClient->sendBuffer = Handler::BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, true);
 			events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), currClient->getFrontRes().body.begin(), currClient->getFrontRes().body.end());
@@ -231,6 +235,7 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
 
 void ServerManager::writeEventProcess(struct kevent& currEvent)
 {
+	Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
     if (clientManager.isClient(currEvent.ident) == true)
     {
         if (clientManager.writeEventProcess(currEvent)) // 더이상 보낼게 없을때 true 반환
@@ -238,16 +243,21 @@ void ServerManager::writeEventProcess(struct kevent& currEvent)
     }
     else
     {
-        ssize_t res = clientManager.ReqToCgiWriteProcess(currEvent);
+        ssize_t res = clientManager.FdWriteProcess(currEvent);  // CGI write || PUT write
         if (res != 0)
 		{
 			// close(currEvent.ident); // 아래에서 더욱 명시적으로 close를 했음
 			// events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata); // 이미 close한 fd에 대해서 이벤트를 조정하려고 하고 있음
-			Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
-			close(currClient->request.pipe_fd[1]);
+			close(currEvent.ident);
+			if (currClient->request.is_static) // PUT write
+			{
+				//make response 
+				
+				//currClient->events.changeEvent(currClient->getClientfd(), EVFILT_WRITE | EV_ENABLE, 0, 0, currEvent.udata);
+				return ;
+			}
 			currClient->httpRequestManager.DynamicReadFromCgi(*currClient);
 			currClient->httpRequestManager.DynamicMakeResponse(*currClient);
-
 		} // -1 : write error, 1 : buffer->size == 0, 0 : buffer left
         // BE에서 pipe fd 관리를 해주는 것이라면 여기에서 close하는게 맞나 싶음.. 중복 close로 엉뚱한 fd가 close되진 않을까..?
         // readEventProcess 에서도 동일한 이슈..

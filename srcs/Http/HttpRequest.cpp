@@ -10,6 +10,7 @@ HttpRequest::HttpRequest()
 void HttpRequest::clear(void)
 {
 	writeIndex = 0;
+	static_fd = -1;
 	raw.clear();
 	startLine.clear();
 	httpVersion.clear();

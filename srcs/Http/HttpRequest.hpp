@@ -40,6 +40,8 @@ class HttpRequest
 		std::string	header;
 		std::map<std::string, std::string> headers;
 		std::vector<unsigned char> body;
+		// --- //
+		int	static_fd;
 
 		void	clear(void);
 };

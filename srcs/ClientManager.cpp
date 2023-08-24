@@ -61,7 +61,7 @@ bool ClientManager::writeEventProcess(struct kevent& currEvent)
     return false;
 }
 
-int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
+int ClientManager::FdWriteProcess(struct kevent& currEvent)
 {
     Client* client = reinterpret_cast<Client*>(currEvent.udata);
     HttpRequest&    request = client->request;

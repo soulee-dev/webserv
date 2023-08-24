@@ -1,7 +1,10 @@
 #include "Handler.hpp"
 #include "HttpStatusCodes.hpp"
 #include "ErrorHandler.hpp"
+#include "../../Client.hpp"
 #include <algorithm>
+#include <fcntl.h>
+#include <unistd.h>
 
 std::string	Handler::GetFileType(std::string file_name)
 {
@@ -128,17 +131,22 @@ bool	Handler::IsFileExist(std::string path)
 	return false;
 }
 
-std::vector<unsigned char>	Handler::ReadStaticFile(std::string& file_name)
+std::vector<unsigned char>	Handler::ReadStaticFile(Client &client, std::string& file_name)
 {
-	std::ifstream	file(file_name.c_str(), std::ios::in | std::ios::binary);
+	client.request.static_fd = open(file_name.c_str(), O_RDONLY);
+	if (client.request.static_fd == -1)
+		ErrorHandler::handle(client, 404);
+	client.events->changeEvents(client.request.static_fd, EVFILT_READ, EV_ENABLE, 0, 0, &client);
 
-	file.seekg(0, std::ios::end);
-	int length = file.tellg();
-	file.seekg(0, std::ios::beg);
+	// std::ifstream	file(file_name.c_str(), std::ios::in | std::ios::binary);
 
-	std::vector<unsigned char> buffer(length);
-	file.read(reinterpret_cast<char*>(&buffer[0]), length);
-	return buffer;
+	// file.seekg(0, std::ios::end);
+	// int length = file.tellg();
+	// file.seekg(0, std::ios::beg);
+
+	// std::vector<unsigned char> buffer(length);
+	// file.read(reinterpret_cast<char*>(&buffer[0]), length);
+	// return buffer;
 }
 
 std::vector<unsigned char>	Handler::ServeStatic(Client& client, std::string& path, std::string method)
@@ -152,7 +160,7 @@ std::vector<unsigned char>	Handler::ServeStatic(Client& client, std::string& pat
 		return ErrorHandler::handle(client, 403);
 
 	if (method != "HEAD")
-		body = ReadStaticFile(path);
+		body = ReadStaticFile(client, path);
 
 	if (method.empty()) // METHOD에 비어있을 때 예외처리이다. 나쁜 테스터 죽어.
 		return ErrorHandler::handle(client, 404);

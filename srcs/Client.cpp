@@ -110,7 +110,7 @@ bool Client::writeEventProcess(void)
 bool Client::readMessage(void)
 {
 	const size_t BUFFER_SIZE = 65536;
-	char buffer[BUFFER_SIZE + 1];
+	char buffer[BUFFER_SIZE];
 	ssize_t readSize = read(client_fd, buffer, BUFFER_SIZE);
 
 	if (readSize <= 0)
@@ -119,7 +119,6 @@ bool Client::readMessage(void)
 			std::cout << "read() error" << std::endl;
 		return true;
 	}
-	buffer[readSize] = '\0';
 
 	// 함수 포인터 배열 사용해보는것도?
 	switch (parseState)
@@ -127,16 +126,16 @@ bool Client::readMessage(void)
 	case READY:
 		request.clear();
 	case METHOD:
-		readMethod(buffer);
+		readMethod(buffer, readSize);
 		break;
 	case URI:
-		readUri(buffer);
+		readUri(buffer, readSize);
 		break;
 	case HTTP_VERSION:
-		readHttpVersion(buffer);
+		readHttpVersion(buffer, readSize);
 		break;
 	case HEADER:
-		readHeader(buffer);
+		readHeader(buffer, readSize);
 		break;
 	case BODY:
 		readBody(buffer, readSize);
@@ -150,7 +149,7 @@ bool Client::readMessage(void)
 }
 // client 안에 readMsg 와 writeMsg handle 할 각각의 클래스를 넣어두고 써보는
 // 것도 ..?
-void Client::readHeader(const char* buffer)
+void Client::readHeader(const char* buffer, size_t readSize)
 {
 	std::stringstream headerSstream;
 	std::string line;
@@ -158,14 +157,14 @@ void Client::readHeader(const char* buffer)
 	std::string value;
 	std::vector<unsigned char>::iterator pos;
 
-	readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
+	readBuffer.insert(readBuffer.end(), buffer, buffer + readSize);
 
 	while ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\n",
 							  &"\n"[1])) != readBuffer.end())
 	{
 		line = std::string(readBuffer.begin(), pos);
 		readBuffer.erase(readBuffer.begin(), pos + 1);
-		if (line[line.size() - 1] == '\r')
+		if (line.size() > 0 && line[line.size() - 1] == '\r')
 			line.pop_back();
 		if (line.empty())
 		{
@@ -394,12 +393,12 @@ bool Client::checkMethod(std::string const& method)
 		return true;
 }
 
-void Client::readMethod(const char* buffer)
+void Client::readMethod(const char* buffer, size_t readSize)
 {
 	std::vector<unsigned char>::iterator pos;
 
 	// 입력버퍼벡터 뒤에 방금읽은 버퍼를 덧붙임
-	readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
+	readBuffer.insert(readBuffer.end(), buffer, buffer + readSize);
 	while (readBuffer.size() > 1 && readBuffer[0] == '\r' && readBuffer[1] == '\n')
 		readBuffer.erase(readBuffer.begin(), readBuffer.begin() + 2);
 	if (readBuffer.size() == 0)
@@ -417,7 +416,7 @@ void Client::readMethod(const char* buffer)
 		// 에러처리로 됨.
 		if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ",
 							   &" "[1])) != readBuffer.end())
-			readUri("");
+			readUri("", 0);
 		else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
 									&CRLF[2])) != readBuffer.end())
 		{
@@ -440,11 +439,11 @@ void Client::readMethod(const char* buffer)
 	}
 }
 
-void Client::readUri(const char* buffer)
+void Client::readUri(const char* buffer, size_t readSize)
 {
 	std::vector<unsigned char>::iterator pos;
 
-	readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
+	readBuffer.insert(readBuffer.end(), buffer, buffer + readSize);
 	if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ", &" "[1])) !=
 		readBuffer.end())
 	{
@@ -454,7 +453,7 @@ void Client::readUri(const char* buffer)
 		parseState = HTTP_VERSION;
 		if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
 							   &CRLF[2])) != readBuffer.end())
-			readHttpVersion("");
+			readHttpVersion("", 0);
 		else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ",
 									&" "[1])) != readBuffer.end())
 		{
@@ -471,11 +470,11 @@ void Client::readUri(const char* buffer)
 	}
 }
 
-void Client::readHttpVersion(const char* buffer)
+void Client::readHttpVersion(const char* buffer, size_t readSize)
 {
 	std::vector<unsigned char>::iterator pos;
 
-	readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
+	readBuffer.insert(readBuffer.end(), buffer, buffer + readSize);
 	if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
 						   &CRLF[2])) != readBuffer.end())
 	{
@@ -492,7 +491,7 @@ void Client::readHttpVersion(const char* buffer)
 		parseState = HEADER;
 		if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
 							   &CRLF[2])) != readBuffer.end())
-			readHeader("");
+			readHeader("", 0);
 		return;
 	}
 }

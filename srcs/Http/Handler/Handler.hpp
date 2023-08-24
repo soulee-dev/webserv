@@ -26,7 +26,7 @@ class Handler
 		static std::string	itos(int num);
 		static std::vector<unsigned char>	stou(std::stringstream& ss);
 		static std::vector<unsigned char>	BuildResponse(int status_code, std::map<std::string, std::string>& headers, std::vector<unsigned char>& body, bool is_cgi=false);
-		static std::vector<unsigned char>	ReadStaticFile(std::string& file_name);
+		static std::vector<unsigned char>	ReadStaticFile(Client &client, std::string& file_name);
 		static bool		IsDirectory(std::string path);
 		static bool		IsRegularFile(std::string path);
 		static bool		IsFileReadable(std::string path);

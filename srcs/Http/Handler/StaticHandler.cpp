@@ -2,10 +2,12 @@
 #include "ErrorHandler.hpp"
 #include "../../Client.hpp"
 #include "ErrorHandler.hpp"
+#include <fcntl.h>
+#include <unistd.h>
 
 std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 {
-	HttpRequest&				request = client.request;
+	HttpRequest&				request = client.request; // getBackReq로 적용되어있었슴
 	std::vector<unsigned char>	result;
 
 	std::cout << "METHOD : " << request.method << RESET << '\n';
@@ -23,8 +25,13 @@ std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 
 	else if (request.method == "PUT") // POST와 PUT이 괴상하게 섞인 분기문을 정리했습니다.
 	{
-		std::ifstream	ifs(request.path);
-		std::ofstream	ofs;
+		// client.request.static_fd = open(client.request.file_name.c_str(), O_RDONLY);
+		// if (client.request.static_fd == -1)
+		// 	ErrorHandler::handle(client, 404);
+		// else
+		// 	client.events->changeEvents(client.request.static_fd, EVFILT_WRITE, EV_ENABLE | EV_ADD, 0, 0, &client);	
+		std::ifstream	ifs(request.path); // read
+		std::ofstream	ofs; // write -> writeEventProcess
 		int res = ifs.is_open();
 		ifs.close(); // infile close
 		ofs.open(request.path, std::ios::out | std::ios::trunc); // 출력 모드로, 이미 파일이 존재한다면 파일을 비우고 새로 엽니다.
@@ -42,7 +49,6 @@ std::vector<unsigned char>	StaticHandler::handle(Client& client) const
 			return BuildResponse(200, headers, empty_body); // 파일 지우고 200, 201 테스트해보려면 위에 curl 입력하면 됩니다.
 		return BuildResponse(201, headers, empty_body); // 200이면 이미 있는 파일을 연거고, 201이면 새로 만든 겁니다.
 	}
-
     if (IsDirectory(request.path)) // 나머지 GET 요청에 대한 처리입니다.
         return ProcessDirectory(client);
 	return ServeStatic(client, request.path, request.method);
