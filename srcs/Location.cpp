@@ -9,26 +9,7 @@ Location::Location()
 // destructor
 Location::~Location() {}
 // copy constructors
-Location::Location(Location const& other)
-    : root(other.root), errorPage(other.errorPage), redirection(other.redirection),
-      allowMethod(other.allowMethod), index(other.index), autoIndex(other.autoIndex),
-      clientBodySize(other.clientBodySize) {}
-// operators
-Location& Location::operator=(Location const& rhs)
-{
-    if (this != &rhs)
-    {
-        this->root = rhs.root;
-        this->errorPage = rhs.errorPage;
-        this->redirection = rhs.redirection;
-        this->allowMethod = rhs.allowMethod;
-        this->index = rhs.index;
-        this->autoIndex = rhs.autoIndex;
-        this->clientBodySize = rhs.clientBodySize;
-    }
-    return *this;
-}
-// getter
+
 std::string Location::getRoot(void) const
 {
     return this->root;

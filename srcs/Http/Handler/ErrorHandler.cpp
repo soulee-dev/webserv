@@ -26,19 +26,15 @@ std::vector<unsigned char>	ErrorHandler::handle(Client &client, int status_code)
 			break ;
 	}
 	if (find_flag)
-	{
-		std::cout << "찾았어요!" << std::endl;
-		std::cout << BOLDCYAN << it->second << RESET << '\n';
-		file_name = "./error_pages/" + it->second;
-	}
+		file_name = "./html/error_pages/" + it->second;
 	else
+		file_name = "./html/error_pages/40x.html";
+	try
 	{
-		std::cout << "못찾았으니 디폴트" << std::endl;
-		file_name = "./error_pages/40x.html";
-	}
-	try { // 존재하지 않는 파일을 ReadStaticFile을 시도했을때 에러처리
 		body = ReadStaticFile(file_name);
-	} catch (const std::length_error& e) {
+	}
+	catch (const std::length_error& e)
+	{
 		std::cout << "Can't found erorr page!!" << std::endl;
 	}
 	headers["Connection"] = "close";

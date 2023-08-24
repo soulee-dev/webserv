@@ -11,15 +11,12 @@
 #include <unistd.h>
 #include "ConfigParser.hpp"
 
-// constructors
 Client::Client() : parseState(READY), haveToReadBody(false), writeIndex(0) {
 	readBuffer.reserve(100000000);
 	sendBuffer.reserve(100000000);
 }
-// destructor
-Client::~Client() {}
-// copy constructors
 
+Client::~Client() {}
 
 Server* Client::getServer(void) const { return this->server; }
 
@@ -32,12 +29,10 @@ void Client::errorEventProcess(void)
 	std::cout << "errorEventProcess" << std::endl;
 }
 
-bool Client::readEventProcess(void) // RUN 5
+bool Client::readEventProcess(void)
 {
 	if (parseState == DONE)
 	{
-		// 메시지 처리하여 버퍼에 입력해야함.
-		// events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, NULL);
 		std::cout << BOLDGREEN << "URI : " << request.uri << RESET << '\n';
 		std::cout << BOLDYELLOW << "HTTP VERSION : " << request.http_version << RESET << '\n';
 
@@ -51,7 +46,6 @@ bool Client::readEventProcess(void) // RUN 5
 	}
 	else if (parseState == ERROR)
 	{
-		// request.errorCode = METHOD_NOT_ALLOWED;
 		std::cout << "ERROR : " << request.errorCode << '\n';
 		ErrorHandler::sendReqtoError(*this);
 		std::cout << BOLDCYAN << " -- SUCCESSFULLY GET MESSAGE -- \n\n" << RESET;
@@ -99,7 +93,6 @@ bool Client::readMessage(void)
 	}
 	buffer[readSize] = '\0';
 
-	// 함수 포인터 배열 사용해보는것도?
 	switch (parseState)
 	{
 	case READY:
@@ -126,8 +119,7 @@ bool Client::readMessage(void)
 	}
 	return false;
 }
-// client 안에 readMsg 와 writeMsg handle 할 각각의 클래스를 넣어두고 써보는
-// 것도 ..?
+
 void Client::readHeader(const char* buffer)
 {
 	std::stringstream headerSstream;
@@ -158,7 +150,7 @@ void Client::readHeader(const char* buffer)
 			{
 				parseState = ERROR;
 				std::cout << "DEBUG CHECKMETHOD\n";
-				request.errorCode = METHOD_NOT_ALLOWED; // 이 경우, 405번을 부여하지 않으면 테스트에서 통과가 불가능합니다(원래 400).
+				request.errorCode = METHOD_NOT_ALLOWED;
 				return;
 			}
 			else if (request.headers.find("content-length") == request.headers.end() &&
@@ -169,14 +161,11 @@ void Client::readHeader(const char* buffer)
 			}
 			else
 			{
-				// header Parsing이 끝난 후, flag를 done이나 BODY 가 아닌 CHUNKED 로
-				// 보내기 위한 로직
 				std::map<std::string, std::string>::iterator encodingIt =
 					request.headers.find("transfer-encoding");
 				if (encodingIt != request.headers.end() &&
 					encodingIt->second == "chunked")
 				{
-					// parse State 변경
 					parseState = CHUNKED;
 					return (readChunked("", 0));
 				}
@@ -220,7 +209,6 @@ void Client::readHeader(const char* buffer)
 			return;
 		}
 		headerSstream.clear();
-		// value의 처음 ifs들을 지움 근데 하나가 아닐 수 있음
 		while (value[0] == ' ')
 			value.erase(value.begin());
 		for (size_t i = 0; i < key.size(); i++)
@@ -376,22 +364,17 @@ void Client::readMethod(const char* buffer)
 {
 	std::vector<unsigned char>::iterator pos;
 
-	// 입력버퍼벡터 뒤에 방금읽은 버퍼를 덧붙임
 	readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
 	while (readBuffer.size() > 1 && readBuffer[0] == '\r' && readBuffer[1] == '\n')
 		readBuffer.erase(readBuffer.begin(), readBuffer.begin() + 2);
 	if (readBuffer.size() == 0)
 		return ;
-	// 입력버퍼벡터에서 공백을 찾음
 	if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ", &" "[1])) !=
 		readBuffer.end())
 	{
 		request.method = std::string(readBuffer.begin(), pos);
 		readBuffer.erase(readBuffer.begin(), pos + 1);
 		parseState = URI;
-		// 또 다른 공백을 찾은 경우 다음 파싱으로 넘어감.
-		// 이때 공백이 연속해서 들어오는 경우를 생각해 볼 수 있는데 이런 경우
-		// 에러처리로 됨.
 		if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ",
 							   &" "[1])) != readBuffer.end())
 			readUri("");
@@ -403,7 +386,6 @@ void Client::readMethod(const char* buffer)
 			request.errorCode = BAD_REQUEST;
 		}
 	}
-	// 공백이 아닌 개행을 읽은 경우 파싱이 완료되지 못하기 때문에 에러
 	else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
 								&CRLF[2])) != readBuffer.end())
 	{
@@ -412,7 +394,7 @@ void Client::readMethod(const char* buffer)
 		std::cout << "PROTO : " << request.http_version << std::endl;
 		parseState = ERROR;
 		std::cout<<"DEBUG8\n";
-		request.errorCode = METHOD_NOT_ALLOWED; // 이 경우 또한 405번을 부여하지 않으면 테스트에서 통과가 불가능합니다(원래 400).
+		request.errorCode = METHOD_NOT_ALLOWED;
 		readBuffer.erase(readBuffer.begin(), pos + 2);
 	}
 }

@@ -1,21 +1,10 @@
 #include "Event.hpp"
 #include <iostream>
 
-// constructors
 Event::Event() : kq(0) {}
-// destructor
+
 Event::~Event() {}
-// copy constructors
-Event::Event(const Event& ref)
-{
-    static_cast<void>(ref);
-}
-// operators
-Event& Event::operator=(const Event& ref)
-{
-    static_cast<void>(ref);
-    return *this;
-}
+
 struct kevent& Event::operator[](int idx)
 {
     if (0 <= idx && idx < EVENTLIST_SIZE) return eventList[idx];
@@ -25,9 +14,7 @@ struct kevent& Event::operator[](int idx)
         exit(1);
     }
 }
-// getter
-// setter
-// functions
+
 void Event::changeEvents(int socket, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void* udata)
 {
     struct kevent event;

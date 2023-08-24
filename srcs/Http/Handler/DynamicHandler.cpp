@@ -69,7 +69,7 @@ void DynamicHandler::RunCgi(Client& client)
 		setenv("CONTENT_TYPE", request.headers["content-type"].c_str(), 1);
 
 		if (request.uri.find(".bla") != std::string::npos)
-			request.path = "./cgi_tester";
+			request.path = "./tester/cgi_tester";
 
 		if (execve(request.path.c_str(), NULL, environ) == -1)
 		{

@@ -9,7 +9,6 @@ ConfigParser::ConfigParser() {}
 ConfigParser::~ConfigParser() {}
 // copy constructors
 
-
 void ConfigParser::parseConfig(std::string const& configFileName)
 {
     int (*action[8])(struct s_info&, mapPortServer&) = {

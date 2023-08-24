@@ -24,8 +24,6 @@ private:
     void setIndex(std::string& sentence);
 
 public:
-    Location(Location const& other);
-    Location& operator=(Location const& rhs);
     Location();
     ~Location();
     bool fillLocationBlock(std::map<std::string, std::string>& mapSentence);

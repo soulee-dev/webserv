@@ -5,19 +5,15 @@
 #include <vector>
 #include "Message/Request.hpp"
 
-// constructors
+
 ClientManager::ClientManager(){};
-// destructor
+
 ClientManager::~ClientManager(){};
-// copy constructors
-// operators
-// getter
+
 Client& ClientManager::getClient(SOCKET client_fd)
 {
     return clients.find(client_fd)->second;
 }
-// setter
-// functions
 
 ClientManager::SOCKET ClientManager::addNewClient(SOCKET client_fd, Server* server, Event* events)
 {
