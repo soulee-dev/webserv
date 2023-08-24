@@ -28,7 +28,7 @@ void	HttpRequestManager::Handle(Client& client)
 void	HttpRequestManager::Parse(Client& client)
 {
 	Request&		request = client.request;
-	bool			is_found;
+	bool			is_found = false;
 	size_t			location_pos;
 	std::string		found_uri;
 	std::string		tmp_uri;
