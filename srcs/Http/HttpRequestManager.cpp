@@ -15,7 +15,6 @@ void	HttpRequestManager::Handle(Client& client)
 	else
 	{
 		// Do Dynamic
-		std::cout << "Do Dynamic" << std::endl;
 		OpenFd(client);
     	client.events->changeEvents(client.request.pipe_fd[1], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &client);
     	client.events->changeEvents(client.request.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &client);
