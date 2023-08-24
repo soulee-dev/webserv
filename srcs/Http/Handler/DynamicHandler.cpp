@@ -19,15 +19,6 @@ void DynamicHandler::OpenFd(Client &client)
 	fcntl(request.pipe_fd_back[0], F_SETFL, O_NONBLOCK);
 }
 
-void DynamicHandler::SendReqtoCgi(Client &client)
-{
-	Request &request = client.request;
-
-    std::string body(request.body.begin(), request.body.end());
-    client.events->changeEvents(request.pipe_fd[1], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &client);
-    client.events->changeEvents(request.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &client);
-}
-
 void DynamicHandler::RunCgi(Client& client)
 {
 	Request &request = client.request;
@@ -75,27 +66,4 @@ void DynamicHandler::RunCgi(Client& client)
 		close(request.pipe_fd[0]);
 		close(request.pipe_fd_back[1]);
 	}
-}
-
-void DynamicHandler::MakeResponse(Client& client)
-{
-	Response& response = client.response;
-	response.status_code = 200;
-}
-
-void DynamicHandler::ReadFromCgi(Client& client)
-{
-	Request&	request = client.request;
-    client.events->changeEvents(request.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &client);
-}
-
-std::vector<unsigned char>	DynamicHandler::handle(Client& client) const
-{
-	static_cast<void>(client);
-	std::vector<unsigned char> result;
-	return result;
-}
-
-DynamicHandler::~DynamicHandler()
-{
 }

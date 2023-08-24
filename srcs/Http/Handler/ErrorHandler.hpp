@@ -2,12 +2,11 @@
 
 #include "Handler.hpp"
 
-class ErrorHandler : public Handler
+class ErrorHandler
 {
 	private:
 
 	public:
 		static std::vector<unsigned char>	handle(Client &client, int status_code);
-		std::vector<unsigned char>			handle(Client& client) const;
 		static void sendReqtoError(Client &client);
 };

@@ -47,10 +47,3 @@ void ErrorHandler::sendReqtoError(Client &client)
 	int errCode = client.request.errorCode;
 	client.sendBuffer = ErrorHandler::handle(client, errCode);
 }
-std::vector<unsigned char>	ErrorHandler::handle(Client& client) const
-{
-	std::vector<unsigned char>	a;
-
-	static_cast<void>(client);
-	return a;
-}

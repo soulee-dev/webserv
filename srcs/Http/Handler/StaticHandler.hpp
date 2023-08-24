@@ -2,7 +2,7 @@
 
 #include "Handler.hpp"
 
-class StaticHandler : public Handler
+class StaticHandler
 {
 	public:
 		std::vector<unsigned char>	handle(Client& client) const;

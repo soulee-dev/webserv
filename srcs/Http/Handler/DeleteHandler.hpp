@@ -2,7 +2,7 @@
 
 #include "Handler.hpp"
 
-class DeleteHandler : public Handler
+class DeleteHandler
 {
 	public:
 		std::vector<unsigned char>	handle(Client &client) const;

@@ -190,15 +190,17 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
     }
     else
     {
+		std::cout << "Read from " << currEvent.ident << std::endl;
         ssize_t ret = clientManager.CgiToResReadProcess(currEvent);
         if (ret != 0)
         {
-			close(currClient->request.pipe_fd_back[0]);
+			close(currEvent.ident);
 			currClient->request.clear();
         }
         if (ret == 1)
         {
-			currClient->sendBuffer = Handler::BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, true);
+			
+			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, !currClient->request.is_static);
 			events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 			currClient->response.clear();
 			wait(NULL);
@@ -220,9 +222,6 @@ void ServerManager::writeEventProcess(struct kevent& currEvent)
 		{
 			Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
 			close(currClient->request.pipe_fd[1]);
-			currClient->httpRequestManager.DynamicReadFromCgi(*currClient);
-			currClient->httpRequestManager.DynamicMakeResponse(*currClient);
-
 		} 
     }
 }

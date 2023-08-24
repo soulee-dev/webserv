@@ -3,7 +3,7 @@
 #include "ErrorHandler.hpp"
 #include <algorithm>
 
-std::string	Handler::GetFileType(std::string file_name)
+std::string	GetFileType(std::string file_name)
 {
 	std::string	file_type;
 
@@ -24,21 +24,21 @@ std::string	Handler::GetFileType(std::string file_name)
 	return (file_type);
 }
 
-std::string	Handler::itos(int num)
+std::string	itos(int num)
 {
 	std::stringstream	ss;
 	ss << num;
 	return (ss.str());
 }
 
-std::vector<unsigned char>	Handler::stou(std::stringstream& ss)
+std::vector<unsigned char>	stou(std::stringstream& ss)
 {
 	std::string					tmp_string = ss.str();
 	std::vector<unsigned char>	result(tmp_string.begin(), tmp_string.end());
 	return result;
 }
 
-std::vector<unsigned char>	Handler::BuildHeader(int status_code, std::map<std::string, std::string>& headers, bool include_crlf)
+std::vector<unsigned char>	BuildHeader(int status_code, std::map<std::string, std::string>& headers, bool include_crlf)
 {
 	std::stringstream			ss;
 
@@ -53,7 +53,7 @@ std::vector<unsigned char>	Handler::BuildHeader(int status_code, std::map<std::s
 	return stou(ss);
 }
 
-std::vector<unsigned char>	Handler::BuildResponse(int status_code, std::map<std::string, std::string>& headers, std::vector<unsigned char>& body, bool is_cgi)
+std::vector<unsigned char>	BuildResponse(int status_code, std::map<std::string, std::string>& headers, std::vector<unsigned char>& body, bool is_cgi)
 {
 	std::vector<unsigned char>	response;
 	std::cout << BOLDGREEN << "CODE : " << status_code << RESET << "\n";
@@ -78,7 +78,7 @@ std::vector<unsigned char>	Handler::BuildResponse(int status_code, std::map<std:
 }
 
 
-bool	Handler::IsDirectory(std::string path)
+bool	IsDirectory(std::string path)
 {
 	struct stat	buf;
 
@@ -90,7 +90,7 @@ bool	Handler::IsDirectory(std::string path)
 	return false;
 }
 
-bool	Handler::IsRegularFile(std::string path)
+bool	IsRegularFile(std::string path)
 {	
 	struct stat	buf;
 
@@ -102,7 +102,7 @@ bool	Handler::IsRegularFile(std::string path)
 	return false;
 }
 
-bool	Handler::IsFileReadable(std::string path)
+bool	IsFileReadable(std::string path)
 {	
 	struct stat	buf;
 
@@ -114,7 +114,7 @@ bool	Handler::IsFileReadable(std::string path)
 	return false;
 }
 
-bool	Handler::IsFileExist(std::string path)
+bool	IsFileExist(std::string path)
 {	
 	struct stat	buf;
 
@@ -123,7 +123,7 @@ bool	Handler::IsFileExist(std::string path)
 	return false;
 }
 
-std::vector<unsigned char>	Handler::ReadStaticFile(std::string& file_name)
+std::vector<unsigned char>	ReadStaticFile(std::string& file_name)
 {
 	std::ifstream	file(file_name.c_str(), std::ios::in | std::ios::binary);
 
@@ -136,7 +136,7 @@ std::vector<unsigned char>	Handler::ReadStaticFile(std::string& file_name)
 	return buffer;
 }
 
-std::vector<unsigned char>	Handler::ServeStatic(Client& client, std::string& path, std::string method)
+std::vector<unsigned char>	ServeStatic(Client& client, std::string& path, std::string method)
 {
 	std::vector<unsigned char>			body;
 	std::map<std::string, std::string>	headers;
@@ -156,6 +156,3 @@ std::vector<unsigned char>	Handler::ServeStatic(Client& client, std::string& pat
 	headers["Content-Type"] = GetFileType(path);
 	return BuildResponse(200, headers, body);
 }
-
-Handler::~Handler()
-{}
