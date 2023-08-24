@@ -19,8 +19,7 @@ jobs:
 
     - name: Execute tester
       run: |
-            { echo; echo; echo; echo; echo; echo; echo; echo; } | ./tester http://localhost:80
-      continue-on-error: true
+            { echo; echo; echo; echo; echo; echo; echo; echo; } | ./tester/tester http://localhost:80 || (exit_code=$?; if [ $exit_code -ne 1 ]; then exit $exit_code; fi)
 
     - name: Print web server log
       run: cat webserv.log
