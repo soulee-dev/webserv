@@ -146,8 +146,6 @@ void	ServeStatic(Client& client, std::string& path)
 	if (!IsRegularFile(path) || !IsFileReadable(path))
 		return HandleError(client, 403);
 
-	if (client.request.method.empty())
-		return HandleError(client, 404);
 	if (client.request.method != "HEAD")
 		ReadStaticFile(client, path);
 	headers["Connection"] = "keep-alive";

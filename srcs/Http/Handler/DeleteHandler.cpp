@@ -3,12 +3,10 @@
 
 void	HandleDelete(Client &client)
 {
-	Request&	request = client.request;
-    const char *path = request.path.c_str();
     std::map<std::string, std::string>  headers;
     std::vector<unsigned char> emptyBody;
 
-	if (std::remove(path) == 0)
+	if (std::remove(client.request.path.c_str()) == 0)
 	 {
 		std::cout << "DELETE SUCCESS\n" << RESET;
         headers["Connection"] = "close";

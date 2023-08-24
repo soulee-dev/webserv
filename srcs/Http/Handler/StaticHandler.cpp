@@ -4,7 +4,7 @@
 
 void	HandleStatic(Client& client)
 {
-	Request&				request = client.request;
+	Request&	request = client.request;
 	std::vector<unsigned char>	result;
 
 	std::cout << "METHOD : " << request.method << RESET << '\n';

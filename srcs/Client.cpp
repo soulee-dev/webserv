@@ -132,7 +132,6 @@ void Client::readHeader(const char* buffer)
 	std::vector<unsigned char>::iterator pos;
 
 	readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
-
 	while ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\n",
 							  &"\n"[1])) != readBuffer.end())
 	{
@@ -385,7 +384,6 @@ void Client::readMethod(const char* buffer)
 									&CRLF[2])) != readBuffer.end())
 		{
 			parseState = ERROR;
-			std::cout<<"DEBUG7\n";
 			request.errorCode = BAD_REQUEST;
 		}
 	}
@@ -396,7 +394,6 @@ void Client::readMethod(const char* buffer)
 		std::cout << "URI : " << request.uri << std::endl;
 		std::cout << "PROTO : " << request.http_version << std::endl;
 		parseState = ERROR;
-		std::cout<<"DEBUG8\n";
 		request.errorCode = METHOD_NOT_ALLOWED;
 		readBuffer.erase(readBuffer.begin(), pos + 2);
 	}

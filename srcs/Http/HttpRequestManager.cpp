@@ -9,7 +9,6 @@ void	HttpRequestManager::Handle(Client& client)
 	if (client.request.is_static)
 	{
 		// Do Static
-		// file fd를 들고 있다면
 		HandleStatic(client);
 		client.response.status_code = 200;
 	}
