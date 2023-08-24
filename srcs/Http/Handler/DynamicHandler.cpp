@@ -4,7 +4,7 @@
 
 extern char **environ;
 
-void DynamicHandler::OpenFd(Client &client)
+void	OpenFd(Client &client)
 {
 	Request &request = client.request;
 
@@ -19,7 +19,7 @@ void DynamicHandler::OpenFd(Client &client)
 	fcntl(request.pipe_fd_back[0], F_SETFL, O_NONBLOCK);
 }
 
-void DynamicHandler::RunCgi(Client& client)
+void	RunCgi(Client& client)
 {
 	Request &request = client.request;
 

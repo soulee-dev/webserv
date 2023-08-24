@@ -1,30 +1,26 @@
 #include "HttpRequestManager.hpp"
 #include "../Client.hpp"
 #include "../Location.hpp"
-#include <fcntl.h>
+#include "Handler/Handler.hpp"
 
 void	HttpRequestManager::Handle(Client& client)
 {
 	Parse(client);
 	if (client.request.is_static)
 	{
-		// DO Static
-		// 우선 다른거 신경 쓰지 말고 파일만 읽어보자
-		int	fd = open(client.request.path.c_str(), O_RDONLY);
-		std::cout << "file_name: " << client.request.path << std::endl;
-		std::cout << "File fd: " << fd << std::endl;
-		client.events->changeEvents(fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &client);
+		// Do Static
+		// file fd를 들고 있다면
+		HandleStatic(client);
 		client.response.status_code = 200;
 	}
 	else
 	{
-		// DO Dynamic
-		DynamicHandler	handler;
-
-		handler.OpenFd(client);
+		// Do Dynamic
+		std::cout << "Do Dynamic" << std::endl;
+		OpenFd(client);
     	client.events->changeEvents(client.request.pipe_fd[1], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &client);
     	client.events->changeEvents(client.request.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &client);
-		handler.RunCgi(client);
+		RunCgi(client);
 		client.response.status_code = 200;
 	}
 }

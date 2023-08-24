@@ -18,6 +18,7 @@ class Request : public Message
 {
 	public:
 		Request(void);
+		int	file_fd;
 		size_t			writeIndex;
 		bool		is_static;
 		std::string	file_name;

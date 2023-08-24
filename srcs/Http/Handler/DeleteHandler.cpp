@@ -1,7 +1,7 @@
 #include "DeleteHandler.hpp"
 #include "../../Client.hpp"
 
-std::vector<unsigned char>	DeleteHandler::handle(Client &client) const
+void	HandleDelete(Client &client)
 {
 	Request&	request = client.request;
     const char *path = request.path.c_str();
@@ -16,12 +16,7 @@ std::vector<unsigned char>	DeleteHandler::handle(Client &client) const
 	else
 	{
         std::cout << "DELETE FAILED\n" << RESET;
-        return ErrorHandler::handle(client, 404);
+        return HandleError(client, 404);
 	}
-    return BuildResponse(200, headers, emptyBody);
-}
-
-void DeleteHandler::sendReqtoDelete(Client &client)
-{
-	client.sendBuffer = handle(client);
+    return SetResponse(client, 200, headers, emptyBody);
 }

@@ -37,17 +37,25 @@ bool Client::readEventProcess(void)
 		httpRequestManager.Handle(*this);
 		std::cout << BOLDCYAN << " -- SUCCESSFULLY GET MESSAGE -- \n\n" << RESET;
 		parseState = READY;
-		return true;
 	}
 	else if (parseState == ERROR)
 	{
 		std::cout << "ERROR : " << request.errorCode << '\n';
-		ErrorHandler::sendReqtoError(*this);
+		HandleError(*this, request.errorCode);
 		std::cout << BOLDCYAN << " -- SUCCESSFULLY GET MESSAGE -- \n\n" << RESET;
 		parseState = READY;
-		return true;
 	}
-	return false;
+	else
+		return false;
+	// Dynamic인 경우 Handle안에서 EVFILT를 걸어주기 때문에 해줄필요 없다.
+	if (request.is_static || parseState == ERROR)
+	{
+		if (request.file_fd != -1)
+			events->changeEvents(request.file_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, this);
+		else
+			events->changeEvents(getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, this);
+	}
+	return true;
 }
 
 int Client::getClientFd(void) const

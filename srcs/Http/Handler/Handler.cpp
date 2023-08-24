@@ -1,5 +1,6 @@
 #include "Handler.hpp"
 #include "HttpStatusCodes.hpp"
+#include "../../Client.hpp"
 #include "ErrorHandler.hpp"
 #include <algorithm>
 
@@ -53,12 +54,18 @@ std::vector<unsigned char>	BuildHeader(int status_code, std::map<std::string, st
 	return stou(ss);
 }
 
-std::vector<unsigned char>	BuildResponse(int status_code, std::map<std::string, std::string>& headers, std::vector<unsigned char>& body, bool is_cgi)
+std::vector<unsigned char>	BuildResponse(int status_code, std::map<std::string, std::string>& headers, std::vector<unsigned char>& body, bool is_static)
 {
 	std::vector<unsigned char>	response;
 	std::cout << BOLDGREEN << "CODE : " << status_code << RESET << "\n";
 	
-	if (is_cgi)
+	std::cout << "is_static: " << is_static << std::endl;
+	if (is_static)
+	{
+		headers["Content-Length"] = itos(body.size());
+		response = BuildHeader(status_code, headers, true);
+	}
+	else
 	{
 		char const * const CRLFCRLF = "\r\n\r\n";
 		int pos = std::search(body.begin(), body.end(), &CRLFCRLF[0], &CRLFCRLF[4]) - body.begin();
@@ -66,17 +73,18 @@ std::vector<unsigned char>	BuildResponse(int status_code, std::map<std::string, 
 		std::cout << "BUILD HEADER\n";
 		response = BuildHeader(status_code, headers, false);
 	}
-	else
-	{
-		headers["Content-Length"] = itos(body.size());
-		response = BuildHeader(status_code, headers, true);
-	}
 	response.insert(response.end(), body.begin(), body.end());
 
 	std::cout << "\n  -- <RESPONSE> -- \n";
 	return response;
 }
 
+void	SetResponse(Client& client, int status_code, std::map<std::string, std::string>& headers, std::vector<unsigned char>& body)
+{
+	client.response.status_code = status_code;
+	client.response.headers = headers;
+	client.response.body = body;
+}
 
 bool	IsDirectory(std::string path)
 {
@@ -123,36 +131,26 @@ bool	IsFileExist(std::string path)
 	return false;
 }
 
-std::vector<unsigned char>	ReadStaticFile(std::string& file_name)
+void	ReadStaticFile(Client& client, std::string& file_name)
 {
-	std::ifstream	file(file_name.c_str(), std::ios::in | std::ios::binary);
-
-	file.seekg(0, std::ios::end);
-	int length = file.tellg();
-	file.seekg(0, std::ios::beg);
-
-	std::vector<unsigned char> buffer(length);
-	file.read(reinterpret_cast<char*>(&buffer[0]), length);
-	return buffer;
+	client.request.file_fd = open(file_name.c_str(), O_RDONLY);
 }
 
-std::vector<unsigned char>	ServeStatic(Client& client, std::string& path, std::string method)
+void	ServeStatic(Client& client, std::string& path)
 {
 	std::vector<unsigned char>			body;
 	std::map<std::string, std::string>	headers;
 
 	if (!IsFileExist(path))
-		return ErrorHandler::handle(client, 404);
+		return HandleError(client, 404);
 	if (!IsRegularFile(path) || !IsFileReadable(path))
-		return ErrorHandler::handle(client, 403);
+		return HandleError(client, 403);
 
-	if (method != "HEAD")
-		body = ReadStaticFile(path);
-
-	if (method.empty())
-		return ErrorHandler::handle(client, 404);
-
+	if (client.request.method.empty())
+		return HandleError(client, 404);
+	if (client.request.method != "HEAD")
+		ReadStaticFile(client, path);
 	headers["Connection"] = "keep-alive";
 	headers["Content-Type"] = GetFileType(path);
-	return BuildResponse(200, headers, body);
+	client.response.status_code = 200;
 }

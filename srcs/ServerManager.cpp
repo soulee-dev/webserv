@@ -175,22 +175,19 @@ bool ServerManager::isResponseToServer(struct kevent& currEvent)
 	return portByServerSocket.find(currEvent.ident) != portByServerSocket.end();
 }
 
-void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
+void ServerManager::readEventProcess(struct kevent& currEvent)
 {
 	Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
 
     if (isResponseToServer(currEvent))
         acceptClient(currEvent.ident);
-    else if (clientManager.isClient(currEvent.ident) == true) // clinet
+    else if (clientManager.isClient(currEvent.ident) == true)
     {
         if (clientManager.readEventProcess(currEvent))
-        {
             events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_ENABLE, 0, 0, currEvent.udata);
-        }
     }
     else
     {
-		std::cout << "Read from " << currEvent.ident << std::endl;
         ssize_t ret = clientManager.CgiToResReadProcess(currEvent);
         if (ret != 0)
         {
@@ -199,11 +196,12 @@ void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
         }
         if (ret == 1)
         {
-			
-			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, !currClient->request.is_static);
+			// TODO is_static이 날아간다 왜? 찾아봐야 함.
+			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, currClient->request.is_static);
 			events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 			currClient->response.clear();
-			wait(NULL);
+			if (!currClient->request.is_static)
+				wait(NULL);
         }
     }
 }
