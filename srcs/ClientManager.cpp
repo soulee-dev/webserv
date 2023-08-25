@@ -41,7 +41,7 @@ bool ClientManager::readEventProcess(struct kevent& currEvent)
     }
     if (currClient->readEventProcess())
     {
-        if (!currClient->request.is_post_dynamic)
+        if (currClient->request.is_static)
             clients[currEvent.ident].events->changeEvents(currClient->getClientFd(), EVFILT_READ, EV_DISABLE, 0, 0, currClient);
         if (currClient->request.file_fd == -1)
             return true;
@@ -70,8 +70,10 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
     Request&    request = client->request;
     std::vector<unsigned char>& buffer = request.body;
     const int   size = buffer.size() - request.writeIndex;
+    std::cout << "to cgi" << std::endl;
 
     int writeSize = write(currEvent.ident, &buffer[request.writeIndex], size);
+    std::cout << "WRITE SIZE : " << writeSize << '\n';
     if (writeSize == -1)
     {
         std::cout << currEvent.ident << std::endl; // 7
@@ -81,6 +83,9 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
         return -1;
     }
     request.writeIndex += writeSize;
+    std::cout << "WriteIndex : " << request.writeIndex << ",  buffer.size() : " << buffer.size() << std::endl;
+    // if (buffer.size() == 0)
+    //     exit(0);
     if (request.is_put)
     {
         request.RW_file_size += writeSize;
@@ -92,6 +97,7 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
     }
     else if (request.writeIndex == buffer.size())
     {
+        // std::cout << "I/m here" << std::endl;
         request.writeIndex = 0;
         buffer.clear();
         return 1;
@@ -107,27 +113,35 @@ int ClientManager::CgiToResReadProcess(struct kevent& currEvent)
     std::vector<unsigned char>& readBuffer = currClient->response.body;
 
     char buffer[BUFFER_SIZE];
+    std::cout << "from cgi" << std::endl;
 
 
     ssize_t ret = read(currEvent.ident, buffer, BUFFER_SIZE);
+    // std::cout << "read : " << ret << std::endl;
+    // if (ret == 0)
+    //     exit(0);
     if (ret == -1)
         return -1;
     readBuffer.insert(readBuffer.end(), buffer, &buffer[ret]);
     currClient->request.RW_file_size += ret;
-    if (currClient->request.is_post_dynamic)
-    {
-        if (ret == 0)
-            return 1;
-        else
-            return 0;
+    // if (currClient->request.is_static == false)
+    // {
+    //     if (ret == 0)
+    //         return 1;
+    //     else
+    //         return 0;
+    // }
+    // else
+    // {
+    //     if (currClient->request.RW_file_size == currClient->request.file_size || ret == 0)
+    //         return 1;
+    //     else
+    //         return 0;
+    // };
+    if (currClient->request.is_static && currClient->request.RW_file_size == currClient->request.file_size) {
+        return 1;
     }
-    else
-    {
-        if (currClient->request.RW_file_size == currClient->request.file_size || ret == 0)
-            return 1;
-        else
-            return 0;
-    }
+    return ret == 0;
 }
 
 bool ClientManager::isClient(SOCKET client_fd)

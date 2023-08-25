@@ -1,6 +1,8 @@
 #include "ServerManager.hpp"
 #include "Color.hpp"
 #include "Http/Handler/Handler.hpp"
+#include <map>
+#include <vector>
 
 ServerManager::~ServerManager(void) {}
 
@@ -197,15 +199,20 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
         ssize_t ret = clientManager.CgiToResReadProcess(currEvent);
         if (ret != 0)
 		{
-			close(currEvent.ident);
-			currEvent.ident = -1;
+			// std::cout << "close 합니다 !!@" << std::endl;
+			// sleep(3);
+			close(currEvent.ident); // Dynamic 일때는  pipe를 닫아주는 close // Static일때는 파일의 fd를 닫아줌
 		}
         if (ret == 1)
         {
-			// TODO is_static이 날아간다 왜? 찾아봐야 함. -> 바로 위에서 request를 clear해 줬었기 때문임
 			std::vector<unsigned char> empty_body;
 			if (currClient->request.method == "PUT")
 				currClient->response.body = empty_body;
+			else if (currClient->request.is_static == false)
+			{
+				currClient->response.headers["Connection"] = "close";
+				SetResponse(*currClient, 200, currClient->response.headers, currClient->response.body);
+			}
 			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, currClient->request.is_static);
 			events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 			// events.changeEvents(currClient->getClientFd(), EVFILT_READ, EV_ENABLE, 0, 0, currClient);
