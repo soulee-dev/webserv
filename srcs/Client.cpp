@@ -84,9 +84,7 @@ bool Client::writeEventProcess(void)
 	if (writeIndex == sendBuffer.size())
 	{
 		writeIndex = 0;
-		sendBuffer.clear();
-		request.clear();
-		response.clear();
+		sendBuffer.clear();;
 	}
 	return false;
 }
@@ -109,6 +107,7 @@ bool Client::readMessage(void)
 	{
 	case READY:
 		request.clear();
+		response.clear();;
 	case METHOD:
 		readMethod(buffer, readSize);
 		break;

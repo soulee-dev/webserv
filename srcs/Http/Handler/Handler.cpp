@@ -59,8 +59,7 @@ std::vector<unsigned char>	BuildResponse(int status_code, std::map<std::string, 
 {
 	std::vector<unsigned char>	response;
 	std::cout << BOLDGREEN << "CODE : " << status_code << RESET << "\n";
-	
-	std::cout << "is_static: " << is_static << std::endl;
+
 	if (is_static)
 	{
 		headers["Content-Length"] = itos(body.size());

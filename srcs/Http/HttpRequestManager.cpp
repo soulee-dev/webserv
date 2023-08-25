@@ -10,7 +10,6 @@ void	HttpRequestManager::Handle(Client& client)
 	{
 		// Do Static
 		HandleStatic(client);
-		// client.response.status_code = 200;
 	}
 	else
 	{
@@ -19,7 +18,7 @@ void	HttpRequestManager::Handle(Client& client)
     	client.events->changeEvents(client.request.pipe_fd[1], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &client);
     	client.events->changeEvents(client.request.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &client);
 		RunCgi(client);
-		// client.response.status_code = 200;
+		client.response.status_code = 200;
 	}
 }
 
