@@ -41,7 +41,8 @@ bool ClientManager::readEventProcess(struct kevent& currEvent)
     }
     if (currClient->readEventProcess())
     {
-        clients[currEvent.ident].events->changeEvents(currClient->getClientFd(), EVFILT_READ, EV_DISABLE, 0, 0, currClient);
+        if (!currClient->request.is_post_dynamic)
+            clients[currEvent.ident].events->changeEvents(currClient->getClientFd(), EVFILT_READ, EV_DISABLE, 0, 0, currClient);
         if (currClient->request.file_fd == -1)
             return true;
     }
@@ -85,12 +86,7 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
         request.RW_file_size += writeSize;
         if (request.RW_file_size == request.file_size)
         {
-            std::vector<unsigned char> empty_body;
-            client->sendBuffer = BuildResponse(client->response.status_code, client->response.headers, empty_body);
-            client->events->changeEvents(client->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, &client);
             close(currEvent.ident);
-            client->request.clear();
-            client->response.clear();
             return 0;
         }
     }

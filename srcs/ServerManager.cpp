@@ -203,11 +203,14 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
         if (ret == 1)
         {
 			// TODO is_static이 날아간다 왜? 찾아봐야 함. -> 바로 위에서 request를 clear해 줬었기 때문임
+			std::vector<unsigned char> empty_body;
+			if (currClient->request.method == "PUT")
+				currClient->response.body = empty_body;
 			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, currClient->request.is_static);
 			events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 			// events.changeEvents(currClient->getClientFd(), EVFILT_READ, EV_ENABLE, 0, 0, currClient);
-			// if (!currClient->request.is_static)
-			// 	wait(NULL);
+			if (!currClient->request.is_static)
+				wait(NULL);
 			// currClient->response.clear();
 			// currClient->request.clear();
         }
