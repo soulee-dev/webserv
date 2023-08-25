@@ -1,33 +1,31 @@
 #include "HttpRequestManager.hpp"
 #include "../Client.hpp"
 #include "../Location.hpp"
+#include "Handler/Handler.hpp"
 
-HttpRequestManager::HttpRequestManager() : handler(NULL) {}
-
-void	HttpRequestManager::SetHandler(Client& client)
+void	HttpRequestManager::Handle(Client& client)
 {
 	Parse(client);
-	if (client.request.method == "DELETE")
+	if (client.request.is_static)
 	{
-		std::cout << BOLDRED << " -- PROCESS DELETING METHOD -- \n";
-		handler = new DeleteHandler();
-	}
-	else if (client.request.is_static)
-	{
-		std::cout << BOLDRED << " -- PROCESSING STATIC -- \n";
-		handler = new StaticHandler();
+		// Do Static
+		HandleStatic(client);
 	}
 	else
 	{
-		std::cout << BOLDBLUE << " -- PROCESSING DYNAMIC --\n";
-		handler = new DynamicHandler();
+		// Do Dynamic
+		OpenFd(client);
+    	client.events->changeEvents(client.request.pipe_fd[1], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &client);
+    	client.events->changeEvents(client.request.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &client);
+		RunCgi(client);
+		client.response.status_code = 200;
 	}
 }
 
 void	HttpRequestManager::Parse(Client& client)
 {
-	HttpRequest&	request = client.request;
-	bool			is_found;
+	Request&		request = client.request;
+	bool			is_found = false;
 	size_t			location_pos;
 	std::string		found_uri;
 	std::string		tmp_uri;
@@ -70,13 +68,9 @@ void	HttpRequestManager::Parse(Client& client)
 	if (request.uri.find("cgi-bin") == std::string::npos)
 	{
 		if (request.method == "POST" && request.uri.find(".bla") != std::string::npos)
-		{
 			request.is_static = false;
-		}
 		else
-		{
 			request.is_static = true;
-		}
 	}
 	else
 	{
@@ -108,63 +102,3 @@ void	HttpRequestManager::Parse(Client& client)
 		std::cout << BOLDGREEN << it->first << " : " << it->second << RESET << '\n';
 	}
 };
-
-std::vector<unsigned char>	HttpRequestManager::processRequest(Client& client)
-{
-	return handler->handle(client);
-}
-
-HttpRequestManager::~HttpRequestManager()
-{
-	delete handler;
-}
-
-void HttpRequestManager::DynamicOpenFd(Client& client)
-{
-	DynamicHandler *currHandler = dynamic_cast<DynamicHandler*>(handler);
-
-	if (currHandler != NULL)
-		currHandler->OpenFd(client);
-}
-
-void HttpRequestManager::SendReqtoEvent(Client& client)
-{
-	DynamicHandler *currHandler = dynamic_cast<DynamicHandler*>(handler);
-
-	if (currHandler != NULL)
-		currHandler->SendReqtoCgi(client);
-	else if (client.request.method == "DELETE")
-	{
-		DeleteHandler *currHandler = dynamic_cast<DeleteHandler*>(handler);
-		currHandler->sendReqtoDelete(client);
-	}
-	else
-	{
-		StaticHandler *currHandler = dynamic_cast<StaticHandler*>(handler);
-		currHandler->sendReqtoEvent(client);
-	}
-}
-
-void HttpRequestManager::DynamicRunCgi(Client& client)
-{
-	DynamicHandler *currHandler = dynamic_cast<DynamicHandler*>(handler);
-
-	if (currHandler != NULL)
-		currHandler->RunCgi(client);
-}
-
-void HttpRequestManager::DynamicMakeResponse(Client& client)
-{
-	DynamicHandler *currHandler = dynamic_cast<DynamicHandler*>(handler);
-
-	if (currHandler != NULL)
-		currHandler->MakeResponse(client);
-}
-
-void HttpRequestManager::DynamicReadFromCgi(Client& client)
-{
-	DynamicHandler *currHandler = dynamic_cast<DynamicHandler*>(handler);
-
-	if (currHandler != NULL)
-		currHandler->ReadFromCgi(client);
-}

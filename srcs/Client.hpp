@@ -1,7 +1,8 @@
 #pragma once
+
 #include "Event.hpp"
 #include "Location.hpp"
-#include "ResponseMessage.hpp"
+#include "Message/Response.hpp"
 #include "Server.hpp"
 #include "Http/HttpRequestManager.hpp"
 
@@ -28,45 +29,39 @@ private:
 	RequestMessageParseState parseState;
 
 	std::string strbodySize;
-	long longBodySize;
+	size_t  longBodySize;
 	bool haveToReadBody;
 
-    void readMethod(const char* buffer);
-    void readUri(const char* buffer);
-    void readHttpVersion(const char* buffer);
-    void readHeader(const char* buffer);
+    void readMethod(const char* buffer, size_t readSize);
+    void readUri(const char* buffer, size_t readSize);
+    void readHttpVersion(const char* buffer, size_t readSize);
+    void readHeader(const char* buffer, size_t readSize);
     void readBody(const char* buffer, size_t readSize);
     void readChunked(const char* buffer, size_t readSize);
 
 public:
-    HttpRequest     request;
-    ResponseMessage response;
+    Request request;
+    Response response;
     Event* events;
     HttpRequestManager httpRequestManager;
 	std::vector<unsigned char> sendBuffer;
-    int         writeIndex;
+    size_t writeIndex;
     typedef int PORT;
     typedef int SOCKET;
     Client();
-    Client(const Client& ref);
-    Client& operator=(const Client& ref);
-
     ~Client();
 
-    // setter
     void setFd(int fd);
     void setServer(Server* server);
     void setEvents(Event* event);
 
-    // getter
     Server* getServer(void) const;
     SOCKET getClientFd(void) const;
 
-    // functions
     void errorEventProcess(void);
     bool readEventProcess(void);
     bool writeEventProcess(void);
     bool readMessage(void);
-    bool checkMethod(std::string const& method);
+    bool checkMethod(void);
     bool isSendBufferEmpty(void);
 };

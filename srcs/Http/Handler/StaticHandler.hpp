@@ -2,14 +2,8 @@
 
 #include "Handler.hpp"
 
-class StaticHandler : public Handler
-{
-	public:
-		std::vector<unsigned char>	handle(Client& client) const;
-		~StaticHandler();
-		void sendReqtoEvent(Client& client);
-		std::vector<unsigned char>	ProcessDirectory(Client& client) const;
-		std::vector<unsigned char>	HandleDirectoryListing(Client& client, HttpRequest& request) const;
-};
-
+void	HandleStatic(Client& client);
+void	ProcessDirectory(Client& client);
+void	HandleDirectoryListing(Client& client, Request& request);
 int	is_directory(std::string fileName);
+

@@ -1,10 +1,9 @@
 #include "ErrorHandler.hpp"
 #include "../../Client.hpp"
 
-std::vector<unsigned char>	ErrorHandler::handle(Client &client, int status_code)
+void	HandleError(Client &client, int status_code)
 {
 	std::vector<unsigned char>			body;
-	std::map<std::string, std::string>	headers;
 	std::string							file_name;
 	bool								find_flag = false;
 
@@ -26,28 +25,13 @@ std::vector<unsigned char>	ErrorHandler::handle(Client &client, int status_code)
 			break ;
 	}
 	if (find_flag)
-	{
-		std::cout << "찾았어요!" << std::endl;
-		std::cout << BOLDCYAN << it->second << RESET << '\n';
-		file_name = "./error_pages/" + it->second;
-	}
+		file_name = "./html/error_pages/" + it->second;
 	else
-	{
-		std::cout << "못찾았으니 디폴트" << std::endl;
-		file_name = "./error_pages/40x.html";
-	}
-	try { // 존재하지 않는 파일을 ReadStaticFile을 시도했을때 에러처리
-		body = ReadStaticFile(file_name);
-	} catch (const std::length_error& e) {
-		std::cout << "Can't found erorr page!!" << std::endl;
-	}
-	headers["Connection"] = "close";
-	headers["Content-Type"] = GetFileType(file_name);
-	return BuildResponse(status_code, headers, body);
-}
+		file_name = "./html/error_pages/40x.html";
 
-void ErrorHandler::sendReqtoError(Client &client)
-{
-	int errCode = client.request.errorCode;
-	client.sendBuffer = ErrorHandler::handle(client, errCode);
+	// TODO check whether there is file
+	client.response.status_code = status_code;
+	client.response.headers["Connection"] = "close";
+	client.response.headers["Content-Type"] = GetFileType(file_name);
+	ReadStaticFile(client, file_name);
 }

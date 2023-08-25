@@ -1,16 +1,13 @@
 #include "ServerManager.hpp"
 #include "Color.hpp"
 #include "Http/Handler/Handler.hpp"
+#include <map>
+#include <vector>
 
-// constructors
 ServerManager::~ServerManager(void) {}
-// destructor
+
 ServerManager::ServerManager(void) {}
-// copy constructors
-// operators
-// getter
-// setter
-// functions
+
 void ServerManager::initServers(void)
 {
 	std::map<PORT, Server>::iterator portIter = servers.begin();
@@ -24,9 +21,7 @@ void ServerManager::initServers(void)
 	{
 		Server& server = portIter->second;
 		SOCKET serversSocket = openPort(portIter->first, server);
-		fcntl(serversSocket, F_SETFL, O_NONBLOCK);
-
-		// 이제 더이상 server 를 map 으로 찾을 필요가 없다면, server_socket 을 담아두는 intvector 로 담아서 써도 될듯?
+		fcntl(serversSocket, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 		portByServerSocket[serversSocket] = portIter->first;
 		events.changeEvents(serversSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &portIter->second);
 		portIter++;
@@ -38,7 +33,7 @@ static std::string intToString(int number)
 	std::stringstream sstream(number);
 	return sstream.str();
 }
-// 이함수는 레알 진짜 격하게 고치고 싶다 ㅠ
+
 int ServerManager::openPort(ServerManager::PORT port, Server& server)
 {
 	struct addrinfo* info;
@@ -83,7 +78,7 @@ void ServerManager::exitWebServer(std::string msg)
 	exit(1);
 }
 
-void ServerManager::runEventProcess(struct kevent& currEvent) // RUN 2
+void ServerManager::runEventProcess(struct kevent& currEvent)
 {
 	if (currEvent.flags & EV_ERROR)
 	{
@@ -93,7 +88,7 @@ void ServerManager::runEventProcess(struct kevent& currEvent) // RUN 2
 	switch (currEvent.filter)
 	{
 	case EVFILT_READ:
-		readEventProcess(currEvent); // (RUN 3)
+		readEventProcess(currEvent);
 		break;
 	case EVFILT_WRITE:
 		writeEventProcess(currEvent);
@@ -104,7 +99,7 @@ void ServerManager::runEventProcess(struct kevent& currEvent) // RUN 2
 	}
 }
 
-void ServerManager::runServerManager(void) // RUN 1
+void ServerManager::runServerManager(void)
 {
 	int newEvent;
 
@@ -116,8 +111,9 @@ void ServerManager::runServerManager(void) // RUN 1
 		events.clearChangeEventList();
 		for (int i = 0; i != newEvent; i++)
 		{
-			runEventProcess(events[i]); // (RUN 2)
+			runEventProcess(events[i]);
 		}
+		clientManager.clearClients();
 	}
 }
 
@@ -130,12 +126,10 @@ int ServerManager::acceptClient(SOCKET server_fd)
         std::cout << "accept() error" << std::endl;
         return -1;
     }
-    fcntl(client_fd, F_SETFL, O_NONBLOCK);
-    // client에 events 를 넣어야 함,
+    fcntl(client_fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
     clientManager.addNewClient(client_fd, &servers[serverPort], &events);
     events.changeEvents(client_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &clientManager.getClient(client_fd));
     events.changeEvents(client_fd, EVFILT_WRITE, EV_ADD | EV_DISABLE, 0, 0, &clientManager.getClient(client_fd));
-    // events.changeEvents(client_fd, EVFILT_TIMER, EV_ADD | EV_ENABLE, NOTE_SECONDS, 100, &clientManager.getClient(client_fd));
 	return client_fd;
 }
 
@@ -174,7 +168,7 @@ void ServerManager::errorEventProcess(struct kevent& currEvent)
 	}
 	else
 	{
-		clientManager.disconnectClient(currEvent.ident);
+		clientManager.addToDisconnectClient(currEvent.ident);
 		std::cout << BOLDMAGENTA << currEvent.ident << " CLIENT DISCONNECTED" << std::endl;
 	}
 }
@@ -184,48 +178,49 @@ bool ServerManager::isResponseToServer(struct kevent& currEvent)
 	return portByServerSocket.find(currEvent.ident) != portByServerSocket.end();
 }
 
-void ServerManager::readEventProcess(struct kevent& currEvent) // RUN 3
+void ServerManager::readEventProcess(struct kevent& currEvent)
 {
 	Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
 
     if (isResponseToServer(currEvent))
         acceptClient(currEvent.ident);
-    else if (clientManager.isClient(currEvent.ident) == true) // clinet
+    else if (clientManager.isClient(currEvent.ident) == true)
     {
-        //Timer 설정
-        // events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_EOF, NOTE_SECONDS, 100, currEvent.udata);
-        if (clientManager.readEventProcess(currEvent))
-        {
+		if (currEvent.flags & EV_EOF)
+		{
+			std::cout << "EV_EOF detacted in client" << std::endl;
+			clientManager.addToDisconnectClient(currEvent.ident);
+		}
+		else if (clientManager.readEventProcess(currEvent))
             events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_ENABLE, 0, 0, currEvent.udata);
-        }
     }
-    else // file Read event...
+    else
     {
-        //Cgi에서 보내는 data 를 response의 body 에 저장
-        ssize_t ret = clientManager.CgiToResReadProcess(currEvent); // -1: read error, 0 : read left 1 : read done
-        if (ret != 0) // read error || read done
-        {
-			// events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_DELETE, NOTE_SECONDS, 10, NULL);
-            // events.changeEvents(currEvent.ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-			close(currClient->request.pipe_fd_back[0]);
-			currClient->request.clear();
-        }
+        ssize_t ret = clientManager.CgiToResReadProcess(currEvent);
+        if (ret != 0)
+		{
+			// std::cout << "close 합니다 !!@" << std::endl;
+			// sleep(3);
+			close(currEvent.ident); // Dynamic 일때는  pipe를 닫아주는 close // Static일때는 파일의 fd를 닫아줌
+		}
         if (ret == 1)
         {
-            // cgi 에서 결과물을 받을때 response 가 완성 되어있다면, client 로 바로 전송 하도록 이벤트를 보냄
-
-			currClient->sendBuffer = Handler::BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, true);
+			std::vector<unsigned char> empty_body;
+			if (currClient->request.method == "PUT")
+				currClient->response.body = empty_body;
+			else if (currClient->request.is_static == false)
+			{
+				currClient->response.headers["Connection"] = "close";
+				SetResponse(*currClient, 200, currClient->response.headers, currClient->response.body);
+			}
+			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, currClient->request.is_static);
 			events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
-			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), currClient->getFrontRes().body.begin(), currClient->getFrontRes().body.end());
-			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), CRLF[0], CRLF[2]);
-			// currClient->sendBuffer.insert(currClient->sendBuffer.end(), CRLF[0], CRLF[2]);
-			currClient->response.clear();
-			wait(NULL);
-            // 위의 경우가 아닌 경우에는 client 의 response 메시지를 만드는 function 을 호출한다.
-            // 예 : currClient->getRes().buildResponse();
+			// events.changeEvents(currClient->getClientFd(), EVFILT_READ, EV_ENABLE, 0, 0, currClient);
+			if (!currClient->request.is_static)
+				wait(NULL);
+			// currClient->response.clear();
+			// currClient->request.clear();
         }
-		// else
-		// 	events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_EOF, NOTE_SECONDS, 10, currEvent.udata);
     }
 }
 
@@ -233,31 +228,26 @@ void ServerManager::writeEventProcess(struct kevent& currEvent)
 {
     if (clientManager.isClient(currEvent.ident) == true)
     {
-        if (clientManager.writeEventProcess(currEvent)) // 더이상 보낼게 없을때 true 반환
+        if (clientManager.writeEventProcess(currEvent))
+		{
             events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata);
+			events.changeEvents(currEvent.ident, EVFILT_READ, EV_ENABLE, 0, 0, currEvent.udata);
+		}
     }
     else
     {
         ssize_t res = clientManager.ReqToCgiWriteProcess(currEvent);
         if (res != 0)
 		{
-			// close(currEvent.ident); // 아래에서 더욱 명시적으로 close를 했음
-			// events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata); // 이미 close한 fd에 대해서 이벤트를 조정하려고 하고 있음
 			Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
 			close(currClient->request.pipe_fd[1]);
-			currClient->httpRequestManager.DynamicReadFromCgi(*currClient);
-			currClient->httpRequestManager.DynamicMakeResponse(*currClient);
-
-		} // -1 : write error, 1 : buffer->size == 0, 0 : buffer left
-        // BE에서 pipe fd 관리를 해주는 것이라면 여기에서 close하는게 맞나 싶음.. 중복 close로 엉뚱한 fd가 close되진 않을까..?
-        // readEventProcess 에서도 동일한 이슈..
+		} 
     }
 }
 
 void ServerManager::timerEventProcess(struct kevent& currEvent)
 {
-	// events.changeEvents(currEvent.ident, EVFILT_TIMER, EV_DELETE, 0, 0, currEvent.udata);
-	clientManager.disconnectClient(currEvent.ident);
+	clientManager.addToDisconnectClient(currEvent.ident);
 }
 
 void ServerManager::serverDisconnect(struct kevent& currEvent)

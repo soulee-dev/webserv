@@ -1,13 +1,10 @@
 #pragma once
 
-#include <string>
-#include <vector>
-
+#include "Message.hpp"
 #include "../Color.hpp"
 #include "../Location.hpp"
 #include <iostream>
 #include <sstream>
-#include <map>
 
 enum ParseErrorCode
 {
@@ -17,16 +14,16 @@ enum ParseErrorCode
     HTTP_VERSION_NOT_SUPPORT = 505,
 };
 
-# define CRLF "\r\n"
-class HttpRequest
+class Request : public Message
 {
 	public:
-		HttpRequest(void);
-		int			writeIndex;
-	    std::vector<unsigned char> raw;
-    	std::string startLine;
-    	std::string	httpVersion;
+		Request(void);
+		int	file_fd;
+		size_t file_size;
+		size_t RW_file_size;
+		size_t			writeIndex;
 		bool		is_static;
+		bool		is_put;
 		std::string	file_name;
 		std::string	path;
 		std::string	cgi_args;
@@ -36,10 +33,6 @@ class HttpRequest
 		std::string	location_uri;
     	std::string uri;
 		enum ParseErrorCode errorCode;
-		std::string	method;
-		std::string	header;
-		std::map<std::string, std::string> headers;
-		std::vector<unsigned char> body;
 
 		void	clear(void);
 };

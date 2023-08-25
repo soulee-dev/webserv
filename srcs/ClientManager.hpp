@@ -1,6 +1,7 @@
 #pragma once
 #include "Client.hpp"
 #include <map>
+#include <set>
 #include <sys/socket.h>
 
 class Server;
@@ -11,8 +12,7 @@ private:
     typedef int PORT;
     typedef int SOCKET;
     std::map<SOCKET, Client> clients;
-    // ClientManager(ClientManager const& other);
-    // ClientManager& operator=(ClientManager const& rhs);
+    std::set<SOCKET> toDisconnectClients;
 public:
     ClientManager();
     ~ClientManager();
@@ -25,4 +25,7 @@ public:
     bool writeEventProcess(struct kevent& currEvent);
     int ReqToCgiWriteProcess(struct kevent& currEvent);
     int CgiToResReadProcess(struct kevent& currEvent);
+
+    void clearClients(void);
+    void addToDisconnectClient(SOCKET);
 };

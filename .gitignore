@@ -7,3 +7,6 @@ webserv
 cmake-build-debug
 CMakeLists.txt
 .idea
+**/**.json
+test.sh
+.cache
