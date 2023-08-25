@@ -1,20 +1,27 @@
-#pragma once
-
 #include "Location.hpp"
-#include "ResponseMessage.hpp"
 #include <map>
 #include <string>
+#include <netdb.h>
+#include "Event.hpp"
+#include <fcntl.h>
+#include "Client.hpp"
+
+extern Event events;
 class Server
 {
 private:
     int listen;
     std::string serverName;
     std::string root;
+    struct addrinfo *info;
+    struct addrinfo hint;
+    struct sockaddr_in socketaddr;
     std::map<std::vector<int>, std::string> errorPage;
     std::map<std::string, int> redirection;
     bool autoIndex;
     size_t clientBodySize;
     std::map<std::string, Location> locations;
+	std::map<int, Client> clients;
 
     // setter
     void setListen(std::string& input);
@@ -26,6 +33,7 @@ private:
     void setClientBodySize(std::string& input);
 
 public:
+	int serverSocket;
     Server();
     ~Server();
     Server(Server const& other);
@@ -43,4 +51,11 @@ public:
     std::string getServerName() const;
 
     // function
+    int openPort(void);
+	void acceptClient();
+	bool isClient(int ident);
+	Client &getClient(int ident);
+	void disconnectClient(int ident);
+	
+	int readProcessFromClient(int ident);
 };

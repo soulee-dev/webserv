@@ -1,8 +1,6 @@
-#include "ConfigParser.hpp"
-#include "ServerManager.hpp"
-#include <iostream>
-#include <fstream>
-#include "Color.hpp"
+#include "Webserv.hpp"
+#include "Event.hpp"
+
 
 int main(int argc, char** argv)
 {
@@ -20,12 +18,7 @@ int main(int argc, char** argv)
     }
     else
         configFileName = argv[1];
-    ConfigParser configParser;
-    ServerManager serverManager;
-
-    configParser.parseConfig(configFileName);
-    serverManager.setServers(configParser.server);
-
-    serverManager.initServers();
-    serverManager.runServerManager();
+    Webserv webserv(configFileName);
+	webserv.initServers();
+	webserv.run();
 }

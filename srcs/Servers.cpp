@@ -1,19 +1,20 @@
-#include "ConfigParser.hpp"
+#include "Servers.hpp"
 #include "Location.hpp"
-#include "Server.hpp"
 #include <fstream>
+#include <fcntl.h>
+#include <unistd.h>
 
 // constructors
-ConfigParser::ConfigParser() {}
+Servers::Servers() {}
 // destructor
-ConfigParser::~ConfigParser() {}
+Servers::~Servers() {}
 // copy constructors
-ConfigParser::ConfigParser(ConfigParser const& other)
+Servers::Servers(Servers const& other)
 {
     static_cast<void>(other);
 }
 // operators
-ConfigParser& ConfigParser::operator=(ConfigParser const& rhs)
+Servers& Servers::operator=(Servers const& rhs)
 {
     static_cast<void>(rhs);
     return *this;
@@ -22,7 +23,21 @@ ConfigParser& ConfigParser::operator=(ConfigParser const& rhs)
 // getter
 // setter
 // functions
-void ConfigParser::parseConfig(std::string const& configFileName)
+void Servers::initServers()
+{
+    std::map<int, Server>::iterator it = server.begin();
+
+    for (std::map<int, Server>::iterator it = server.begin();
+         it != server.end(); it++)
+    {
+        int serverSocket = it->second.openPort();
+        fcntl(serverSocket, F_SETFL, O_NONBLOCK);
+		portByServerSocket[serverSocket] = it->first;
+		events.changeEvents(serverSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &it->second);
+    }
+}
+
+void Servers::parseConfig(std::string const& configFileName)
 {
     int (*action[8])(struct s_info&, mapPortServer&) = {
         parse_action_0,
@@ -79,4 +94,15 @@ void ConfigParser::parseConfig(std::string const& configFileName)
         exit(1);
     }
     std::cout << "config parse success!!" << std::endl;
+}
+
+bool Servers::isResponseToServer(int ident)
+{
+	return portByServerSocket.find(ident) != portByServerSocket.end();
+}
+
+void Servers::serverDisconnect(int ident)
+{
+	close(ident);
+	server.erase(portByServerSocket[ident]);
 }

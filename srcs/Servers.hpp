@@ -1,29 +1,27 @@
 #pragma once
-#include "Server.hpp"
 #include <iostream>
 #include <map>
 #include <sstream>
 #include <vector>
+#include "Server.hpp"
+#include "Event.hpp"
 #define CONFIG_ERROR -1
 
-enum METHOD
-{
-    GET = 1,
-    POST = 2,
-    PUT = 4,
-    DELETE = 8,
-    HEAD = 16,
-};
 
+extern Event events;
 class Location;
 class Server;
-class ConfigParser
+class Servers
 {
 public:
+    ~Servers();
+    Servers();
     std::map<int, Server> server;
+	std::map<int, int> portByServerSocket;
     void parseConfig(std::string const& configFileName);
-    ~ConfigParser();
-    ConfigParser();
+	void initServers(void);
+	bool isResponseToServer(int ident);
+	void serverDisconnect(int ident);
 
 private:
     typedef std::map<int, Server> mapPortServer;
@@ -31,8 +29,8 @@ private:
     typedef std::vector<std::string> vecStr;
     typedef std::map<std::string, std::string> mapStrStr;
 
-    ConfigParser(ConfigParser const& other);
-    ConfigParser& operator=(ConfigParser const& rhs);
+    Servers(Servers const& other);
+    Servers& operator=(Servers const& rhs);
 
     struct s_info
     {

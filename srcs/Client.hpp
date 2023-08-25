@@ -1,50 +1,101 @@
 #pragma once
 #include "Event.hpp"
 #include "Location.hpp"
-#include "ResponseMessage.hpp"
-#include "Server.hpp"
-#include "Http/HttpRequestManager.hpp"
+#include "Color.hpp"
+#define SUCCESS 1
+#define ERROR -1
+#define NOTDONE 0
 
-enum RequestMessageParseState
+
+# define SPACE " "
+# define CRLF "\r\n"
+# define CRLFCRLF "\r\n\r\n"
+# define SERVER_NAME "Master J&J Server"
+# define SERVER_HTTP_VERSION "HTTP/1.1"
+# define COLON ":"
+
+
+enum State
 {
-    READY,
-    METHOD,
-    URI,
-    HTTP_VERSION,
-    HEADER,
-    BODY,
-    DONE,
-    CHUNKED,
-    ERROR,
+    PARSE_READY,
+    PARSE_METHOD,
+    PARSE_URI,
+    PARSE_HTTP_VERSION,
+    PARSE_HEADER,
+    PARSE_BODY,
+    PARSE_DONE,
+    PARSE_CHUNKED,
+    PARSE_ERROR,
+};
+
+enum ParseErrorCode
+{
+	NOT_ERROR = 0,
+    BAD_REQUEST = 400,
+	METHOD_NOT_ALLOWED = 405,
+    HTTP_VERSION_NOT_SUPPORT = 505,
+};
+
+enum METHOD
+{
+    GET = 1,
+    POST = 2,
+    PUT = 4,
+    DELETE = 8,
+    HEAD = 16,
+};
+
+// HTTP REQ and RES
+struct HttpRequest
+{
+	int writeIndex;
+	std::string startLine;
+	std::string httpVersion;
+	bool isStatic;
+	std::string fileName;
+	std::string path;
+	std::string cgiArgs;
+	std::string cgiPathInfo;
+	int pipe_fd[2];
+	int pipe_fd_back[2];
+	Location location;
+	std::string location_uri;
+	std::string uri;
+	enum ParseErrorCode errorCode;
+	std::string method;
+	std::string header;
+	std::map<std::string, std::string> headers;
+	std::vector<unsigned char> body;
+};
+
+struct HttpResponse
+{
+	int statusCode;
+	std::string startLine;
+	std::string httpVersion;
+	std::map<std::string, std::string> headers;
+	std::vector<unsigned char> body;
 };
 
 class Client
 {
 private:
     int client_fd;
-    Server* server;
-    // event 등록;
+	int state; //Parsing + Res
+	
+	std::map<std::string, Location> *locations;
+    HttpRequest	request;
+    HttpResponse response;
+	
 	std::vector<unsigned char> readBuffer;
-	RequestMessageParseState parseState;
-
-	std::string strbodySize;
-	long longBodySize;
-	bool haveToReadBody;
-
-    void readMethod(const char* buffer);
-    void readUri(const char* buffer);
-    void readHttpVersion(const char* buffer);
-    void readHeader(const char* buffer);
-    void readBody(const char* buffer, size_t readSize);
-    void readChunked(const char* buffer, size_t readSize);
-
-public:
-    HttpRequest     request;
-    ResponseMessage response;
-    Event* events;
-    HttpRequestManager httpRequestManager;
 	std::vector<unsigned char> sendBuffer;
     int         writeIndex;
+	
+	int haveToReadBody;
+	std::string strBodySize;
+	long longBodySize;
+	int clientBodySize;
+public:
     typedef int PORT;
     typedef int SOCKET;
     Client();
@@ -55,18 +106,28 @@ public:
 
     // setter
     void setFd(int fd);
-    void setServer(Server* server);
-    void setEvents(Event* event);
-
+	void setLocations(std::map<std::string, Location> &loc);
+	void setClientBodySize(int size);
     // getter
-    Server* getServer(void) const;
     SOCKET getClientFd(void) const;
+	HttpRequest &getReq(void) const;
+	HttpResponse &gatRes(void) const;
 
     // functions
-    void errorEventProcess(void);
-    bool readEventProcess(void);
-    bool writeEventProcess(void);
-    bool readMessage(void);
-    bool checkMethod(std::string const& method);
-    bool isSendBufferEmpty(void);
+	void requestClear();
+	void responseClear();
+	
+	int makeReqeustFromClient();
+	int readMessageFromClient();
+
+private:
+	void readMethod(const char* buffer);
+    void readUri(const char* buffer);
+    void readHttpVersion(const char* buffer);
+    void readHeader(const char* buffer);
+    void readBody(const char* buffer, size_t readSize);
+    void readChunked(const char* buffer, size_t readSize);
+	bool isSendBufferEmpty(void);
+	bool checkMethod(std::string const& method);
+	void checkRequest(void);
 };

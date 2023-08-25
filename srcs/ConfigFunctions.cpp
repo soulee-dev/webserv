@@ -1,8 +1,7 @@
-#include "ConfigParser.hpp"
+#include "Servers.hpp"
 #include "Location.hpp"
-#include "Server.hpp"
 
-int ConfigParser::parse_action_0(struct s_info& parse_info, mapPortServer& servers)
+int Servers::parse_action_0(struct s_info& parse_info, mapPortServer& servers)
 {
     std::string& input = parse_info.inputToken;
 
@@ -12,7 +11,7 @@ int ConfigParser::parse_action_0(struct s_info& parse_info, mapPortServer& serve
     return CONFIG_ERROR;
 }
 
-int ConfigParser::parse_action_1(struct s_info& parse_info, mapPortServer& servers)
+int Servers::parse_action_1(struct s_info& parse_info, mapPortServer& servers)
 {
     std::string& input = parse_info.inputToken;
 
@@ -23,7 +22,7 @@ int ConfigParser::parse_action_1(struct s_info& parse_info, mapPortServer& serve
         return CONFIG_ERROR;
 }
 
-int ConfigParser::parse_action_2(struct s_info& parse_info, mapPortServer& servers)
+int Servers::parse_action_2(struct s_info& parse_info, mapPortServer& servers)
 {
     std::string& input = parse_info.inputToken;
     std::vector<std::string>& vecInput = parse_info.vecInput;
@@ -58,7 +57,7 @@ int ConfigParser::parse_action_2(struct s_info& parse_info, mapPortServer& serve
     }
 }
 
-int ConfigParser::parse_action_3(struct s_info& parse_info, mapPortServer& servers)
+int Servers::parse_action_3(struct s_info& parse_info, mapPortServer& servers)
 {
     std::string& input = parse_info.inputToken;
     std::vector<std::string>& vecInput = parse_info.vecInput;
@@ -102,7 +101,7 @@ int ConfigParser::parse_action_3(struct s_info& parse_info, mapPortServer& serve
     }
 }
 
-int ConfigParser::parse_action_4(struct s_info& parse_info, mapPortServer& servers)
+int Servers::parse_action_4(struct s_info& parse_info, mapPortServer& servers)
 {
     std::string& input = parse_info.inputToken;
     std::string& locationDir = parse_info.locationDir;
@@ -117,7 +116,7 @@ int ConfigParser::parse_action_4(struct s_info& parse_info, mapPortServer& serve
     }
 }
 
-int ConfigParser::parse_action_5(struct s_info& parse_info, mapPortServer& servers)
+int Servers::parse_action_5(struct s_info& parse_info, mapPortServer& servers)
 {
     std::string& input = parse_info.inputToken;
 
@@ -128,7 +127,7 @@ int ConfigParser::parse_action_5(struct s_info& parse_info, mapPortServer& serve
         return CONFIG_ERROR;
 }
 
-int ConfigParser::parse_action_6(struct s_info& parse_info, mapPortServer& servers)
+int Servers::parse_action_6(struct s_info& parse_info, mapPortServer& servers)
 {
     std::string& input = parse_info.inputToken;
     std::vector<std::string>& vecInput = parse_info.vecInput;
@@ -157,7 +156,7 @@ int ConfigParser::parse_action_6(struct s_info& parse_info, mapPortServer& serve
     }
 }
 
-int ConfigParser::parse_action_7(struct s_info& parse_info, mapPortServer& servers)
+int Servers::parse_action_7(struct s_info& parse_info, mapPortServer& servers)
 {
     std::string& input = parse_info.inputToken;
     std::vector<std::string>& vecInput = parse_info.vecInput;
