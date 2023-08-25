@@ -26,7 +26,6 @@ void	HandleStatic(Client& client)
 		fcntl(client.request.file_fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 		fstat(client.request.file_fd, &file_stat);
 		client.request.file_size = file_stat.st_size;
-		client.events->changeEvents(client.request.file_fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &client);
 		return ;
 	}
 
