@@ -24,6 +24,7 @@ class Request : public Message
 		size_t			writeIndex;
 		bool		is_static;
 		bool		is_put;
+		bool		is_post_dynamic;
 		std::string	file_name;
 		std::string	path;
 		std::string	cgi_args;

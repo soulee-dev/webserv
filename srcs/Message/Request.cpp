@@ -20,6 +20,7 @@ void Request::clear(void)
 	writeIndex = 0;
 	is_static = true;
 	is_put = false;
+	is_post_dynamic = false;
 	file_name.clear();
 	path.clear();
 	cgi_args.clear();

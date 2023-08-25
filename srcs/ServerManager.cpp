@@ -189,7 +189,7 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
 			std::cout << "EV_EOF detacted in client" << std::endl;
 			clientManager.addToDisconnectClient(currEvent.ident);
 		}
-        else if (clientManager.readEventProcess(currEvent))
+		else if (clientManager.readEventProcess(currEvent))
             events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_ENABLE, 0, 0, currEvent.udata);
     }
     else
@@ -206,10 +206,10 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
 			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, currClient->request.is_static);
 			events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 			// events.changeEvents(currClient->getClientFd(), EVFILT_READ, EV_ENABLE, 0, 0, currClient);
-			if (!currClient->request.is_static)
-				wait(NULL);
-			currClient->response.clear();
-			currClient->request.clear();
+			// if (!currClient->request.is_static)
+			// 	wait(NULL);
+			// currClient->response.clear();
+			// currClient->request.clear();
         }
     }
 }

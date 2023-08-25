@@ -147,8 +147,6 @@ void	ReadStaticFile(Client& client, std::string& file_name)
 		client.sendBuffer = BuildResponse(200, client.response.headers, client.response.body);
 		client.events->changeEvents(client.getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, &client);
 		close(client.request.file_fd);
-		client.request.clear();
-		client.response.clear();
 	}
 	else
 		client.events->changeEvents(client.request.file_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &client);

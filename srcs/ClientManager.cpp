@@ -118,10 +118,20 @@ int ClientManager::CgiToResReadProcess(struct kevent& currEvent)
         return -1;
     readBuffer.insert(readBuffer.end(), buffer, &buffer[ret]);
     currClient->request.RW_file_size += ret;
-    if (currClient->request.RW_file_size == currClient->request.file_size || ret == 0)
-        return 1;
+    if (currClient->request.is_post_dynamic)
+    {
+        if (ret == 0)
+            return 1;
+        else
+            return 0;
+    }
     else
-        return 0;
+    {
+        if (currClient->request.RW_file_size == currClient->request.file_size || ret == 0)
+            return 1;
+        else
+            return 0;
+    }
 }
 
 bool ClientManager::isClient(SOCKET client_fd)
