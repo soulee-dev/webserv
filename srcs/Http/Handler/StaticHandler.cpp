@@ -12,27 +12,22 @@ void	HandleStatic(Client& client)
 	std::cout << "SIZE : " << request.body.size() << "\nMAX BODY SIZE : " << request.location.getClientBodySize() << '\n';
 	if ((request.body.size() > request.location.getClientBodySize()) && request.method == "POST")
 		return HandleError(client, 413);
-	if (request.method == "HEAD")
+	else if (request.method == "HEAD")
 		return HandleError(client, 405);
 	else if (request.method == "PUT")
 	{
-		std::ifstream	ifs(request.path);
-		std::ofstream	ofs;
-		int res = ifs.is_open();
-		ifs.close();
-		ofs.open(request.path, std::ios::out | std::ios::trunc);
-		std::map<std::string, std::string>  headers;
-		if (ofs.fail())
-			return HandleError(client, 404);
-		headers["Connection"] = "close";
-		for (size_t i = 0; i < request.body.size(); i++)
-			ofs << request.body[i];
-		ofs.close();
+		struct stat file_stat;
 
-		std::vector<unsigned char> empty_body;
-		if (res)
-			return SetResponse(client, 200, headers, empty_body);
-		return SetResponse(client, 201, headers, empty_body);
+		client.request.file_fd = open(request.path.c_str(), O_RDONLY | O_CREAT, 0644);
+		if (errno == EEXIST)
+			client.response.status_code = 201;
+		else
+			client.response.status_code = 200;
+		fcntl(client.request.file_fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+		fstat(client.request.file_fd, &file_stat);
+		client.request.file_size = file_stat.st_size;
+		client.events->changeEvents(client.request.file_fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &client);
+		return ;
 	}
 
     if (IsDirectory(request.path))

@@ -32,10 +32,10 @@ private:
 	size_t  longBodySize;
 	bool haveToReadBody;
 
-    void readMethod(const char* buffer);
-    void readUri(const char* buffer);
-    void readHttpVersion(const char* buffer);
-    void readHeader(const char* buffer);
+    void readMethod(const char* buffer, size_t readSize);
+    void readUri(const char* buffer, size_t readSize);
+    void readHttpVersion(const char* buffer, size_t readSize);
+    void readHeader(const char* buffer, size_t readSize);
     void readBody(const char* buffer, size_t readSize);
     void readChunked(const char* buffer, size_t readSize);
 

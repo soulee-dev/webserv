@@ -15,8 +15,11 @@ void Request::clear(void)
 	body.clear();
 
 	file_fd = -1;
+	file_size = 0;
+	RW_file_size = 0;
 	writeIndex = 0;
 	is_static = true;
+	is_put = false;
 	file_name.clear();
 	path.clear();
 	cgi_args.clear();

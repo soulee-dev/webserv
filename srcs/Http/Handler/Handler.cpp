@@ -3,6 +3,7 @@
 #include "../../Client.hpp"
 #include "ErrorHandler.hpp"
 #include <algorithm>
+#include <vector>
 
 std::string	GetFileType(std::string file_name)
 {
@@ -133,7 +134,22 @@ bool	IsFileExist(std::string path)
 
 void	ReadStaticFile(Client& client, std::string& file_name)
 {
-	client.request.file_fd = open(file_name.c_str(), O_RDONLY);
+	struct stat file_stat;
+	std::vector<unsigned char> empty_body;
+
+	client.request.file_fd = open(file_name.c_str(), O_RDONLY, 0644);
+	fcntl(client.request.file_fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+	fstat(client.request.file_fd, &file_stat);
+	client.request.file_size = file_stat.st_size;
+	if (client.request.file_size == 0)
+	{
+		SetResponse(client, client.response.status_code, client.request.headers, empty_body);
+		client.sendBuffer = BuildResponse(200, client.response.headers, client.response.body);
+		client.events->changeEvents(client.getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, &client);
+		close(client.request.file_fd);
+	}
+	else
+		client.events->changeEvents(client.request.file_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &client);
 }
 
 void	ServeStatic(Client& client, std::string& path)

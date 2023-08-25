@@ -1,4 +1,5 @@
 #include "ClientManager.hpp"
+#include "Http/Handler/Handler.hpp"
 #include "Message/Request.hpp"
 #include <sys/event.h>
 #include <unistd.h>
@@ -35,11 +36,15 @@ bool ClientManager::readEventProcess(struct kevent& currEvent)
     Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
     if (currClient->readMessage())
     {
-        disconnectClient(currEvent.ident);
+        addToDisconnectClient(currEvent.ident);
         return false;
     }
     if (currClient->readEventProcess())
-        return true;
+    {
+        clients[currEvent.ident].events->changeEvents(currClient->getClientFd(), EVFILT_READ, EV_DISABLE, 0, 0, currClient);
+        if (currClient->request.file_fd == -1)
+            return true;
+    }
     return false;
 }
 
@@ -48,11 +53,13 @@ bool ClientManager::writeEventProcess(struct kevent& currEvent)
     Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
     if (currClient->writeEventProcess())
     {
-        disconnectClient(currEvent.ident);
+        addToDisconnectClient(currEvent.ident);
         return false;
     }
     if (currClient->isSendBufferEmpty())
+    {
         return true;
+    }
     return false;
 }
 
@@ -66,19 +73,33 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
     int writeSize = write(currEvent.ident, &buffer[request.writeIndex], size);
     if (writeSize == -1)
     {
+        std::cout << currEvent.ident << std::endl; // 7
         std::cout << "write() error" << std::endl;
         std::cout << "errno : " << errno << std::endl;
         return -1;
     }
     request.writeIndex += writeSize;
-    if (request.writeIndex == buffer.size())
+    if (request.is_put)
+    {
+        request.RW_file_size += writeSize;
+        if (request.RW_file_size == request.file_size)
+        {
+            std::vector<unsigned char> empty_body;
+            client->sendBuffer = BuildResponse(client->response.status_code, client->response.headers, empty_body);
+            client->events->changeEvents(client->getClientFd(), EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &client);
+            client->events->changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, &client);
+            client->request.clear();
+            client->response.clear();
+            return 0;
+        }
+    }
+    else if (request.writeIndex == buffer.size())
     {
         request.writeIndex = 0;
         buffer.clear();
         return 1;
     }
-    else
-        return 0;
+    return 0;
 }
 
 int ClientManager::CgiToResReadProcess(struct kevent& currEvent)
@@ -87,14 +108,16 @@ int ClientManager::CgiToResReadProcess(struct kevent& currEvent)
 
     Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
     std::vector<unsigned char>& readBuffer = currClient->response.body;
-    
+
     char buffer[BUFFER_SIZE];
+
 
     ssize_t ret = read(currEvent.ident, buffer, BUFFER_SIZE);
     if (ret == -1)
         return -1;
     readBuffer.insert(readBuffer.end(), buffer, &buffer[ret]);
-    if ((ret == 0 || ret < BUFFER_SIZE) && currClient->request.body.size() == 0)
+    currClient->request.RW_file_size += ret;
+    if (currClient->request.RW_file_size == currClient->request.file_size || ret == 0)
         return 1;
     else
         return 0;
@@ -103,4 +126,24 @@ int ClientManager::CgiToResReadProcess(struct kevent& currEvent)
 bool ClientManager::isClient(SOCKET client_fd)
 {
     return (clients.find(client_fd) != clients.end());
+}
+
+void ClientManager::clearClients(void)
+{
+    std::set<SOCKET>::iterator it = toDisconnectClients.begin();
+    for (; it != toDisconnectClients.end(); it++)
+    {
+        std::map<SOCKET, Client>::iterator ItClient = clients.find(*it);
+        if (ItClient->second.request.pipe_fd[1] != -1)
+            close(ItClient->second.request.pipe_fd[1]);
+        if (ItClient->second.request.pipe_fd_back[0] != -1)
+            close(ItClient->second.request.pipe_fd_back[0]);
+        disconnectClient(*it);
+    }
+    toDisconnectClients.clear();
+}
+
+void ClientManager::addToDisconnectClient(SOCKET client_fd)
+{
+    toDisconnectClients.insert(client_fd);
 }

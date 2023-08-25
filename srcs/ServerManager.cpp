@@ -19,7 +19,7 @@ void ServerManager::initServers(void)
 	{
 		Server& server = portIter->second;
 		SOCKET serversSocket = openPort(portIter->first, server);
-		fcntl(serversSocket, F_SETFL, O_NONBLOCK);
+		fcntl(serversSocket, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 		portByServerSocket[serversSocket] = portIter->first;
 		events.changeEvents(serversSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &portIter->second);
 		portIter++;
@@ -111,6 +111,7 @@ void ServerManager::runServerManager(void)
 		{
 			runEventProcess(events[i]);
 		}
+		clientManager.clearClients();
 	}
 }
 
@@ -123,7 +124,7 @@ int ServerManager::acceptClient(SOCKET server_fd)
         std::cout << "accept() error" << std::endl;
         return -1;
     }
-    fcntl(client_fd, F_SETFL, O_NONBLOCK);
+    fcntl(client_fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
     clientManager.addNewClient(client_fd, &servers[serverPort], &events);
     events.changeEvents(client_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &clientManager.getClient(client_fd));
     events.changeEvents(client_fd, EVFILT_WRITE, EV_ADD | EV_DISABLE, 0, 0, &clientManager.getClient(client_fd));
@@ -165,7 +166,7 @@ void ServerManager::errorEventProcess(struct kevent& currEvent)
 	}
 	else
 	{
-		clientManager.disconnectClient(currEvent.ident);
+		clientManager.addToDisconnectClient(currEvent.ident);
 		std::cout << BOLDMAGENTA << currEvent.ident << " CLIENT DISCONNECTED" << std::endl;
 	}
 }
@@ -183,25 +184,31 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
         acceptClient(currEvent.ident);
     else if (clientManager.isClient(currEvent.ident) == true)
     {
-        if (clientManager.readEventProcess(currEvent))
+		if (currEvent.flags & EV_EOF)
+		{
+			std::cout << "EV_EOF detacted in client" << std::endl;
+			clientManager.addToDisconnectClient(currEvent.ident);
+		}
+        else if (clientManager.readEventProcess(currEvent))
             events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_ENABLE, 0, 0, currEvent.udata);
     }
     else
     {
         ssize_t ret = clientManager.CgiToResReadProcess(currEvent);
         if (ret != 0)
-        {
+		{
 			close(currEvent.ident);
-			currClient->request.clear();
-        }
+		}
         if (ret == 1)
         {
-			// TODO is_static이 날아간다 왜? 찾아봐야 함.
+			// TODO is_static이 날아간다 왜? 찾아봐야 함. -> 바로 위에서 request를 clear해 줬었기 때문임
 			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, currClient->request.is_static);
 			events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
-			currClient->response.clear();
+			// events.changeEvents(currClient->getClientFd(), EVFILT_READ, EV_ENABLE, 0, 0, currClient);
 			if (!currClient->request.is_static)
 				wait(NULL);
+			currClient->response.clear();
+			currClient->request.clear();
         }
     }
 }
@@ -211,7 +218,10 @@ void ServerManager::writeEventProcess(struct kevent& currEvent)
     if (clientManager.isClient(currEvent.ident) == true)
     {
         if (clientManager.writeEventProcess(currEvent))
+		{
             events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata);
+			events.changeEvents(currEvent.ident, EVFILT_READ, EV_ENABLE, 0, 0, currEvent.udata);
+		}
     }
     else
     {
@@ -226,7 +236,7 @@ void ServerManager::writeEventProcess(struct kevent& currEvent)
 
 void ServerManager::timerEventProcess(struct kevent& currEvent)
 {
-	clientManager.disconnectClient(currEvent.ident);
+	clientManager.addToDisconnectClient(currEvent.ident);
 }
 
 void ServerManager::serverDisconnect(struct kevent& currEvent)

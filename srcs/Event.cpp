@@ -1,5 +1,6 @@
 #include "Event.hpp"
 #include <iostream>
+#include <fcntl.h>
 
 Event::Event() : kq(0) {}
 

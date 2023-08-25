@@ -13,6 +13,8 @@
 Client::Client() : parseState(READY), haveToReadBody(false), writeIndex(0) {
 	readBuffer.reserve(100000000);
 	sendBuffer.reserve(100000000);
+	request.clear();
+	response.clear();
 }
 
 Client::~Client() {}
@@ -78,6 +80,8 @@ bool Client::writeEventProcess(void)
 	{
 		writeIndex = 0;
 		sendBuffer.clear();
+		request.clear();
+		response.clear();
 	}
 	return false;
 }
@@ -101,16 +105,16 @@ bool Client::readMessage(void)
 	case READY:
 		request.clear();
 	case METHOD:
-		readMethod(buffer);
+		readMethod(buffer, readSize);
 		break;
 	case URI:
-		readUri(buffer);
+		readUri(buffer, readSize);
 		break;
 	case HTTP_VERSION:
-		readHttpVersion(buffer);
+		readHttpVersion(buffer, readSize);
 		break;
 	case HEADER:
-		readHeader(buffer);
+		readHeader(buffer, readSize);
 		break;
 	case BODY:
 		readBody(buffer, readSize);
@@ -123,7 +127,7 @@ bool Client::readMessage(void)
 	return false;
 }
 
-void Client::readHeader(const char* buffer)
+void Client::readHeader(const char* buffer, size_t readSize)
 {
 	std::stringstream headerSstream;
 	std::string line;
@@ -131,7 +135,7 @@ void Client::readHeader(const char* buffer)
 	std::string value;
 	std::vector<unsigned char>::iterator pos;
 
-	readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
+	readBuffer.insert(readBuffer.end(), buffer, buffer + readSize);
 	while ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\n",
 							  &"\n"[1])) != readBuffer.end())
 	{
@@ -362,11 +366,11 @@ bool Client::checkMethod(void)
 		return true;
 }
 
-void Client::readMethod(const char* buffer)
+void Client::readMethod(const char* buffer, size_t readSize)
 {
 	std::vector<unsigned char>::iterator pos;
 
-	readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
+	readBuffer.insert(readBuffer.end(), buffer, buffer + readSize);
 	while (readBuffer.size() > 1 && readBuffer[0] == '\r' && readBuffer[1] == '\n')
 		readBuffer.erase(readBuffer.begin(), readBuffer.begin() + 2);
 	if (readBuffer.size() == 0)
@@ -379,7 +383,7 @@ void Client::readMethod(const char* buffer)
 		parseState = URI;
 		if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ",
 							   &" "[1])) != readBuffer.end())
-			readUri("");
+			readUri("", 0);
 		else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
 									&CRLF[2])) != readBuffer.end())
 		{
@@ -399,11 +403,11 @@ void Client::readMethod(const char* buffer)
 	}
 }
 
-void Client::readUri(const char* buffer)
+void Client::readUri(const char* buffer, size_t readSize)
 {
 	std::vector<unsigned char>::iterator pos;
 
-	readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
+	readBuffer.insert(readBuffer.end(), buffer, buffer + readSize);
 	if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ", &" "[1])) !=
 		readBuffer.end())
 	{
@@ -412,7 +416,7 @@ void Client::readUri(const char* buffer)
 		parseState = HTTP_VERSION;
 		if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
 							   &CRLF[2])) != readBuffer.end())
-			readHttpVersion("");
+			readHttpVersion("", 0);
 		else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ",
 									&" "[1])) != readBuffer.end())
 		{
@@ -429,11 +433,11 @@ void Client::readUri(const char* buffer)
 	}
 }
 
-void Client::readHttpVersion(const char* buffer)
+void Client::readHttpVersion(const char* buffer, size_t readSize)
 {
 	std::vector<unsigned char>::iterator pos;
 
-	readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
+	readBuffer.insert(readBuffer.end(), buffer, buffer + readSize);
 	if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
 						   &CRLF[2])) != readBuffer.end())
 	{
@@ -449,7 +453,7 @@ void Client::readHttpVersion(const char* buffer)
 		parseState = HEADER;
 		if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
 							   &CRLF[2])) != readBuffer.end())
-			readHeader("");
+			readHeader("", 0);
 		return;
 	}
 }

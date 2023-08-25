@@ -19,8 +19,11 @@ class Request : public Message
 	public:
 		Request(void);
 		int	file_fd;
+		size_t file_size;
+		size_t RW_file_size;
 		size_t			writeIndex;
 		bool		is_static;
+		bool		is_put;
 		std::string	file_name;
 		std::string	path;
 		std::string	cgi_args;
