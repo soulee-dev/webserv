@@ -76,6 +76,7 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
         std::cout << currEvent.ident << std::endl; // 7
         std::cout << "write() error" << std::endl;
         std::cout << "errno : " << errno << std::endl;
+        client->events->changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, client);
         return -1;
     }
     request.writeIndex += writeSize;
@@ -86,8 +87,8 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
         {
             std::vector<unsigned char> empty_body;
             client->sendBuffer = BuildResponse(client->response.status_code, client->response.headers, empty_body);
-            client->events->changeEvents(client->getClientFd(), EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &client);
-            client->events->changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, &client);
+            client->events->changeEvents(client->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, &client);
+            close(currEvent.ident);
             client->request.clear();
             client->response.clear();
             return 0;

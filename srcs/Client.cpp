@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <iostream>
 #include <sstream>
+#include <sys/event.h>
 #include <unistd.h>
 
 Client::Client() : parseState(READY), haveToReadBody(false), writeIndex(0) {
@@ -52,8 +53,12 @@ bool Client::readEventProcess(void)
 	// Dynamic인 경우 Handle안에서 EVFILT를 걸어주기 때문에 해줄필요 없다.
 	if (request.is_static || parseState == ERROR)
 	{
-		if (request.file_fd != -1)
+		if (request.file_fd != -1 && !request.is_put)
 			events->changeEvents(request.file_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, this);
+		else if (request.file_fd != -1 && request.is_put)
+		{
+			events->changeEvents(request.file_fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, this);
+		}
 		else
 			events->changeEvents(getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, this);
 	}

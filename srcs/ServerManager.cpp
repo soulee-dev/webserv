@@ -198,6 +198,7 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
         if (ret != 0)
 		{
 			close(currEvent.ident);
+			currEvent.ident = -1;
 		}
         if (ret == 1)
         {
