@@ -2,6 +2,7 @@
 #include "Color.hpp"
 #include "Event.hpp"
 #include "Location.hpp"
+#include "Http/Handler/Handler.hpp"
 #define SUCCESS 1
 #define ERROR -1
 #define NOTDONE 0
@@ -13,6 +14,8 @@
 #define SERVER_HTTP_VERSION "HTTP/1.1"
 #define COLON ":"
 
+extern char **environ;
+extern Event events;
 enum State
 {
     PARSE_READY,
@@ -80,6 +83,8 @@ class Client
 private:
     int client_fd;
     int state; // Parsing + Res
+	int isCgi;
+	std::map<int, std::string> STATUS_CODES;
 
     std::map<std::string, Location>* locations;
     HttpRequest request;
@@ -108,9 +113,9 @@ public:
     void setLocations(std::map<std::string, Location>& loc);
     void setClientBodySize(int size);
     // getter
-    SOCKET getClientFd(void) const;
-    HttpRequest& getReq(void) const;
-    HttpResponse& gatRes(void) const;
+    int getClientFd(void) const;
+    HttpRequest& getReq(void);
+    HttpResponse& gatRes(void);
 
     // functions
     void requestClear();
@@ -118,6 +123,18 @@ public:
 
     int makeReqeustFromClient();
     int readMessageFromClient();
+
+	void makeResponseFromStatic();
+    void processDirectory();
+    void serveStatic();
+	void handleDirectoryListing();
+
+	
+	void makeResponseFromDelete();
+	void makeResponseFromDynamic();
+	
+	int makeResponseFromFd(int ident);
+	void calculateBodyLength();
 
 private:
     void readMethod(const char* buffer);
@@ -129,4 +146,6 @@ private:
     bool isSendBufferEmpty(void);
     bool checkMethod(std::string const& method);
     void checkRequest(void);
+	bool openFdForDynamic();
+	bool runCgiForDynamic();
 };

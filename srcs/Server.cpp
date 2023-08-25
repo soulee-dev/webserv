@@ -212,7 +212,7 @@ int Server::openPort()
     return serverSocket;
 }
 
-void Server::acceptClient()
+int Server::acceptClient()
 {
     int newClientFd = accept(serverSocket, NULL, NULL);
     if (newClientFd == -1)
@@ -225,6 +225,7 @@ void Server::acceptClient()
 
     events.changeEvents(newClientFd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, this);
     events.changeEvents(newClientFd, EVFILT_WRITE, EV_ADD | EV_DISABLE, 0, 0, this);
+	return newClientFd;
 }
 
 bool Server::isClient(int ident)

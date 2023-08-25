@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../HttpRequest.hpp"
 #include <vector>
 #include "../../Color.hpp" // for debug
 #include <iostream> // for debug
@@ -8,12 +7,7 @@
 #include <fstream> // for ifstream
 #include <sys/stat.h> // for struct stat
 #include <dirent.h> // for directory listing/entrying
-
-# define SPACE " "
-# define CRLF "\r\n"
-# define SERVER_NAME "Master J&J Server"
-# define SERVER_HTTP_VERSION "HTTP/1.1"
-# define COLON ":"
+#include <map>
 
 class	Client;
 

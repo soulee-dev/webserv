@@ -52,10 +52,11 @@ public:
 
     // function
     int openPort(void);
-    void acceptClient();
+    int acceptClient();
     bool isClient(int ident);
     Client& getClient(int ident);
     void disconnectClient(int ident);
 
     int readProcessFromClient(int ident);
+	void staticRequestProcess(int ident);
 };

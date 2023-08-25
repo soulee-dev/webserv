@@ -2,13 +2,14 @@
 #include "Servers.hpp"
 #include <string>
 #include <sys/event.h>
-#include <vector>
+#include <set>
 #define EVENTLIST_SIZE 1000
 
 class Webserv
 {
 private:
     Servers _servers;
+	std::set<int> _clients;
 
     Webserv(Webserv const& obj);
     Webserv const& operator=(Webserv const& obj);

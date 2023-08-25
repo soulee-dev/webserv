@@ -1,6 +1,7 @@
 #include "Client.hpp"
 #include "Utils.hpp"
 #include <cstring>
+#include <fcntl.h>
 #include <iostream>
 #include <unistd.h>
 #include <vector>
@@ -10,6 +11,14 @@ Client::Client()
 {
     readBuffer.reserve(100000000);
     sendBuffer.reserve(100000000);
+    STATUS_CODES[200] = "OK";
+    STATUS_CODES[201] = "Created";
+    STATUS_CODES[400] = "Bad Request";
+    STATUS_CODES[403] = "Forbidden";
+    STATUS_CODES[404] = "Not Found";
+    STATUS_CODES[405] = "Method Not Allowed";
+    STATUS_CODES[413] = "Request Entity Too Large";
+    STATUS_CODES[505] = "HTTP Version Not Supported";
 }
 
 Client::~Client() {}
@@ -57,6 +66,21 @@ void Client::setLocations(std::map<std::string, Location>& loc)
 void Client::setClientBodySize(int size)
 {
     clientBodySize = size;
+}
+
+int Client::getClientFd(void) const
+{
+    return client_fd;
+}
+
+HttpRequest& Client::getReq(void)
+{
+	return request;
+}
+
+HttpResponse& Client::gatRes(void)
+{
+	return response;
 }
 
 void Client::responseClear()
@@ -562,3 +586,287 @@ void Client::checkRequest(void) // RequestManager::Parse
     }
 };
 // DONE makeRequest
+// START makeResponse
+
+// Static
+void Client::makeResponseFromStatic()
+{
+    isCgi = false;
+    std::cout << "METHOD : " << request.method << RESET << "\n";
+    std::cout << "SIZE : " << request.body.size() << "\nMAX BODY SIZE : " << request.location.getClientBodySize() << '\n';
+    if ((request.body.size() > request.location.getClientBodySize()) && request.method == "POST") // CGI-BIN 없는 POST 요청의 경우 일괄적으로 405를 띄워 줍니다.
+    {
+        response.statusCode = 413;
+        return;
+    }
+    // TODO: 현재 STATIC으로 들어오는 HEAD 요청에 대해 전부 405를 반환하는데 이것은 테스터가 URI "/"로 보내는 요청의
+    // allowed method가 GET 뿐이기 때문입니다. 현재 ServeStatic() 끝에 HEAD일 경우 바디 때는 처리가 되어있어서
+    // HEAD를 따로 구현할 건 없는데 allowed method 처리 되면 이 분기문은 없애야합니다.
+    if (request.method == "HEAD")
+        response.statusCode = 405;
+
+    else if (request.method == "PUT") // POST와 PUT이 괴상하게 섞인 분기문을 정리했습니다.
+    {
+        std::ifstream ifs(request.path);
+        std::ofstream ofs;
+        int res = ifs.is_open();
+        ifs.close();                                             // infile close
+        ofs.open(request.path, std::ios::out | std::ios::trunc); // 출력 모드로, 이미 파일이 존재한다면 파일을 비우고 새로 엽니다.
+        if (ofs.fail())                                          // 파일 열기에 실패했으면 404 에러를 호출합니다
+            response.statusCode = 404;                           // 이거 아래까지 내려가면 안되는거 아님?
+        response.headers["Connection"] = "close";
+        // request.body.resize(100); // TODO: max body size
+        for (size_t i = 0; i < request.body.size(); i++)
+            ofs << request.body[i];
+        ofs.close();
+
+        if (res) // curl -v -X DELETE -d "body" http://localhost/put_test/file_should_exist_after
+            response.statusCode = 200;
+        else
+            response.statusCode = 201;
+        return;
+    }
+
+    if (isDirectory(request.path)) // 나머지 GET 요청에 대한 처리입니다.
+        processDirectory();
+    else
+        serveStatic();
+}
+
+void Client::processDirectory()
+{
+
+    std::vector<std::string> indexVec = request.location.getIndex(); // 벡터에 대한 참조
+    std::vector<std::string>::iterator it;
+
+    if (!indexVec.empty()) // 벡터가 비어있지 않은지 확인
+    {
+        for (it = indexVec.begin(); it != indexVec.end(); ++it)
+        {
+            std::string index = *it;
+            std::string path = request.path + "/" + index;
+            if (isRegularFile(path) && isFileReadable(path))
+            {
+                request.path = path;
+                std::cout << BOLDRED << "PATH : " << path << RESET << '\n';
+                serveStatic();
+                return;
+            }
+        }
+    }
+    if (request.location.getAutoIndex())
+        handleDirectoryListing();
+    else
+        response.statusCode = 404;
+}
+
+void Client::handleDirectoryListing()
+{
+
+    DIR* dir = opendir(request.path.c_str());
+    if (!dir)
+    // Error Handler를 호출해야 하는 첫 번째 경우 (errnum = 1),
+    // 현재 default.conf의 root는 /html로 지정되어 있는데, 그 /html이 없는 경우이다.
+    {
+        response.statusCode = 404;
+        return;
+    }
+    std::stringstream ss;
+    ss << "<!DOCTYPE html><head><title>Index of " << request.path;
+    ss << "</title></head><body><h1>Index of " << request.path;
+    ss << "</h1><ul>";
+
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != NULL)
+    {
+        ss << "<li><a href=";
+        ss << request.location_uri;
+        ss << request.fileName << "/";
+        ss << entry->d_name;
+        ss << ">";
+        ss << entry->d_name;
+        ss << "</a></li>";
+    }
+    closedir(dir);
+    ss << "</ul></body></html>";
+    response.body = stou(ss);
+    response.headers["Connection"] = "close";
+    response.headers["Content-Type"] = "text/html";
+    response.statusCode = 200;
+}
+
+void Client::serveStatic()
+{
+
+    if (!isFileExist(request.path))
+    {
+        response.statusCode = 404;
+        return;
+    }
+    if (!isRegularFile(request.path) || !isFileReadable(request.path))
+    {
+        response.statusCode = 403;
+    }
+
+    if (request.method != "HEAD")
+        response.body = ReadStaticFile(request.path);
+
+    if (request.method.empty()) // METHOD에 비어있을 때 예외처리이다. 나쁜 테스터 죽어.
+    {
+        response.statusCode = 404;
+        return;
+    }
+    response.headers["Connection"] = "keep-alive";
+    response.headers["Content-Type"] = getFileType(request.path);
+    response.statusCode = 200;
+}
+
+// Delete
+void Client::makeResponseFromDelete()
+{
+    const char* path = request.path.c_str();
+    std::vector<unsigned char> emptyBody;
+
+    response.body.clear();
+    if (std::remove(path) == 0)
+    {
+        std::cout << "DELETE SUCCESS\n"
+                  << RESET;
+        response.headers["Connection"] = "close";
+        response.statusCode = 200;
+    }
+    else
+    {
+        std::cout << "DELETE FAILED\n"
+                  << RESET;
+        response.statusCode = 404;
+        return;
+    }
+}
+
+// Dynamic
+bool Client::openFdForDynamic()
+{
+
+    if (pipe(request.pipe_fd) == -1 || pipe(request.pipe_fd_back) == -1)
+    {
+        return false;
+    }
+    fcntl(request.pipe_fd[0], F_SETFL, O_NONBLOCK);
+    fcntl(request.pipe_fd_back[1], F_SETFL, O_NONBLOCK);
+    fcntl(request.pipe_fd[1], F_SETFL, O_NONBLOCK);
+    fcntl(request.pipe_fd_back[0], F_SETFL, O_NONBLOCK);
+    return true;
+}
+
+bool Client::runCgiForDynamic()
+{
+
+    pid_t pid = fork();
+    if (pid == -1)
+    {
+        return false;
+    }
+    isCgi = true;
+    if (pid == 0) // 자식 코드
+    {
+        // Child process
+        dup2(request.pipe_fd[0], STDIN_FILENO);       // stdin을 pipe_fd[0]로 복제
+        dup2(request.pipe_fd_back[1], STDOUT_FILENO); // stdout을 pipe_fd_back[1]로 복제
+
+        close(request.pipe_fd[0]);      // Close unused read end
+        close(request.pipe_fd_back[1]); // Close unused write end in parent
+        close(request.pipe_fd[1]);      // Close unused read end
+        close(request.pipe_fd_back[0]); // Close unused write end in parent
+
+        // TODO MAX BODY SIZE
+        // if (request.body.size() > 100)
+        // 	request.body.resize(100); // max body size
+
+        int size = request.body.size();
+        std::string size_str = std::to_string(size); // c++ 11
+        const char* size_cstr = size_str.c_str();
+
+        setenv("QUERY_STRING", request.cgiArgs.c_str(), 1);
+        setenv("REQUEST_METHOD", request.method.c_str(), 1);
+        setenv("CONTENT_LENGTH", size_cstr, 1);
+        setenv("SERVER_PROTOCOL", SERVER_HTTP_VERSION, 1);
+        setenv("PATH_INFO", request.cgiPathInfo.c_str(), 1);
+        setenv("HTTP_X_SECRET_HEADER_FOR_TEST", request.headers["x-secret-header-for-test"].c_str(), 1);
+        setenv("CONTENT_TYPE", request.headers["content-type"].c_str(), 1);
+
+        if (request.uri.find(".bla") != std::string::npos)
+            request.path = "./cgi_tester";
+
+        if (execve(request.path.c_str(), NULL, environ) == -1)
+        {
+            // TODO: Handle Error
+            std::cerr << "execve error" << std::endl;
+            exit(0);
+        }
+    }
+    else
+    {
+        close(request.pipe_fd[0]);      // Close unused read end
+        close(request.pipe_fd_back[1]); // Close unused write end in parent
+    }
+    return true;
+}
+
+void Client::makeResponseFromDynamic()
+{
+    if (openFdForDynamic() == false)
+        exitWebserver("Pipe() error"); // or response 응답 코드로 변경해도됨
+    if (runCgiForDynamic() == false)
+        exitWebserver("Fork() error");
+    // 정상이라면 이벤트 등록 하자
+    events.changeEvents(request.pipe_fd[1], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, this);
+    events.changeEvents(request.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, this);
+}
+
+// FD
+
+int Client::makeResponseFromFd(int ident)
+{
+    const size_t BUFFER_SIZE = 65536;
+
+    std::vector<unsigned char>& readBuffer = response.body;
+
+    char buffer[BUFFER_SIZE];
+
+    ssize_t ret = read(ident, buffer, BUFFER_SIZE);
+    if (ret == -1)
+    {
+        response.statusCode = 500; // 걍 넣어봄, 맞는지는 몰름
+        return -1;
+    }
+    readBuffer.insert(readBuffer.end(), buffer, &buffer[ret]);
+    if ((ret == 0 || ret < BUFFER_SIZE) && request.body.size() == 0)
+    {
+        response.statusCode = 200;
+        return 1;
+    }
+    else
+        return 0;
+}
+
+void Client::calculateBodyLength()
+{
+
+    std::cout << BOLDGREEN << "CODE : " << response.statusCode << RESET << "\n";
+
+    if (isCgi)
+    {
+        int pos = std::search(response.body.begin(), response.body.end(), &CRLFCRLF[0], &CRLFCRLF[4]) - response.body.begin();
+        response.headers["Content-Length"] = intToString(response.body.size() - pos - 4);
+        std::cout << "BUILD HEADER\n";
+    }
+    else
+    {
+        response.headers["Content-Length"] = intToString(response.body.size());
+    }
+    std::cout << "\n  -- <RESPONSE> -- \n";
+    // for (size_t i = 0; i < response.size(); i++)
+    // 	std::cout << response[i];
+    // std::cout << '\n';
+}
