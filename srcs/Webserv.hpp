@@ -19,13 +19,13 @@ public:
 
     // Servers
     void initServers(void);
-	void run(void);
-	
-	//kevents
-	void readEventProcess(struct kevent& currEvent);
-	void writeEventProcess(struct kevent& currEvent);
-	void timerEventProcess(struct kevent& currEvent);
-	void errorEventProcess(struct kevent& currEvent);
+    void run(void);
 
-	//extra
+    // kevents
+    void readEventProcess(struct kevent& currEvent);
+    void writeEventProcess(struct kevent& currEvent);
+    void timerEventProcess(struct kevent& currEvent);
+    void errorEventProcess(struct kevent& currEvent);
+
+    // extra
 };

@@ -1,19 +1,17 @@
 #pragma once
+#include "Color.hpp"
 #include "Event.hpp"
 #include "Location.hpp"
-#include "Color.hpp"
 #define SUCCESS 1
 #define ERROR -1
 #define NOTDONE 0
 
-
-# define SPACE " "
-# define CRLF "\r\n"
-# define CRLFCRLF "\r\n\r\n"
-# define SERVER_NAME "Master J&J Server"
-# define SERVER_HTTP_VERSION "HTTP/1.1"
-# define COLON ":"
-
+#define SPACE " "
+#define CRLF "\r\n"
+#define CRLFCRLF "\r\n\r\n"
+#define SERVER_NAME "Master J&J Server"
+#define SERVER_HTTP_VERSION "HTTP/1.1"
+#define COLON ":"
 
 enum State
 {
@@ -30,9 +28,9 @@ enum State
 
 enum ParseErrorCode
 {
-	NOT_ERROR = 0,
+    NOT_ERROR = 0,
     BAD_REQUEST = 400,
-	METHOD_NOT_ALLOWED = 405,
+    METHOD_NOT_ALLOWED = 405,
     HTTP_VERSION_NOT_SUPPORT = 505,
 };
 
@@ -48,53 +46,54 @@ enum METHOD
 // HTTP REQ and RES
 struct HttpRequest
 {
-	int writeIndex;
-	std::string startLine;
-	std::string httpVersion;
-	bool isStatic;
-	std::string fileName;
-	std::string path;
-	std::string cgiArgs;
-	std::string cgiPathInfo;
-	int pipe_fd[2];
-	int pipe_fd_back[2];
-	Location location;
-	std::string location_uri;
-	std::string uri;
-	enum ParseErrorCode errorCode;
-	std::string method;
-	std::string header;
-	std::map<std::string, std::string> headers;
-	std::vector<unsigned char> body;
+    int writeIndex;
+    std::string startLine;
+    std::string httpVersion;
+    bool isStatic;
+    std::string fileName;
+    std::string path;
+    std::string cgiArgs;
+    std::string cgiPathInfo;
+    int pipe_fd[2];
+    int pipe_fd_back[2];
+    Location location;
+    std::string location_uri;
+    std::string uri;
+    enum ParseErrorCode errorCode;
+    std::string method;
+    std::string header;
+    std::map<std::string, std::string> headers;
+    std::vector<unsigned char> body;
 };
 
 struct HttpResponse
 {
-	int statusCode;
-	std::string startLine;
-	std::string httpVersion;
-	std::map<std::string, std::string> headers;
-	std::vector<unsigned char> body;
+    int statusCode;
+    std::string startLine;
+    std::string httpVersion;
+    std::map<std::string, std::string> headers;
+    std::vector<unsigned char> body;
 };
 
 class Client
 {
 private:
     int client_fd;
-	int state; //Parsing + Res
-	
-	std::map<std::string, Location> *locations;
-    HttpRequest	request;
+    int state; // Parsing + Res
+
+    std::map<std::string, Location>* locations;
+    HttpRequest request;
     HttpResponse response;
-	
-	std::vector<unsigned char> readBuffer;
-	std::vector<unsigned char> sendBuffer;
-    int         writeIndex;
-	
-	int haveToReadBody;
-	std::string strBodySize;
-	long longBodySize;
-	int clientBodySize;
+
+    std::vector<unsigned char> readBuffer;
+    std::vector<unsigned char> sendBuffer;
+    int writeIndex;
+
+    int haveToReadBody;
+    std::string strBodySize;
+    long longBodySize;
+    int clientBodySize;
+
 public:
     typedef int PORT;
     typedef int SOCKET;
@@ -106,28 +105,28 @@ public:
 
     // setter
     void setFd(int fd);
-	void setLocations(std::map<std::string, Location> &loc);
-	void setClientBodySize(int size);
+    void setLocations(std::map<std::string, Location>& loc);
+    void setClientBodySize(int size);
     // getter
     SOCKET getClientFd(void) const;
-	HttpRequest &getReq(void) const;
-	HttpResponse &gatRes(void) const;
+    HttpRequest& getReq(void) const;
+    HttpResponse& gatRes(void) const;
 
     // functions
-	void requestClear();
-	void responseClear();
-	
-	int makeReqeustFromClient();
-	int readMessageFromClient();
+    void requestClear();
+    void responseClear();
+
+    int makeReqeustFromClient();
+    int readMessageFromClient();
 
 private:
-	void readMethod(const char* buffer);
+    void readMethod(const char* buffer);
     void readUri(const char* buffer);
     void readHttpVersion(const char* buffer);
     void readHeader(const char* buffer);
     void readBody(const char* buffer, size_t readSize);
     void readChunked(const char* buffer, size_t readSize);
-	bool isSendBufferEmpty(void);
-	bool checkMethod(std::string const& method);
-	void checkRequest(void);
+    bool isSendBufferEmpty(void);
+    bool checkMethod(std::string const& method);
+    void checkRequest(void);
 };

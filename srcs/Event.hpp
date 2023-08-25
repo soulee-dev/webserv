@@ -1,8 +1,8 @@
 #pragma once
-#include <sys/event.h>
-#include <vector>
 #include <ostream>
 #include <sstream>
+#include <sys/event.h>
+#include <vector>
 #define EVENTLIST_SIZE 1000
 
 class Event
@@ -25,4 +25,4 @@ public:
     bool initKqueue(void);
 };
 
-std::ostream& operator << (std::ostream &out, struct kevent& val);
+std::ostream& operator<<(std::ostream& out, struct kevent& val);

@@ -1,6 +1,5 @@
-#include "Webserv.hpp"
 #include "Event.hpp"
-
+#include "Webserv.hpp"
 
 int main(int argc, char** argv)
 {
@@ -19,6 +18,6 @@ int main(int argc, char** argv)
     else
         configFileName = argv[1];
     Webserv webserv(configFileName);
-	webserv.initServers();
-	webserv.run();
+    webserv.initServers();
+    webserv.run();
 }

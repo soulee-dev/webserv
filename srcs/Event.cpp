@@ -18,7 +18,8 @@ Event& Event::operator=(const Event& ref)
 }
 struct kevent& Event::operator[](int idx)
 {
-    if (0 <= idx && idx < EVENTLIST_SIZE) return eventList[idx];
+    if (0 <= idx && idx < EVENTLIST_SIZE)
+        return eventList[idx];
     else
     {
         std::cout << "eventList index Error" << std::endl;
@@ -62,28 +63,28 @@ void Event::clearChangeEventList(void)
     changeList.clear();
 }
 
-std::ostream& operator<<(std::ostream &out, struct kevent& val)
+std::ostream& operator<<(std::ostream& out, struct kevent& val)
 {
-    std::stringstream   stream;
+    std::stringstream stream;
     stream << std::hex << val.flags;
-    std::string         _filter;
+    std::string _filter;
 
-    switch(val.filter)
+    switch (val.filter)
     {
-        case (EVFILT_READ):
-            _filter = "READ";
-            break ;
-        case (EVFILT_WRITE):
-            _filter = "WRITE";
-            break ;      
-        default:
-            _filter = "ERROR";
-            break ;  
+    case (EVFILT_READ):
+        _filter = "READ";
+        break;
+    case (EVFILT_WRITE):
+        _filter = "WRITE";
+        break;
+    default:
+        _filter = "ERROR";
+        break;
     }
-	out << "ident : " << val.ident 
-		<< " filter : " << _filter
-		<< " flags : 0x" << stream.str()
+    out << "ident : " << val.ident
+        << " filter : " << _filter
+        << " flags : 0x" << stream.str()
         << " data: " << val.data
-		<< std::endl;
-	return out;
+        << std::endl;
+    return out;
 }

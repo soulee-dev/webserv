@@ -1,7 +1,7 @@
 #include "Servers.hpp"
 #include "Location.hpp"
-#include <fstream>
 #include <fcntl.h>
+#include <fstream>
 #include <unistd.h>
 
 // constructors
@@ -32,8 +32,8 @@ void Servers::initServers()
     {
         int serverSocket = it->second.openPort();
         fcntl(serverSocket, F_SETFL, O_NONBLOCK);
-		portByServerSocket[serverSocket] = it->first;
-		events.changeEvents(serverSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &it->second);
+        portByServerSocket[serverSocket] = it->first;
+        events.changeEvents(serverSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &it->second);
     }
 }
 
@@ -98,11 +98,11 @@ void Servers::parseConfig(std::string const& configFileName)
 
 bool Servers::isResponseToServer(int ident)
 {
-	return portByServerSocket.find(ident) != portByServerSocket.end();
+    return portByServerSocket.find(ident) != portByServerSocket.end();
 }
 
 void Servers::serverDisconnect(int ident)
 {
-	close(ident);
-	server.erase(portByServerSocket[ident]);
+    close(ident);
+    server.erase(portByServerSocket[ident]);
 }

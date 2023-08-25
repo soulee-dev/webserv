@@ -1,5 +1,5 @@
-#include "Servers.hpp"
 #include "Location.hpp"
+#include "Servers.hpp"
 
 int Servers::parse_action_0(struct s_info& parse_info, mapPortServer& servers)
 {

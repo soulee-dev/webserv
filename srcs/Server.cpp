@@ -1,10 +1,10 @@
 #include "Server.hpp"
-#include <iostream>
-#include <sstream>
-#include <vector>
-#include <unistd.h>
 #include "Client.hpp"
 #include "Utils.hpp"
+#include <iostream>
+#include <sstream>
+#include <unistd.h>
+#include <vector>
 
 // constructors
 Server::Server()
@@ -183,63 +183,62 @@ void Server::setClientBodySize(std::string& input)
 
 int Server::openPort()
 {
-  int opt = 1;
-  
-  std::cout << "Port number : " << listen << "\n";
-  
-  memset(&hint, 0, sizeof(struct addrinfo));
-  memset(&socketaddr, 0, sizeof(struct sockaddr_in));
+    int opt = 1;
 
-  socketaddr.sin_family = AF_INET;
-  socketaddr.sin_port = htons(listen);
-  socketaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    std::cout << "Port number : " << listen << "\n";
 
-  hint.ai_family = AF_INET;
-  hint.ai_socktype = SOCK_STREAM;
+    memset(&hint, 0, sizeof(struct addrinfo));
+    memset(&socketaddr, 0, sizeof(struct sockaddr_in));
 
-  std::string strPortNumber = intToString(listen);
-  
-  int errorCode = getaddrinfo(serverName.c_str(), strPortNumber.c_str(), &hint, &info);
-  if (errorCode == -1)
-    return -1;
-  serverSocket = socket(info->ai_family, info->ai_socktype, info->ai_protocol);
-  if (serverSocket == -1)
-    return -1;
-  setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-  errorCode = bind(serverSocket, reinterpret_cast<struct sockaddr*>(&socketaddr), sizeof(socketaddr));
-  if (errorCode)
-    return -1;
-  return serverSocket;
+    socketaddr.sin_family = AF_INET;
+    socketaddr.sin_port = htons(listen);
+    socketaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    hint.ai_family = AF_INET;
+    hint.ai_socktype = SOCK_STREAM;
+
+    std::string strPortNumber = intToString(listen);
+
+    int errorCode = getaddrinfo(serverName.c_str(), strPortNumber.c_str(), &hint, &info);
+    if (errorCode == -1)
+        return -1;
+    serverSocket = socket(info->ai_family, info->ai_socktype, info->ai_protocol);
+    if (serverSocket == -1)
+        return -1;
+    setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    errorCode = bind(serverSocket, reinterpret_cast<struct sockaddr*>(&socketaddr), sizeof(socketaddr));
+    if (errorCode)
+        return -1;
+    return serverSocket;
 }
 
 void Server::acceptClient()
 {
-	int newClientFd = accept(serverSocket, NULL, NULL);
-	if (newClientFd == -1)
-		exitWebserver("accept() error");
-	fcntl(newClientFd, F_SETFL, O_NONBLOCK);
+    int newClientFd = accept(serverSocket, NULL, NULL);
+    if (newClientFd == -1)
+        exitWebserver("accept() error");
+    fcntl(newClientFd, F_SETFL, O_NONBLOCK);
 
-	clients[newClientFd] = Client();
-	clients[newClientFd].setFd(newClientFd);
-	clients[newClientFd].setLocations(locations);
-	
-	events.changeEvents(newClientFd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, this);
-	events.changeEvents(newClientFd, EVFILT_WRITE, EV_ADD | EV_DISABLE, 0, 0, this);
+    clients[newClientFd] = Client();
+    clients[newClientFd].setFd(newClientFd);
+    clients[newClientFd].setLocations(locations);
+
+    events.changeEvents(newClientFd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, this);
+    events.changeEvents(newClientFd, EVFILT_WRITE, EV_ADD | EV_DISABLE, 0, 0, this);
 }
 
 bool Server::isClient(int ident)
 {
-	return clients.find(ident) != clients.end();
+    return clients.find(ident) != clients.end();
 }
 
-Client &Server::getClient(int ident)
+Client& Server::getClient(int ident)
 {
-	return clients[ident];
+    return clients[ident];
 }
 
 void Server::disconnectClient(int ident)
 {
-	close(ident);
-	clients.erase(ident);
+    close(ident);
+    clients.erase(ident);
 }
-

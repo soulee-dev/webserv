@@ -1,12 +1,11 @@
 #pragma once
+#include "Event.hpp"
+#include "Server.hpp"
 #include <iostream>
 #include <map>
 #include <sstream>
 #include <vector>
-#include "Server.hpp"
-#include "Event.hpp"
 #define CONFIG_ERROR -1
-
 
 extern Event events;
 class Location;
@@ -17,11 +16,11 @@ public:
     ~Servers();
     Servers();
     std::map<int, Server> server;
-	std::map<int, int> portByServerSocket;
+    std::map<int, int> portByServerSocket;
     void parseConfig(std::string const& configFileName);
-	void initServers(void);
-	bool isResponseToServer(int ident);
-	void serverDisconnect(int ident);
+    void initServers(void);
+    bool isResponseToServer(int ident);
+    void serverDisconnect(int ident);
 
 private:
     typedef std::map<int, Server> mapPortServer;
