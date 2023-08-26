@@ -20,7 +20,6 @@ void ConfigParser::parseConfig(std::string const& configFileName)
         parse_action_5,
         parse_action_6,
         parse_action_7};
-    // 아래 변수들은 자기가 필요한 시점에 선언 해서 쓰는게 더 다을 것 같음
     std::fstream fileStream;
     std::stringstream sstream;
     char c;

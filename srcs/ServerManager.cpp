@@ -199,8 +199,6 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
         ssize_t ret = clientManager.CgiToResReadProcess(currEvent);
         if (ret != 0)
 		{
-			// std::cout << "close 합니다 !!@" << std::endl;
-			// sleep(3);
 			close(currEvent.ident); // Dynamic 일때는  pipe를 닫아주는 close // Static일때는 파일의 fd를 닫아줌
 		}
         if (ret == 1)
@@ -215,11 +213,8 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
 			}
 			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, currClient->request.is_static);
 			events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
-			// events.changeEvents(currClient->getClientFd(), EVFILT_READ, EV_ENABLE, 0, 0, currClient);
 			if (!currClient->request.is_static)
 				wait(NULL);
-			// currClient->response.clear();
-			// currClient->request.clear();
         }
     }
 }
