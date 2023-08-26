@@ -39,13 +39,7 @@ bool ClientManager::readEventProcess(struct kevent& currEvent)
         addToDisconnectClient(currEvent.ident);
         return false;
     }
-    if (currClient->readEventProcess())
-    {
-        if (currClient->request.is_static)
-            clients[currEvent.ident].events->changeEvents(currClient->getClientFd(), EVFILT_READ, EV_DISABLE, 0, 0, currClient);
-        if (currClient->request.file_fd == -1)
-            return true;
-    }
+    currClient->readEventProcess();
     return false;
 }
 
@@ -81,23 +75,14 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
         return -1;
     }
     request.writeIndex += writeSize;
-    if (request.method == "PUT")
-    {
-        request.RW_file_size += writeSize;
-        if (request.RW_file_size == request.file_size)
-        {
-            close(currEvent.ident);
-            client->request.file_fd = -1;
-            return 0;
-        }
-    }
-    else if (request.writeIndex == buffer.size())
+    if (request.writeIndex == buffer.size())
     {
         request.writeIndex = 0;
         close(currEvent.ident);
-        client->request.pipe_fd[1] = -1;
         buffer.clear();
-        return 1;
+        if (request.method == "PUT")
+            return 1;
+        return 0;
     }
     return 0;
 }
@@ -117,10 +102,9 @@ int ClientManager::CgiToResReadProcess(struct kevent& currEvent)
         return -1;
     readBuffer.insert(readBuffer.end(), buffer, &buffer[ret]);
     currClient->request.RW_file_size += ret;
-    if (currClient->request.is_static && currClient->request.RW_file_size == currClient->request.file_size) {
+    if (currClient->request.RW_file_size == currClient->request.file_size || ret == 0)
         return 1;
-    }
-    return ret == 0;
+    return 0;
 }
 
 bool ClientManager::isClient(SOCKET client_fd)

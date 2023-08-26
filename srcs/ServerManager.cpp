@@ -191,12 +191,12 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
 			std::cout << "EV_EOF detacted in client" << std::endl;
 			clientManager.addToDisconnectClient(currEvent.ident);
 		}
-		else if (clientManager.readEventProcess(currEvent))
+		else if (clientManager.readEventProcess(currEvent)) // DELETE를 제외하고는 true가 나올 리가 없음
             events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_ENABLE, 0, 0, currEvent.udata);
     }
     else
     {
-        ssize_t ret = clientManager.CgiToResReadProcess(currEvent);
+        ssize_t ret = clientManager.CgiToResReadProcess(currEvent); // 전부 read한 상황이면 1을 반환함
         if (ret != 0)
 		{
 			close(currEvent.ident); // Dynamic 일때는  pipe를 닫아주는 close // Static일때는 파일의 fd를 닫아줌
@@ -206,6 +206,8 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
         if (ret == 1)
         {
 			std::vector<unsigned char> empty_body;
+			if (currClient->request.method == "POST" || currClient->request.method == "PUT" || currClient->request.method == "GET" || currClient->request.method == "HEAD")
+				currClient->events->changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 			if (currClient->request.method == "PUT")
 				currClient->response.body = empty_body;
 			else if (currClient->request.is_static == false)
@@ -214,8 +216,7 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
 				SetResponse(*currClient, 200, currClient->response.headers, currClient->response.body);
 			}
 			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, currClient->request.is_static);
-			events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
-			if (!currClient->request.is_static)
+			if (currClient->request.is_static == false)
 				wait(NULL);
         }
     }
@@ -233,12 +234,14 @@ void ServerManager::writeEventProcess(struct kevent& currEvent)
     }
     else
     {
-        ssize_t res = clientManager.ReqToCgiWriteProcess(currEvent);
-        if (res != 0)
+        ssize_t res = clientManager.ReqToCgiWriteProcess(currEvent); // PUT일때 전부 write했으면 1을 반환
+		if (res == 1)
 		{
 			Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
-			close(currClient->request.pipe_fd[1]);
-			currClient->request.pipe_fd[1] = -1;
+			currClient->response.headers["Connection"] = "close";
+			SetResponse(*currClient, 200, currClient->response.headers, currClient->response.body);
+			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, currClient->request.is_static);
+			currClient->events->changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 		}
     }
 }

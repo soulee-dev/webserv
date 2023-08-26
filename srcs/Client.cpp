@@ -1,4 +1,5 @@
 #include "Client.hpp"
+#include "Event.hpp"
 #include "Server.hpp"
 #include "Color.hpp"
 #include "Http/HttpRequestManager.hpp"
@@ -31,7 +32,7 @@ void Client::errorEventProcess(void)
 	std::cout << "errorEventProcess" << std::endl;
 }
 
-bool Client::readEventProcess(void)
+int Client::readEventProcess(void)
 {
 	if (parseState == DONE)
 	{
@@ -49,20 +50,19 @@ bool Client::readEventProcess(void)
 		parseState = READY;
 	}
 	else
-		return false;
-	// Dynamic인 경우 Handle안에서 EVFILT를 걸어주기 때문에 해줄필요 없다.
-	if (request.is_static || parseState == ERROR)
+		return 0;
+	if (request.method != "DELETE")
+		events->changeEvents(getClientFd(), EVFILT_READ, EV_DISABLE, 0, 0, this);
+	if (request.method == "POST")
 	{
-		if (request.file_fd != -1 && request.method != "PUT")
-			events->changeEvents(request.file_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, this);
-		else if (request.file_fd != -1 && request.method == "PUT")
-		{
-			events->changeEvents(request.file_fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, this);
-		}
-		else
-			events->changeEvents(getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, this);
+		events->changeEvents(request.pipe_fd[1], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, this);
+		events->changeEvents(request.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, this);
 	}
-	return true;
+	else if (request.method == "PUT")
+		events->changeEvents(request.file_fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, this);
+	else if (request.method == "GET" || request.method == "HEAD")
+		events->changeEvents(request.file_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, this);
+	return 1;
 }
 
 int Client::getClientFd(void) const
@@ -84,7 +84,7 @@ bool Client::writeEventProcess(void)
 	if (writeIndex == sendBuffer.size())
 	{
 		writeIndex = 0;
-		sendBuffer.clear();;
+		sendBuffer.clear();
 	}
 	return false;
 }

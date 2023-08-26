@@ -18,7 +18,7 @@ void	HandleStatic(Client& client)
 	{
 		struct stat file_stat;
 
-		client.request.file_fd = open(request.path.c_str(), O_RDONLY | O_CREAT, 0644);
+		client.request.file_fd = open(request.path.c_str(), O_WRONLY | O_CREAT, 0644);
 		if (errno == EEXIST)
 			client.response.status_code = 201;
 		else
