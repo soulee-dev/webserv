@@ -70,10 +70,8 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
     Request&    request = client->request;
     std::vector<unsigned char>& buffer = request.body;
     const int   size = buffer.size() - request.writeIndex;
-    std::cout << "to cgi" << std::endl;
 
     int writeSize = write(currEvent.ident, &buffer[request.writeIndex], size);
-    std::cout << "WRITE SIZE : " << writeSize << '\n';
     if (writeSize == -1)
     {
         std::cout << currEvent.ident << std::endl; // 7
@@ -83,7 +81,6 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
         return -1;
     }
     request.writeIndex += writeSize;
-    std::cout << "WriteIndex : " << request.writeIndex << ",  buffer.size() : " << buffer.size() << std::endl;
     if (request.is_put)
     {
         request.RW_file_size += writeSize;
@@ -110,7 +107,6 @@ int ClientManager::CgiToResReadProcess(struct kevent& currEvent)
     std::vector<unsigned char>& readBuffer = currClient->response.body;
 
     char buffer[BUFFER_SIZE];
-    std::cout << "from cgi" << std::endl;
 
 
     ssize_t ret = read(currEvent.ident, buffer, BUFFER_SIZE);

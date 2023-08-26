@@ -31,7 +31,6 @@ all		: $(NAME)
 
 $(NAME)	: $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $(NAME)
-	@./test.sh
 
 clean	:
 	@$(RM) $(RMFLAGS) -r $(OUT_DIR)
