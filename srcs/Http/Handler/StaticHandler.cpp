@@ -7,9 +7,6 @@ void	HandleStatic(Client& client)
 	Request&	request = client.request;
 	std::vector<unsigned char>	result;
 
-	std::cout << "METHOD : " << request.method << RESET << '\n';
-
-	std::cout << "SIZE : " << request.body.size() << "\nMAX BODY SIZE : " << request.location.getClientBodySize() << '\n';
 	if ((request.body.size() > request.location.getClientBodySize()) && request.method == "POST")
 		return HandleError(client, 413);
 	else if (request.method == "HEAD")
@@ -89,7 +86,6 @@ void	ProcessDirectory(Client& client)
             if (IsRegularFile(path) && IsFileReadable(path))
             {
                 request.path = path;
-                std::cout << BOLDRED << "PATH : " << path << RESET << '\n';
                 return ServeStatic(client, request.path);
             }
         }

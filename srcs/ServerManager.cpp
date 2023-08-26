@@ -1,6 +1,7 @@
 #include "ServerManager.hpp"
 #include "Color.hpp"
 #include "Http/Handler/Handler.hpp"
+#include "Http/Handler/HttpStatusCodes.hpp"
 #include <map>
 #include <vector>
 
@@ -164,12 +165,12 @@ void ServerManager::errorEventProcess(struct kevent& currEvent)
 	if (isResponseToServer(currEvent))
 	{
 		serverDisconnect(currEvent);
-		std::cout << BOLDMAGENTA << currEvent.ident << " SERVER DISCONNECTED" << std::endl;
+		std::cout << BOLDMAGENTA << currEvent.ident << "SERVER DISCONNECTED" << std::endl;
 	}
 	else
 	{
 		clientManager.addToDisconnectClient(currEvent.ident);
-		std::cout << BOLDMAGENTA << currEvent.ident << " CLIENT DISCONNECTED" << std::endl;
+		// std::cout << BOLDMAGENTA << currEvent.ident << " CLIENT DISCONNECTED" << std::endl;
 	}
 }
 
@@ -184,11 +185,11 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
 
     if (isResponseToServer(currEvent))
         acceptClient(currEvent.ident);
-    else if (clientManager.isClient(currEvent.ident) == true)
+	else if (clientManager.isClient(currEvent.ident) == true)
     {
 		if (currEvent.flags & EV_EOF)
 		{
-			std::cout << "EV_EOF detacted in client" << std::endl;
+			std::cout << BOLDRED << "EV_EOF detacted in client\n" << RESET << std::endl;
 			clientManager.addToDisconnectClient(currEvent.ident);
 		}
 		else if (clientManager.readEventProcess(currEvent))
@@ -211,6 +212,18 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
 				currClient->response.headers["Connection"] = "close";
 				SetResponse(*currClient, 200, currClient->response.headers, currClient->response.body);
 			}
+			// --- //
+			std::cout << "> " << currClient->request.method << ' ' << currClient->request.uri << ' ' << currClient->request.http_version << '\n';
+			std::cout << "> Host: " << currClient->request.headers["host"] << '\n';
+			std::cout << "> User-Agent: " << currClient->request.headers["user-agent"] << '\n';
+			std::cout << "> Accept: */*\n";
+			std::cout << "> Content-Length: " << currClient->response.body.size() << '\n';
+			std::cout << "> Content-Type: " << currClient->request.headers["content-type"] << "\n\n";
+
+			std::cout << "< " << currClient->request.http_version << ' ' << currClient->response.status_code \
+				<< ' ' << get_status_codes()[currClient->response.status_code] << '\n' << "< Server: Master J&J Server\n" \
+					<< "< Content-Length: " << currClient->response.body.size() << "\n\n";
+			// --- //
 			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, currClient->request.is_static);
 			events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 			if (!currClient->request.is_static)

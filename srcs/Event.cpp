@@ -1,4 +1,5 @@
 #include "Event.hpp"
+#include "Color.hpp"
 #include <iostream>
 #include <fcntl.h>
 

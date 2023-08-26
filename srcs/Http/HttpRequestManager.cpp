@@ -63,7 +63,6 @@ void	HttpRequestManager::Parse(Client& client)
 	}
 	else
 		found_uri = "/";
-	std::cout << "LOCATION: " << found_uri << '\n';
 	request.cgi_path_info = "/";
 	if (request.uri.find("cgi-bin") == std::string::npos)
 	{
@@ -92,13 +91,10 @@ void	HttpRequestManager::Parse(Client& client)
 	request.location_uri = found_uri;
 	request.location = client.getServer()->getLocations()[found_uri];
 	request.path = request.location.getRoot() + request.file_name;
-	std::cout << "FILENAME: " << request.file_name << std::endl;
-	std::cout << "PATH_INFO: " << request.cgi_path_info << std::endl;
-	std::cout << "PATH: " << request.path << std::endl;
-
 	std::map<std::string, std::string>::iterator it;
-	for (it = request.headers.begin(); it != request.headers.end(); ++it)
-	{
-		std::cout << BOLDGREEN << it->first << " : " << it->second << RESET << '\n';
-	}
+	// std::cout << BOLDYELLOW << "<Header Info>\n";
+	// for (it = request.headers.begin(); it != request.headers.end(); ++it)
+	// {
+	// 	std::cout << BOLDGREEN << it->first << " : " << it->second << RESET << '\n';
+	// }
 };
