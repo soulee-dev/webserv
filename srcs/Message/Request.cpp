@@ -19,7 +19,6 @@ void Request::clear(void)
 	RW_file_size = 0;
 	writeIndex = 0;
 	is_static = true;
-	is_put = false;
 	file_name.clear();
 	path.clear();
 	cgi_args.clear();

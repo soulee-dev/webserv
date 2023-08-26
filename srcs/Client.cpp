@@ -53,9 +53,9 @@ bool Client::readEventProcess(void)
 	// Dynamic인 경우 Handle안에서 EVFILT를 걸어주기 때문에 해줄필요 없다.
 	if (request.is_static || parseState == ERROR)
 	{
-		if (request.file_fd != -1 && !request.is_put)
+		if (request.file_fd != -1 && !request.method == "PUT")
 			events->changeEvents(request.file_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, this);
-		else if (request.file_fd != -1 && request.is_put)
+		else if (request.file_fd != -1 && request.method == "PUT")
 		{
 			events->changeEvents(request.file_fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, this);
 		}

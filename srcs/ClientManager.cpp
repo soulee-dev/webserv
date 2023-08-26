@@ -81,7 +81,7 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
         return -1;
     }
     request.writeIndex += writeSize;
-    if (request.is_put)
+    if (request.method == "PUT")
     {
         request.RW_file_size += writeSize;
         if (request.RW_file_size == request.file_size)
