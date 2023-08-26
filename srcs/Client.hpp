@@ -57,13 +57,15 @@ enum METHOD
 // HTTP REQ and RES
 struct HttpRequest
 {
+public:
+    std::map<std::string, std::string> headers;
     int writeIndex;
     std::string startLine;
     std::string httpVersion;
     bool isStatic;
     int fileFd;
-	int file_size;
-	int RW_file_size;
+    int file_size;
+    int RW_file_size;
     std::string fileName;
     std::string path;
     std::string cgiArgs;
@@ -76,33 +78,32 @@ struct HttpRequest
     enum ParseErrorCode errorCode;
     std::string method;
     std::string header;
-    std::map<std::string, std::string> headers;
     std::vector<unsigned char> body;
 };
 
 struct HttpResponse
 {
+public:
+    std::map<std::string, std::string> headers;
     int statusCode;
     std::string startLine;
     std::string httpVersion;
-    std::map<std::string, std::string> headers;
     std::vector<unsigned char> body;
 };
 
 class Client
 {
 private:
+    std::vector<unsigned char> readBuffer;
+    std::vector<unsigned char> sendBuffer;
     int client_fd;
     int state; // Parsing + Res
     int isCgi;
-    std::map<int, std::string> STATUS_CODES;
 
+    std::map<int, std::string> STATUS_CODES;
     std::map<std::string, Location>* locations;
     HttpRequest request;
     HttpResponse response;
-
-    std::vector<unsigned char> readBuffer;
-    std::vector<unsigned char> sendBuffer;
     int writeIndex;
 
     int haveToReadBody;
@@ -149,7 +150,7 @@ public:
     void buildHeader();
     void makeSendBufferForWrite();
     int writeSendBufferToClient();
-	int writeRequestBodyToFd(int fd);
+    int writeRequestBodyToFd(int fd);
     // int sendResponseToClient();
 
 private:

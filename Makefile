@@ -9,7 +9,7 @@ RM 			= rm
 RMFLAGS		= -f
 OUT_DIR		= objs
 SRC_DIR		= srcs
-FILE		= main Server Webserv ConfigFunctions Servers Location Utils Event Client
+FILE		= Client main Server Webserv ConfigFunctions Servers Location Utils Event
 OBJECTS		= $(addprefix $(OUT_DIR)/, $(addsuffix .o, $(FILE)))
 
 # Compile rules

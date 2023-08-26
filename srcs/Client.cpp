@@ -9,8 +9,6 @@
 Client::Client()
     : state(PARSE_READY), haveToReadBody(false), writeIndex(0)
 {
-    requestClear();
-    responseClear();
     readBuffer.reserve(100000000);
     sendBuffer.reserve(100000000);
     STATUS_CODES[200] = "OK";
@@ -21,6 +19,8 @@ Client::Client()
     STATUS_CODES[405] = "Method Not Allowed";
     STATUS_CODES[413] = "Request Entity Too Large";
     STATUS_CODES[505] = "HTTP Version Not Supported";
+    requestClear();
+    responseClear();
 }
 
 Client::~Client() {}
@@ -42,7 +42,7 @@ Client::Client(Client const& other)
 
 void Client::requestClear()
 {
-    memset(&request, 0, sizeof(HttpRequest));
+    // memset(&request, 0, sizeof(HttpRequest));
     request.isStatic = true;
     request.pipe_fd[0] = -1;
     request.pipe_fd[1] = -1;
@@ -106,6 +106,8 @@ void Client::responseClear()
 int Client::makeReqeustFromClient()
 {
     int res = readMessageFromClient();
+
+    std::cout << "read done\n";
     if (res == ERROR)
         return res;
     else
@@ -140,7 +142,6 @@ int Client::readMessageFromClient()
     const size_t BUFFER_SIZE = 65536;
     char buffer[BUFFER_SIZE + 1];
     ssize_t readSize = read(client_fd, buffer, BUFFER_SIZE);
-    std::cout << "read done\n";
 
     if (readSize <= 0)
     {
@@ -183,25 +184,18 @@ void Client::readMethod(const char* buffer)
     std::vector<unsigned char>::iterator pos;
 
     // 입력버퍼벡터 뒤에 방금읽은 버퍼를 덧붙임
-    std::cout << "in readMethod\n";
     readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
     while (readBuffer.size() > 1 && readBuffer[0] == '\r' && readBuffer[1] == '\n')
         readBuffer.erase(readBuffer.begin(), readBuffer.begin() + 2);
-    std::cout << "1\n";
     if (readBuffer.size() == 0)
         return;
-    std::cout << "2\n";
     // 입력버퍼벡터에서 공백을 찾음
     if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ", &" "[1])) !=
         readBuffer.end())
     {
-        std::cout << "3\n";
         request.method = std::string(readBuffer.begin(), pos);
-        std::cout << "request method : " << request.method << std::endl;
         request.startLine = request.method;
-        std::cout << "request startLine : " << request.method << std::endl;
         readBuffer.erase(readBuffer.begin(), pos + 1);
-        std::cout << "4\n";
         state = PARSE_URI;
         // 또 다른 공백을 찾은 경우 다음 파싱으로 넘어감.
         // 이때 공백이 연속해서 들어오는 경우를 생각해 볼 수 있는데 이런 경우
@@ -229,24 +223,20 @@ void Client::readMethod(const char* buffer)
         request.errorCode = METHOD_NOT_ALLOWED; // 이 경우 또한 405번을 부여하지 않으면 테스트에서 통과가 불가능합니다(원래 400).
         readBuffer.erase(readBuffer.begin(), pos + 2);
     }
-    std::cout << "readMethod done\n";
 }
 
 void Client::readUri(const char* buffer)
 {
     std::vector<unsigned char>::iterator pos;
 
-    std::cout << "in readUri \n";
     readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
     if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ", &" "[1])) !=
         readBuffer.end())
     {
-        std::cout << "1\n";
         request.uri = std::string(readBuffer.begin(), pos);
         request.startLine += " " + request.uri;
         readBuffer.erase(readBuffer.begin(), pos + 1);
         state = PARSE_HTTP_VERSION;
-        std::cout << "2\n";
         if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
                                &CRLF[2])) != readBuffer.end())
             readHttpVersion("");
@@ -259,20 +249,17 @@ void Client::readUri(const char* buffer)
     else if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
                                 &CRLF[2])) != readBuffer.end())
     {
-        std::cout << "4\n";
         state = PARSE_ERROR;
         std::cout << "DEBUG9\n";
         request.errorCode = BAD_REQUEST;
         readBuffer.erase(readBuffer.begin(), pos + 2);
     }
-    std::cout << "readUri done\n";
 }
 
 void Client::readHttpVersion(const char* buffer)
 {
     std::vector<unsigned char>::iterator pos;
 
-    std::cout << "in readHttpVersion\n";
     readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
     if ((pos = std::search(readBuffer.begin(), readBuffer.end(), CRLF,
                            &CRLF[2])) != readBuffer.end())
@@ -305,21 +292,18 @@ void Client::readHeader(const char* buffer)
 
     readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
 
-    std::cout << "in readHeader\n";
+	// std:: cout << request.headers.max_size() << std::endl;
     while ((pos = std::search(readBuffer.begin(), readBuffer.end(), "\n",
                               &"\n"[1])) != readBuffer.end())
     {
-        std::cout << "1\n";
         line = std::string(readBuffer.begin(), pos);
         readBuffer.erase(readBuffer.begin(), pos + 1);
         if (line[line.size() - 1] == '\r')
             line.pop_back();
-        std::cout << "2\n";
         if (line.empty())
         {
             if (request.headers.find("host") == request.headers.end())
             {
-                std::cout << "3\n";
                 state = PARSE_ERROR;
                 std::cout << "DEBUG1\n";
                 request.errorCode = BAD_REQUEST;
@@ -327,7 +311,6 @@ void Client::readHeader(const char* buffer)
             }
             else if (checkMethod(request.method))
             {
-                std::cout << "4\n";
                 state = PARSE_ERROR;
                 std::cout << "DEBUG CHECKMETHOD\n";
                 request.errorCode = METHOD_NOT_ALLOWED; // 이 경우, 405번을 부여하지 않으면 테스트에서 통과가 불가능합니다(원래 400).
@@ -336,13 +319,11 @@ void Client::readHeader(const char* buffer)
             else if (request.headers.find("content-length") == request.headers.end() &&
                      (request.method == "GET" || request.method == "DELETE" || request.method == "HEAD"))
             {
-                std::cout << "5\n";
                 state = PARSE_DONE;
                 return;
             }
             else
             {
-                std::cout << "6\n";
                 // header Parsing이 끝난 후, flag를 done이나 BODY 가 아닌 CHUNKED 로
                 // 보내기 위한 로직
                 std::map<std::string, std::string>::iterator encodingIt =
@@ -368,6 +349,7 @@ void Client::readHeader(const char* buffer)
         }
         headerSstream << line;
         getline(headerSstream, key, ':');
+		
         if (key.size() == 0)
         {
             state = PARSE_ERROR;
@@ -399,7 +381,7 @@ void Client::readHeader(const char* buffer)
             value.erase(value.begin());
         for (size_t i = 0; i < key.size(); i++)
             key[i] = tolower(key[i]);
-        request.headers[key] = value;
+        request.headers[key] = value; // 왜 자꾸?
     }
 }
 
@@ -407,11 +389,9 @@ void Client::readBody(const char* buffer, size_t readSize)
 {
     std::vector<unsigned char>::iterator pos;
 
-    std::cout << "in readBody\n";
     readBuffer.insert(readBuffer.end(), buffer, buffer + readSize);
     if (request.headers.find("content-length") != request.headers.end())
     {
-        std::cout << "1\n";
         size_t contentLen = atoi(request.headers["content-length"].c_str());
         size_t maxLen = minLen(contentLen, clientBodySize);
         size_t lengthToRead = maxLen - request.body.size();
@@ -432,7 +412,6 @@ void Client::readBody(const char* buffer, size_t readSize)
                                 "\r\n\r\n", &"\r\n\r\n"[4])) !=
              readBuffer.end())
     {
-        std::cout << "2\n";
         request.body.insert(request.body.end(), readBuffer.begin(), pos);
         readBuffer.erase(readBuffer.begin(), pos + 4);
         state = PARSE_DONE;
@@ -621,10 +600,13 @@ void Client::checkRequest(void) // RequestManager::Parse
     std::cout << "PATH_INFO: " << request.cgiPathInfo << std::endl;
     std::cout << "PATH: " << request.path << std::endl;
 
+	// ????????????????????????????????????살려줘
     std::map<std::string, std::string>::iterator it;
     for (it = request.headers.begin(); it != request.headers.end(); ++it)
     {
-        std::cout << BOLDGREEN << it->first << " : " << it->second << RESET << '\n';
+		// std::cout << "1\n";
+        std::cout << BOLDGREEN << it->first << " : " << it->second << RESET << '\n';// 왜 여기서 segfault???
+		// std::cout << "2\n";
     }
 };
 // DONE makeRequest
