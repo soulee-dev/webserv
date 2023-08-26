@@ -238,7 +238,8 @@ void ServerManager::writeEventProcess(struct kevent& currEvent)
 		if (res == 1)
 		{
 			Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
-			currClient->response.headers["Connection"] = "close";
+
+			currClient->response.headers["Connection"] = "keep-alive";
 			SetResponse(*currClient, 200, currClient->response.headers, currClient->response.body);
 			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, currClient->request.is_static);
 			currClient->events->changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
