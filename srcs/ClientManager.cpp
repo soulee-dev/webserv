@@ -84,8 +84,6 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
     }
     request.writeIndex += writeSize;
     std::cout << "WriteIndex : " << request.writeIndex << ",  buffer.size() : " << buffer.size() << std::endl;
-    // if (buffer.size() == 0)
-    //     exit(0);
     if (request.is_put)
     {
         request.RW_file_size += writeSize;
@@ -97,7 +95,6 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
     }
     else if (request.writeIndex == buffer.size())
     {
-        // std::cout << "I/m here" << std::endl;
         request.writeIndex = 0;
         buffer.clear();
         return 1;
@@ -117,27 +114,10 @@ int ClientManager::CgiToResReadProcess(struct kevent& currEvent)
 
 
     ssize_t ret = read(currEvent.ident, buffer, BUFFER_SIZE);
-    // std::cout << "read : " << ret << std::endl;
-    // if (ret == 0)
-    //     exit(0);
     if (ret == -1)
         return -1;
     readBuffer.insert(readBuffer.end(), buffer, &buffer[ret]);
     currClient->request.RW_file_size += ret;
-    // if (currClient->request.is_static == false)
-    // {
-    //     if (ret == 0)
-    //         return 1;
-    //     else
-    //         return 0;
-    // }
-    // else
-    // {
-    //     if (currClient->request.RW_file_size == currClient->request.file_size || ret == 0)
-    //         return 1;
-    //     else
-    //         return 0;
-    // };
     if (currClient->request.is_static && currClient->request.RW_file_size == currClient->request.file_size) {
         return 1;
     }
