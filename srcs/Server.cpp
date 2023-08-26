@@ -203,13 +203,14 @@ int Server::openPort()
     hint.ai_socktype = SOCK_STREAM;
 
     std::string strPortNumber = intToString(_listen);
-    std::cout << strPortNumber << std::endl;
+    std::cout << "strPortNumber : "  << strPortNumber << std::endl;
 
     int errorCode = getaddrinfo(serverName.c_str(), strPortNumber.c_str(), &hint, &info);
     if (errorCode == -1)
         exitWebserver(gai_strerror(errorCode));
 
-    int serverSocket = socket(info->ai_family, info->ai_socktype, info->ai_protocol);
+    serverSocket = socket(info->ai_family, info->ai_socktype, info->ai_protocol);
+    std::cout << serverSocket << std::endl;
     if (serverSocket == -1)
         exitWebserver("socket() error");
     setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
@@ -227,7 +228,7 @@ int Server::acceptClient()
     int newClientFd = accept(serverSocket, NULL, NULL);
     if (newClientFd == -1)
         exitWebserver("Server : accept() error");
-    fcntl(newClientFd, F_SETFL, O_NONBLOCK);
+    fcntl(newClientFd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 
     clients[newClientFd] = Client();
     clients[newClientFd].setFd(newClientFd);
