@@ -9,17 +9,21 @@
 
 // constructors
 Server::Server()
-    : _listen(80), serverName(""), root("/"), autoIndex(false), clientBodySize(10240) {}
+    : _listen(80), serverName(""), root("/"), autoIndex(false), clientBodySize(10240)
+{
+	clients.clear();
+}
 // destructor
 Server::~Server() {}
 // copy constructors
 
 Server::Server(Server const& other) : _listen(other._listen), serverName(other.serverName),
                                       root(other.root), errorPage(other.errorPage), redirection(other.redirection),
-                                      autoIndex(other.autoIndex), clientBodySize(other.clientBodySize), locations(other.locations) {}
+                                      autoIndex(other.autoIndex), clientBodySize(other.clientBodySize), locations(other.locations), clients(other.clients){}
 // operators
 Server& Server::operator=(Server const& rhs)
 {
+	clients.clear();
     _listen = rhs._listen;
     serverName = rhs.serverName;
     root = rhs.root;
@@ -28,6 +32,7 @@ Server& Server::operator=(Server const& rhs)
     autoIndex = rhs.autoIndex;
     clientBodySize = rhs.clientBodySize;
     locations = rhs.locations;
+	clients = rhs.clients;
     return *this;
 }
 
@@ -225,12 +230,12 @@ int Server::openPort()
 
 int Server::acceptClient()
 {
-    std::cout << "in acceptClient :: serverSocket : " << serverSocket << std::endl;
     int newClientFd = accept(serverSocket, NULL, NULL);
     if (newClientFd == -1)
         exitWebserver("Server : accept() error");
     fcntl(newClientFd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 
+	std::cout << "NEW CLIENT : " << newClientFd << std::endl;
     clients[newClientFd] = Client();
     clients[newClientFd].setFd(newClientFd);
     clients[newClientFd].setLocations(locations);
@@ -247,7 +252,7 @@ bool Server::isClient(int ident)
 
 Client& Server::getClient(int ident)
 {
-    return clients[ident];
+    return clients[ident]; // 이제 여기서 터짐 --;; 왜??? 
 }
 
 void Server::disconnectClient(int ident)

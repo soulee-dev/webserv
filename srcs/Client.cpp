@@ -50,6 +50,7 @@ void Client::requestClear()
     request.pipe_fd_back[1] = -1;
     request.errorCode = NOT_ERROR;
     request.fileFd = -1;
+	request.headers.clear(); //초기화로 segfault 해결
 }
 
 Client& Client::operator=(Client const& rhs)
@@ -101,6 +102,7 @@ HttpResponse& Client::getRes(void)
 void Client::responseClear()
 {
     memset(&response, 0, sizeof(HttpResponse));
+	response.headers.clear();
 }
 
 int Client::makeReqeustFromClient()
