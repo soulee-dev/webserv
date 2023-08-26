@@ -82,21 +82,24 @@ void Webserv::readEventProcess(struct kevent& currEvent)
     // udata == server
     if (_servers.isResponseToServer(ident))
     {
-        Server& currServer = reinterpret_cast<Server&>(currEvent.udata);
-        int clientFd = currServer.acceptClient();
+        Server* currServer = reinterpret_cast<Server*>(currEvent.udata);
+        int clientFd = currServer->acceptClient();
         _clients.insert(clientFd);
+		std::cout << "-- new Client accept : " << currServer->getServerName() << std::endl;
     }
 
     // udata == server (serverFunction 으로 넣어도됨)
     else if (_clients.find(ident) != _clients.end())
     {
+
+		std::cout << "inReadProcess : " << currEvent.ident << std::endl;
         if (currEvent.flags & EV_EOF)
         {
             std::cout << "EV_EOF detacted in client\n";
             _disconnectedClients.insert(ident);
         }
-        Server& currServer = reinterpret_cast<Server&>(currEvent.udata);
-        Client& currClient = currServer.getClient(ident);
+        Server* currServer = reinterpret_cast<Server*>(currEvent.udata);
+        Client& currClient = currServer->getClient(ident);
         int res = currClient.makeReqeustFromClient();
         if (res == SUCCESS) // request 다 만들어짐
         {
@@ -142,16 +145,16 @@ void Webserv::readEventProcess(struct kevent& currEvent)
     // udata == Client
     else
     {
-        Client& currClient = reinterpret_cast<Client&>(currEvent.udata);
-        int res = currClient.makeResponseFromFd(ident); // fd로 부터 읽어서 response body에 넣음
+        Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
+        int res = currClient->makeResponseFromFd(ident); // fd로 부터 읽어서 response body에 넣음
         if (res != 0)                                   // error || done
         {
             close(ident);
         }
         if (res == 1)
         {
-            HttpRequest& request = currClient.getReq();
-            HttpResponse& response = currClient.getRes();
+            HttpRequest& request = currClient->getReq();
+            HttpResponse& response = currClient->getRes();
             // sendbuffer 만들어도 되고 아니면 clientWriteEvent에서 바로 해도됨
             if (request.method == "PUT")
                 response.body.clear();
@@ -160,7 +163,7 @@ void Webserv::readEventProcess(struct kevent& currEvent)
                 response.headers["Connection"] = "close";
             }
             // 근데 위에 이거 다 앞에서 해줌
-            events.changeEvents(currClient.getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, &currClient);
+            events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, &currClient);
             if (!request.isStatic)
                 wait(NULL);
         }
@@ -172,8 +175,8 @@ void Webserv::writeEventProcess(struct kevent& currEvent)
     // udata == server
     if (_clients.find(currEvent.ident) != _clients.end())
     {
-        Server& currServer = reinterpret_cast<Server&>(currEvent.udata);
-        Client& currClient = currServer.getClient(currEvent.ident);
+        Server* currServer = reinterpret_cast<Server*>(currEvent.udata);
+        Client& currClient = currServer->getClient(currEvent.ident);
         currClient.makeSendBufferForWrite(); // response -> sendBuffer 채우기
         int res = currClient.writeSendBufferToClient();
         if (res == SUCCESS)
@@ -190,8 +193,8 @@ void Webserv::writeEventProcess(struct kevent& currEvent)
     // udata == Client
     else // CGI or FILE req.body -> Event.ident 로 보내기
     {
-        Client& currClient = reinterpret_cast<Client&>(currEvent.udata);
-        int res = currClient.writeRequestBodyToFd(currEvent.ident);
+        Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
+        int res = currClient->writeRequestBodyToFd(currEvent.ident);
         if (res != NOTDONE)
         {
             close(currEvent.ident);

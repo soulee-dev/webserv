@@ -203,7 +203,7 @@ int Server::openPort()
     hint.ai_socktype = SOCK_STREAM;
 
     std::string strPortNumber = intToString(_listen);
-    std::cout << "strPortNumber : "  << strPortNumber << std::endl;
+    std::cout << "strPortNumber : " << strPortNumber << std::endl;
 
     int errorCode = getaddrinfo(serverName.c_str(), strPortNumber.c_str(), &hint, &info);
     if (errorCode == -1)
@@ -225,6 +225,7 @@ int Server::openPort()
 
 int Server::acceptClient()
 {
+    std::cout << "in acceptClient :: serverSocket : " << serverSocket << std::endl;
     int newClientFd = accept(serverSocket, NULL, NULL);
     if (newClientFd == -1)
         exitWebserver("Server : accept() error");

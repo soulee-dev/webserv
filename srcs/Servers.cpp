@@ -30,11 +30,13 @@ void Servers::initServers()
     for (std::map<int, Server>::iterator it = server.begin();
          it != server.end(); it++)
     {
+		Server& currServer = it->second;
         int serverSocket = it->second.openPort();
+		std::cout << "Servers serverSocket : " << serverSocket;
         fcntl(serverSocket, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
         portByServerSocket[serverSocket] = it->first;
 		std::cout << serverSocket << " server open !\n";
-        events.changeEvents(serverSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &it->second);
+        events.changeEvents(serverSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &currServer);
     }
 }
 

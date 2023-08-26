@@ -26,8 +26,18 @@ Client::Client()
 Client::~Client() {}
 
 Client::Client(Client const& other)
-    : client_fd(other.client_fd), request(other.request), response(other.response), readBuffer(other.readBuffer), sendBuffer(other.sendBuffer), writeIndex(other.writeIndex)
+    : client_fd(other.client_fd), readBuffer(other.readBuffer), sendBuffer(other.sendBuffer), writeIndex(other.writeIndex)
 {
+	memcpy(&this->request, &other.request, sizeof(HttpRequest));
+	memcpy(&this->response, &other.response, sizeof(HttpResponse));
+    STATUS_CODES[200] = "OK";
+    STATUS_CODES[201] = "Created";
+    STATUS_CODES[400] = "Bad Request";
+    STATUS_CODES[403] = "Forbidden";
+    STATUS_CODES[404] = "Not Found";
+    STATUS_CODES[405] = "Method Not Allowed";
+    STATUS_CODES[413] = "Request Entity Too Large";
+    STATUS_CODES[505] = "HTTP Version Not Supported";
 }
 
 void Client::requestClear()
@@ -51,8 +61,10 @@ Client& Client::operator=(Client const& rhs)
         this->sendBuffer = rhs.sendBuffer;
         this->state = rhs.state;
         this->writeIndex = rhs.writeIndex;
-        this->request = rhs.request;
-        this->response = rhs.response;
+		memcpy(&this->request, &rhs.request, sizeof(HttpRequest));
+		memcpy(&this->response, &rhs.response, sizeof(HttpResponse));
+        // this->request = rhs.request;
+        // this->response = rhs.response;
     }
     return *this;
 }
@@ -98,6 +110,7 @@ int Client::makeReqeustFromClient()
         return res;
     else
     {
+		std::cout << "readMessage done\n";
         if (state == PARSE_DONE)
         {
             std::cout << BOLDGREEN << "URI : " << request.uri << RESET << '\n';
@@ -123,9 +136,11 @@ int Client::makeReqeustFromClient()
 // START makeRequest
 int Client::readMessageFromClient()
 {
+	std::cout << "readMessageFromClient\n";
     const size_t BUFFER_SIZE = 65536;
     char buffer[BUFFER_SIZE + 1];
     ssize_t readSize = read(client_fd, buffer, BUFFER_SIZE);
+	std::cout << "read done\n";
 
     if (readSize <= 0)
     {
@@ -168,15 +183,19 @@ void Client::readMethod(const char* buffer)
     std::vector<unsigned char>::iterator pos;
 
     // 입력버퍼벡터 뒤에 방금읽은 버퍼를 덧붙임
+	std::cout << "in readMethod\n";
     readBuffer.insert(readBuffer.end(), buffer, buffer + strlen(buffer));
     while (readBuffer.size() > 1 && readBuffer[0] == '\r' && readBuffer[1] == '\n')
         readBuffer.erase(readBuffer.begin(), readBuffer.begin() + 2);
+	std::cout << "1\n";
     if (readBuffer.size() == 0)
         return;
+	std::cout << "2\n";
     // 입력버퍼벡터에서 공백을 찾음
     if ((pos = std::search(readBuffer.begin(), readBuffer.end(), " ", &" "[1])) !=
         readBuffer.end())
     {
+	std::cout << "3\n";
         request.method = std::string(readBuffer.begin(), pos);
         request.startLine = request.method;
         readBuffer.erase(readBuffer.begin(), pos + 1);
@@ -207,6 +226,7 @@ void Client::readMethod(const char* buffer)
         request.errorCode = METHOD_NOT_ALLOWED; // 이 경우 또한 405번을 부여하지 않으면 테스트에서 통과가 불가능합니다(원래 400).
         readBuffer.erase(readBuffer.begin(), pos + 2);
     }
+	std::cout << "readMethod done\n";
 }
 
 void Client::readUri(const char* buffer)
