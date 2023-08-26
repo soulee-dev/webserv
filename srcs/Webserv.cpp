@@ -3,7 +3,6 @@
 #include "Utils.hpp"
 #include <unistd.h>
 
-Event events;
 
 Webserv::Webserv(std::string config)
 {
@@ -28,6 +27,7 @@ void Webserv::run()
 
     while (1)
     {
+        std::cout << events.kq << std::endl;
         newEvent = events.newEvents();
         if (newEvent == -1)
             exitWebserver("kevent() error");
@@ -90,6 +90,11 @@ void Webserv::readEventProcess(struct kevent& currEvent)
     // udata == server (serverFunction 으로 넣어도됨)
     else if (_clients.find(ident) != _clients.end())
     {
+        if (currEvent.flags & EV_EOF)
+        {
+            std::cout << "EV_EOF detacted in client\n";
+            _disconnectedClients.insert(ident);
+        }
         Server& currServer = reinterpret_cast<Server&>(currEvent.udata);
         Client& currClient = currServer.getClient(ident);
         int res = currClient.makeReqeustFromClient();
@@ -100,14 +105,23 @@ void Webserv::readEventProcess(struct kevent& currEvent)
             {
                 std::cout << BOLDRED << "-- PROCESSING DELETING METHOD -- \n";
                 currClient.makeResponseFromDelete();
-                events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_ENABLE, 0, 0, &currServer);
+                events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, &currServer);
                 // writeEventForClient
             }
             else if (currClient.getReq().isStatic)
             {
                 std::cout << BOLDRED << "-- PROCESSING STATIC -- \n";
                 currClient.makeResponseFromStatic();
-                events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_ENABLE, 0, 0, &currServer);
+                events.changeEvents(ident, EVFILT_READ, EV_DISABLE, 0, 0, &currServer);
+                if (currClient.getReq().fileFd == -1) // 이 뒷부분은 고쳐야됨
+                    events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, &currServer);
+                else
+                {
+                    if (currClient.getReq().method == "PUT")
+                        events.changeEvents(currClient.getReq().fileFd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &currClient);
+                    else
+                        events.changeEvents(currClient.getReq().fileFd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &currClient);
+                }
             }
             // writeEventForClient 만약 FILE write/read가 있다면 안에서 flag 세우고 여기서 분기
             else
@@ -118,8 +132,10 @@ void Webserv::readEventProcess(struct kevent& currEvent)
             }
             // make response
         }
-        else if (res == ERROR)
+        if (res == ERROR)
         {
+            std::cout << BOLDRED << "-- PROCESSING ERROR -- \n";
+            events.changeEvents(ident, EVFILT_WRITE, EV_ENABLE, 0, 0, &currServer);
         }
     }
     // File or CGI 인 경우 들어감
@@ -131,21 +147,59 @@ void Webserv::readEventProcess(struct kevent& currEvent)
         if (res != 0)                                   // error || done
         {
             close(ident);
-            currClient.requestClear();
         }
         if (res == 1)
         {
-			//sendbuffer 만들어도 되고 아니면 clientWriteEvent에서 바로 해도됨
-			events.changeEvents(currClient.getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, &currClient);
-			wait(NULL);
+            HttpRequest& request = currClient.getReq();
+            HttpResponse& response = currClient.getRes();
+            // sendbuffer 만들어도 되고 아니면 clientWriteEvent에서 바로 해도됨
+            if (request.method == "PUT")
+                response.body.clear();
+            else if (request.isStatic == false)
+            {
+                response.headers["Connection"] = "close";
+            }
+            // 근데 위에 이거 다 앞에서 해줌
+            events.changeEvents(currClient.getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, &currClient);
+            if (!request.isStatic)
+                wait(NULL);
         }
     }
 }
 
 void Webserv::writeEventProcess(struct kevent& currEvent)
 {
+    // udata == server
+    if (_clients.find(currEvent.ident) != _clients.end())
+    {
+        Server& currServer = reinterpret_cast<Server&>(currEvent.udata);
+        Client& currClient = currServer.getClient(currEvent.ident);
+        currClient.makeSendBufferForWrite(); // response -> sendBuffer 채우기
+        int res = currClient.writeSendBufferToClient();
+        if (res == SUCCESS)
+        {
+            events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_DISABLE, 0, 0, currEvent.udata);
+            events.changeEvents(currEvent.ident, EVFILT_READ, EV_ENABLE, 0, 0, currEvent.udata);
+        }
+        else if (res == ERROR)
+        {
+            _disconnectedClients.insert(currEvent.ident);
+        }
+        // else // NOTDONE
+    }
+    // udata == Client
+    else // CGI or FILE req.body -> Event.ident 로 보내기
+    {
+        Client& currClient = reinterpret_cast<Client&>(currEvent.udata);
+        int res = currClient.writeRequestBodyToFd(currEvent.ident);
+        if (res != NOTDONE)
+        {
+            close(currEvent.ident);
+        }
+    }
 }
 
 void Webserv::timerEventProcess(struct kevent& currEvent)
 {
+    _disconnectedClients.insert(currEvent.ident);
 }

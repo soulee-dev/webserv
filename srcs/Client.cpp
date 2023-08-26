@@ -9,6 +9,8 @@
 Client::Client()
     : state(PARSE_READY), haveToReadBody(false), writeIndex(0)
 {
+    requestClear();
+    responseClear();
     readBuffer.reserve(100000000);
     sendBuffer.reserve(100000000);
     STATUS_CODES[200] = "OK";
@@ -37,6 +39,7 @@ void Client::requestClear()
     request.pipe_fd_back[0] = -1;
     request.pipe_fd_back[1] = -1;
     request.errorCode = NOT_ERROR;
+    request.fileFd = -1;
 }
 
 Client& Client::operator=(Client const& rhs)
@@ -75,12 +78,12 @@ int Client::getClientFd(void) const
 
 HttpRequest& Client::getReq(void)
 {
-	return request;
+    return request;
 }
 
-HttpResponse& Client::gatRes(void)
+HttpResponse& Client::getRes(void)
 {
-	return response;
+    return response;
 }
 
 void Client::responseClear()
@@ -869,4 +872,105 @@ void Client::calculateBodyLength()
     // for (size_t i = 0; i < response.size(); i++)
     // 	std::cout << response[i];
     // std::cout << '\n';
+}
+
+// int Client::sendResponseToClient()
+// {
+// 	switch (state)
+// 	{
+// 		case PARSE_DONE || PARSE_ERROR :
+// 			sendStartline();
+// 			break;
+// 		case sendStartline :
+// 			sendHeaders();
+// 			break;
+// 		case sendHeaders :
+// 			sendBody();
+// 			break;
+// 	}
+// }
+//
+
+void Client::buildHeader()
+{
+    std::stringstream ss;
+
+    ss << SERVER_HTTP_VERSION << SPACE << response.statusCode << SPACE << STATUS_CODES.find(response.statusCode)->second << CRLF;
+    ss << "Server:" << SPACE << SERVER_NAME << CRLF;
+    std::map<std::string, std::string>::iterator iter;
+    for (iter = response.headers.begin(); iter != response.headers.end(); iter++)
+    {
+        ss << iter->first << COLON << SPACE << iter->second << CRLF;
+    }
+    if (request.isStatic)
+        ss << CRLF;
+    sendBuffer.insert(sendBuffer.end(), ss.str().begin(), ss.str().end());
+}
+void Client::makeSendBufferForWrite()
+{
+    calculateBodyLength();
+    buildHeader();
+    sendBuffer.insert(sendBuffer.end(), response.body.begin(), response.body.end());
+}
+
+int Client::writeSendBufferToClient()
+{
+    const int size = sendBuffer.size() - writeIndex;
+    int writeSize = write(client_fd, &sendBuffer[writeIndex], size);
+    if (writeSize == -1)
+    {
+        std::cout << "write() error\n";
+        std::cout << errno << std::endl;
+        return ERROR;
+    }
+    writeIndex += writeSize;
+    if (writeIndex == sendBuffer.size())
+    {
+        writeIndex = 0;
+        sendBuffer.clear();
+        return SUCCESS;
+    }
+    return NOTDONE;
+}
+
+int Client::writeRequestBodyToFd(int fd)
+{
+    std::vector<unsigned char>& buffer = request.body;
+    const int size = buffer.size() - request.writeIndex;
+    std::cout << "to cgi" << std::endl;
+
+    int writeSize = write(fd, &buffer[request.writeIndex], size);
+    std::cout << "WRITE SIZE : " << writeSize << '\n';
+    if (writeSize == -1)
+    {
+        std::cout << fd << std::endl; // 7
+        std::cout << "write() error" << std::endl;
+        std::cout << "errno : " << errno << std::endl;
+        return ERROR;
+    }
+    request.writeIndex += writeSize;
+    std::cout << "WriteIndex : " << request.writeIndex << ",  buffer.size() : " << buffer.size() << std::endl;
+    // if (buffer.size() == 0)
+    //     exit(0);
+    if (request.method == "PUT")
+    {
+		// 여기 좀 다시 손 봐야함
+        request.RW_file_size += writeSize;
+        if (request.RW_file_size == request.file_size)
+        {
+            //close(fd); 바깥에서도 하는데 ? 
+			//clear 는 ? 
+			request.RW_file_size = 0;
+			request.file_size = 0;
+            return SUCCESS;
+        }
+    }
+    else if (request.writeIndex == buffer.size())
+    {
+        // std::cout << "I/m here" << std::endl;
+        request.writeIndex = 0;
+        buffer.clear();
+        return SUCCESS;
+    }
+    return NOTDONE;
 }

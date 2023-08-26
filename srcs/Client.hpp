@@ -1,8 +1,8 @@
 #pragma once
 #include "Color.hpp"
 #include "Event.hpp"
-#include "Location.hpp"
 #include "Http/Handler/Handler.hpp"
+#include "Location.hpp"
 #define SUCCESS 1
 #define ERROR -1
 #define NOTDONE 0
@@ -14,7 +14,7 @@
 #define SERVER_HTTP_VERSION "HTTP/1.1"
 #define COLON ":"
 
-extern char **environ;
+extern char** environ;
 extern Event events;
 enum State
 {
@@ -27,6 +27,14 @@ enum State
     PARSE_DONE,
     PARSE_CHUNKED,
     PARSE_ERROR,
+    //
+    // MAKE_CGI,
+    // MAKE_PUT,
+
+    SEND_STARTLINE,
+    SEND_HEADERS,
+    SEND_BODY,
+    DONE,
 };
 
 enum ParseErrorCode
@@ -53,6 +61,9 @@ struct HttpRequest
     std::string startLine;
     std::string httpVersion;
     bool isStatic;
+    int fileFd;
+	int file_size;
+	int RW_file_size;
     std::string fileName;
     std::string path;
     std::string cgiArgs;
@@ -83,8 +94,8 @@ class Client
 private:
     int client_fd;
     int state; // Parsing + Res
-	int isCgi;
-	std::map<int, std::string> STATUS_CODES;
+    int isCgi;
+    std::map<int, std::string> STATUS_CODES;
 
     std::map<std::string, Location>* locations;
     HttpRequest request;
@@ -115,7 +126,7 @@ public:
     // getter
     int getClientFd(void) const;
     HttpRequest& getReq(void);
-    HttpResponse& gatRes(void);
+    HttpResponse& getRes(void);
 
     // functions
     void requestClear();
@@ -124,17 +135,22 @@ public:
     int makeReqeustFromClient();
     int readMessageFromClient();
 
-	void makeResponseFromStatic();
+    void makeResponseFromStatic();
     void processDirectory();
     void serveStatic();
-	void handleDirectoryListing();
+    void handleDirectoryListing();
 
-	
-	void makeResponseFromDelete();
-	void makeResponseFromDynamic();
-	
-	int makeResponseFromFd(int ident);
-	void calculateBodyLength();
+    void makeResponseFromDelete();
+    void makeResponseFromDynamic();
+
+    int makeResponseFromFd(int ident);
+    void calculateBodyLength();
+
+    void buildHeader();
+    void makeSendBufferForWrite();
+    int writeSendBufferToClient();
+	int writeRequestBodyToFd(int fd);
+    // int sendResponseToClient();
 
 private:
     void readMethod(const char* buffer);
@@ -146,6 +162,6 @@ private:
     bool isSendBufferEmpty(void);
     bool checkMethod(std::string const& method);
     void checkRequest(void);
-	bool openFdForDynamic();
-	bool runCgiForDynamic();
+    bool openFdForDynamic();
+    bool runCgiForDynamic();
 };

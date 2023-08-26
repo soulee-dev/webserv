@@ -3,23 +3,24 @@
 #include "Utils.hpp"
 #include <iostream>
 #include <sstream>
+#include <sys/socket.h>
 #include <unistd.h>
 #include <vector>
 
 // constructors
 Server::Server()
-    : listen(80), serverName(""), root("/"), autoIndex(false), clientBodySize(10240) {}
+    : _listen(80), serverName(""), root("/"), autoIndex(false), clientBodySize(10240) {}
 // destructor
 Server::~Server() {}
 // copy constructors
 
-Server::Server(Server const& other) : listen(other.listen), serverName(other.serverName),
+Server::Server(Server const& other) : _listen(other._listen), serverName(other.serverName),
                                       root(other.root), errorPage(other.errorPage), redirection(other.redirection),
                                       autoIndex(other.autoIndex), clientBodySize(other.clientBodySize), locations(other.locations) {}
 // operators
 Server& Server::operator=(Server const& rhs)
 {
-    listen = rhs.listen;
+    _listen = rhs._listen;
     serverName = rhs.serverName;
     root = rhs.root;
     errorPage = rhs.errorPage;
@@ -33,7 +34,7 @@ Server& Server::operator=(Server const& rhs)
 // getter
 int Server::getListen() const
 {
-    return this->listen;
+    return this->_listen;
 }
 
 std::map<std::string, Location> Server::getLocations(void) const
@@ -112,7 +113,7 @@ void Server::setListen(std::string& input)
 
     if (parsedPort < 0 || parsedPort > 65535)
         std::cout << "Warning : invalid port number" << std::endl;
-    this->listen = parsedPort;
+    this->_listen = parsedPort;
 }
 
 void Server::setServerName(std::string& input)
@@ -183,32 +184,41 @@ void Server::setClientBodySize(std::string& input)
 
 int Server::openPort()
 {
+
+    struct addrinfo* info;
+    struct addrinfo hint;
+    struct sockaddr_in socketaddr;
     int opt = 1;
 
-    std::cout << "Port number : " << listen << "\n";
+    std::cout << "Port number : " << _listen << std::endl;
 
     memset(&hint, 0, sizeof(struct addrinfo));
     memset(&socketaddr, 0, sizeof(struct sockaddr_in));
 
     socketaddr.sin_family = AF_INET;
-    socketaddr.sin_port = htons(listen);
+    socketaddr.sin_port = htons(_listen);
     socketaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
     hint.ai_family = AF_INET;
     hint.ai_socktype = SOCK_STREAM;
 
-    std::string strPortNumber = intToString(listen);
+    std::string strPortNumber = intToString(_listen);
+    std::cout << strPortNumber << std::endl;
 
     int errorCode = getaddrinfo(serverName.c_str(), strPortNumber.c_str(), &hint, &info);
     if (errorCode == -1)
-        return -1;
-    serverSocket = socket(info->ai_family, info->ai_socktype, info->ai_protocol);
+        exitWebserver(gai_strerror(errorCode));
+
+    int serverSocket = socket(info->ai_family, info->ai_socktype, info->ai_protocol);
     if (serverSocket == -1)
-        return -1;
+        exitWebserver("socket() error");
     setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
     errorCode = bind(serverSocket, reinterpret_cast<struct sockaddr*>(&socketaddr), sizeof(socketaddr));
     if (errorCode)
-        return -1;
+        exitWebserver("bind() error");
+    errorCode = listen(serverSocket, LISTENCAPACITY);
+    if (errorCode)
+        exitWebserver("listen() error");
     return serverSocket;
 }
 
@@ -216,7 +226,7 @@ int Server::acceptClient()
 {
     int newClientFd = accept(serverSocket, NULL, NULL);
     if (newClientFd == -1)
-        exitWebserver("accept() error");
+        exitWebserver("Server : accept() error");
     fcntl(newClientFd, F_SETFL, O_NONBLOCK);
 
     clients[newClientFd] = Client();
@@ -225,7 +235,7 @@ int Server::acceptClient()
 
     events.changeEvents(newClientFd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, this);
     events.changeEvents(newClientFd, EVFILT_WRITE, EV_ADD | EV_DISABLE, 0, 0, this);
-	return newClientFd;
+    return newClientFd;
 }
 
 bool Server::isClient(int ident)

@@ -31,8 +31,9 @@ void Servers::initServers()
          it != server.end(); it++)
     {
         int serverSocket = it->second.openPort();
-        fcntl(serverSocket, F_SETFL, O_NONBLOCK);
+        fcntl(serverSocket, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
         portByServerSocket[serverSocket] = it->first;
+		std::cout << serverSocket << " server open !\n";
         events.changeEvents(serverSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &it->second);
     }
 }

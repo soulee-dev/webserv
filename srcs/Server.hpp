@@ -10,12 +10,12 @@ extern Event events;
 class Server
 {
 private:
-    int listen;
+    int _listen;
     std::string serverName;
     std::string root;
-    struct addrinfo* info;
-    struct addrinfo hint;
-    struct sockaddr_in socketaddr;
+    // struct addrinfo* info;
+    // struct addrinfo hint;
+    // struct sockaddr_in socketaddr;
     std::map<std::vector<int>, std::string> errorPage;
     std::map<std::string, int> redirection;
     bool autoIndex;
@@ -33,6 +33,7 @@ private:
     void setClientBodySize(std::string& input);
 
 public:
+    static const int LISTENCAPACITY = 1000;
     int serverSocket;
     Server();
     ~Server();

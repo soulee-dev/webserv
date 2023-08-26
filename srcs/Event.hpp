@@ -8,13 +8,13 @@
 class Event
 {
 private:
-    int kq;
     std::vector<struct kevent> changeList;
     struct kevent eventList[EVENTLIST_SIZE];
     Event(const Event& ref);
     Event& operator=(const Event& ref);
 
 public:
+    int kq;
     Event();
     ~Event();
     struct kevent& operator[](int idx);

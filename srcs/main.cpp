@@ -1,6 +1,7 @@
 #include "Event.hpp"
 #include "Webserv.hpp"
 
+Event events;
 int main(int argc, char** argv)
 {
     std::string configFileName;

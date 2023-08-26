@@ -8,7 +8,8 @@
 
 std::string intToString(int num)
 {
-    std::stringstream sstream(num);
+    std::stringstream sstream;
+	sstream << num;
     return sstream.str();
 }
 
