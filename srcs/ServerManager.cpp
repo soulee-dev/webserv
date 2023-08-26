@@ -200,6 +200,8 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
         if (ret != 0)
 		{
 			close(currEvent.ident); // Dynamic 일때는  pipe를 닫아주는 close // Static일때는 파일의 fd를 닫아줌
+			currClient->request.pipe_fd_back[0] = -1;
+			currClient->request.file_fd = -1;
 		}
         if (ret == 1)
         {
@@ -236,7 +238,8 @@ void ServerManager::writeEventProcess(struct kevent& currEvent)
 		{
 			Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
 			close(currClient->request.pipe_fd[1]);
-		} 
+			currClient->request.pipe_fd[1] = -1;
+		}
     }
 }
 

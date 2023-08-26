@@ -64,6 +64,8 @@ void	RunCgi(Client& client)
 	else
 	{
 		close(request.pipe_fd[0]);
+		request.pipe_fd[0] = -1;
 		close(request.pipe_fd_back[1]);
+		request.pipe_fd_back[1] = -1;
 	}
 }

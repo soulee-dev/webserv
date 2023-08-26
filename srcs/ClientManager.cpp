@@ -87,12 +87,15 @@ int ClientManager::ReqToCgiWriteProcess(struct kevent& currEvent)
         if (request.RW_file_size == request.file_size)
         {
             close(currEvent.ident);
+            client->request.file_fd = -1;
             return 0;
         }
     }
     else if (request.writeIndex == buffer.size())
     {
         request.writeIndex = 0;
+        close(currEvent.ident);
+        client->request.pipe_fd[1] = -1;
         buffer.clear();
         return 1;
     }
@@ -135,6 +138,8 @@ void ClientManager::clearClients(void)
             close(ItClient->second.request.pipe_fd[1]);
         if (ItClient->second.request.pipe_fd_back[0] != -1)
             close(ItClient->second.request.pipe_fd_back[0]);
+        if (ItClient->second.request.file_fd != -1)
+            close(ItClient->second.request.file_fd);
         disconnectClient(*it);
     }
     toDisconnectClients.clear();
