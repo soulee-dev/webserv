@@ -266,7 +266,6 @@ void Client::readChunked(const char* buffer, size_t readSize)
 			readBuffer.erase(readBuffer.begin(),
 							 readBuffer.begin() + longBodySize + 2);
 			pos = std::search(readBuffer.begin(), readBuffer.end(), crlf, &crlf[2]);
-			std::cout << "READ CHUNKED SIZE : " << longBodySize << std::endl;
 		}
 	}
 }
