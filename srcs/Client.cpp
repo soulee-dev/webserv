@@ -92,7 +92,7 @@ bool Client::writeEventProcess(void)
 bool Client::readMessage(void)
 {
 	const size_t BUFFER_SIZE = 65536;
-	char buffer[BUFFER_SIZE + 1];
+	char buffer[BUFFER_SIZE];
 	ssize_t readSize = read(client_fd, buffer, BUFFER_SIZE);
 
 	if (readSize <= 0)
@@ -101,7 +101,6 @@ bool Client::readMessage(void)
 			std::cout << "read() error" << std::endl;
 		return true;
 	}
-	buffer[readSize] = '\0';
 
 	switch (parseState)
 	{
@@ -267,6 +266,7 @@ void Client::readChunked(const char* buffer, size_t readSize)
 			readBuffer.erase(readBuffer.begin(),
 							 readBuffer.begin() + longBodySize + 2);
 			pos = std::search(readBuffer.begin(), readBuffer.end(), crlf, &crlf[2]);
+			std::cout << "READ CHUNKED SIZE : " << longBodySize << std::endl;
 		}
 	}
 }
