@@ -52,21 +52,17 @@ void	HandleDirectoryListing(Client& client, Request& request)
 		return HandleError(client, 404);
 
 	std::stringstream	ss;
-	ss << "<!DOCTYPE html><head><title>Index of " << request.path;
-	ss << "</title></head><body><h1>Index of " << request.path;
+	ss << "<!DOCTYPE html><head><title>Index of " << request.file_name;
+	ss << "</title></head><body><h1>Index of " << request.file_name;
 	ss << "</h1><ul>";
 
 	struct dirent* entry;
-	std::string tmp_location_uri = client.getServer()->getServerName() + "/" + request.location_uri;
 	std::cout << "serverName : " << client.getServer()->getServerName() << std::endl;
 	while ((entry = readdir(dir)) != NULL)
 	{
 		ss << "<li><a href=";
-		// ss << request.location_uri;
-		ss << tmp_location_uri;
 		ss << request.file_name;
-		if (request.file_name != "")
-			ss << "/";
+		ss << "/";
 		ss << entry->d_name;
 		ss << ">";
 		ss << entry->d_name;
