@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import cgi
 import cgitb
 import os
@@ -53,4 +52,3 @@ else:
         </form>
     """)
     exit()
-
