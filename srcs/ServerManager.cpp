@@ -1,5 +1,6 @@
 #include "ServerManager.hpp"
 #include "Color.hpp"
+#include "Http/Handler/DeleteHandler.hpp"
 #include "Http/Handler/Handler.hpp"
 #include <map>
 #include <vector>
@@ -206,10 +207,12 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
         if (ret == 1)
         {
 			std::vector<unsigned char> empty_body;
-			if (currClient->request.method == "POST" || currClient->request.method == "PUT" || currClient->request.method == "GET" || currClient->request.method == "HEAD")
+			if (currClient->request.method == "POST" || currClient->request.method == "PUT" || currClient->request.method == "GET" || currClient->request.method == "HEAD" || currClient->request.method == "DELETE")
 				currClient->events->changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 			if (currClient->request.method == "PUT")
 				currClient->response.body = empty_body;
+			if (currClient->request.method == "DELETE")
+				HandleDelete(*currClient);
 			else if (currClient->request.is_static == false)
 			{
 				currClient->response.headers["Connection"] = "close";
