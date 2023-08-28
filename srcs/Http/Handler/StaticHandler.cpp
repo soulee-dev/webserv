@@ -1,6 +1,7 @@
 #include "StaticHandler.hpp"
 #include "ErrorHandler.hpp"
 #include "../../Client.hpp"
+#include "Handler.hpp"
 
 void	HandleStatic(Client& client)
 {
@@ -47,7 +48,6 @@ void	HandleDirectoryListing(Client& client, Request& request)
 	std::vector<unsigned char>			body;
 	std::map<std::string, std::string>	headers;
 
-	std::cout << "WHY DIRECTORYLISTING\n";
 	DIR	*dir = opendir(request.path.c_str());
 	if (!dir)
 		return HandleError(client, 404);

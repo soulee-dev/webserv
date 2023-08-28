@@ -14,11 +14,8 @@ void	HttpRequestManager::Handle(Client& client)
 	else
 	{
 		// Do Dynamic
-		std::cout << "in Handle : Dynamic\n";
 		OpenFd(client);
-		std::cout << "in handle 1\n";
 		RunCgi(client);
-		std::cout << "in handle 2\n";
 		client.response.status_code = 200;
 	}
 }

@@ -14,7 +14,6 @@ void	HandleError(Client &client, int status_code)
 		std::vector<int>::const_iterator it2 = it->first.begin();
 		for (; it2 != it->first.end(); ++it2)
 		{
-			std::cout << "it2 : " << *it2 << std::endl;
 			if (status_code == *it2)
 			{
 				find_flag = true;
