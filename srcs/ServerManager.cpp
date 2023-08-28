@@ -31,7 +31,8 @@ void ServerManager::initServers(void)
 
 static std::string intToString(int number)
 {
-	std::stringstream sstream(number);
+	std::stringstream sstream;
+	sstream << number;
 	return sstream.str();
 }
 
@@ -55,6 +56,7 @@ int ServerManager::openPort(ServerManager::PORT port, Server& server)
 	hint.ai_socktype = SOCK_STREAM;
 
 	std::string strPortNumber = intToString(port);
+	std::cout << strPortNumber << std::endl;
 
 	int errorCode = getaddrinfo(server.getServerName().c_str(), strPortNumber.c_str(), &hint, &info);
 	if (errorCode == -1)

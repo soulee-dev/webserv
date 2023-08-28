@@ -3,6 +3,13 @@
 #include <fcntl.h>
 
 extern char **environ;
+static std::string intToString(int number)
+{
+	std::stringstream sstream;
+	sstream << number;
+	return sstream.str();
+}
+
 
 void	OpenFd(Client &client)
 {
@@ -40,7 +47,7 @@ void	RunCgi(Client& client)
 		close(request.pipe_fd_back[0]);
 
 		int size = request.body.size();
-		std::string size_str = std::to_string(size);
+		std::string size_str = intToString(size);
 		const char *size_cstr = size_str.c_str();
 
 		setenv("QUERY_STRING", request.cgi_args.c_str(), 1);
