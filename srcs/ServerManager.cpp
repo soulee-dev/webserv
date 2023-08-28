@@ -193,8 +193,6 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
 			clientManager.addToDisconnectClient(currEvent.ident);
 		}
 		clientManager.readEventProcess(currEvent);
-		// else if (clientManager.readEventProcess(currEvent)) // DELETE를 제외하고는 true가 나올 리가 없음
-        //     events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_ENABLE, 0, 0, currEvent.udata);
     }
     else
     {

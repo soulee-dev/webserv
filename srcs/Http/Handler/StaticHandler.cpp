@@ -85,7 +85,6 @@ void	ProcessDirectory(Client& client)
     Request& request = client.request;
     std::vector<std::string> indexVec = request.location.getIndex(); // 벡터에 대한 참조
     std::vector<std::string>::iterator it;
-	std::cout << "in directory" << std::endl;
 
     if (!indexVec.empty())
     {

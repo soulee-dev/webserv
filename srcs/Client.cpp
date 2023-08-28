@@ -52,8 +52,6 @@ int Client::readEventProcess(void)
 	}
 	else
 		return 0;
-	// if (request.method != "DELETE")
-	// if (request.method == "POST")
 	if (response.is_auto_index)
 	{
 		std::cout << "IN READEVENT AUTOINDEX PROSESS\n";
@@ -160,14 +158,12 @@ void Client::readHeader(const char* buffer, size_t readSize)
 			if (request.headers.find("host") == request.headers.end())
 			{
 				parseState = ERROR;
-				std::cout<<"DEBUG1\n";
 				request.errorCode = BAD_REQUEST;
 				return;
 			}
 			else if (checkMethod())
 			{
 				parseState = ERROR;
-				std::cout << "DEBUG CHECKMETHOD\n";
 				request.errorCode = METHOD_NOT_ALLOWED;
 				return;
 			}
@@ -204,7 +200,6 @@ void Client::readHeader(const char* buffer, size_t readSize)
 		if (key.size() == 0)
 		{
 			parseState = ERROR;
-			std::cout<<"DEBUG3\n";
 			request.errorCode = BAD_REQUEST;
 			return;
 		}
@@ -213,7 +208,6 @@ void Client::readHeader(const char* buffer, size_t readSize)
 			if (isspace(key[i]))
 			{
 				parseState = ERROR;
-				std::cout<<"DEBUG4\n";
 				request.errorCode = BAD_REQUEST;
 				return;
 			}
@@ -222,7 +216,6 @@ void Client::readHeader(const char* buffer, size_t readSize)
 		if (value.size() == 0)
 		{
 			parseState = ERROR;
-			std::cout<<"DEBUG5\n";
 			request.errorCode = BAD_REQUEST;
 			return;
 		}
@@ -268,7 +261,6 @@ void Client::readChunked(const char* buffer, size_t readSize)
 				readBuffer[longBodySize + 1] != '\n')
 			{
 				parseState = ERROR;
-				std::cout<<"DEBUG6\n";
 				request.errorCode = BAD_REQUEST;
 				return;
 			}
@@ -443,7 +435,6 @@ void Client::readUri(const char* buffer, size_t readSize)
 								&CRLF[2])) != readBuffer.end())
 	{
 		parseState = ERROR;
-		std::cout<<"DEBUG9\n";
 		request.errorCode = BAD_REQUEST;
 		readBuffer.erase(readBuffer.begin(), pos + 2);
 	}
@@ -462,7 +453,6 @@ void Client::readHttpVersion(const char* buffer, size_t readSize)
 		if (request.http_version != "HTTP/1.1" && request.http_version != "HTTP/1.0")
 		{
 			parseState = ERROR;
-			std::cout<<"DEBUG10\n";
 			request.errorCode = HTTP_VERSION_NOT_SUPPORT;
 			return;
 		}
