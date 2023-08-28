@@ -3,8 +3,8 @@ NAME = webserv
 
 # Cmd & Options
 CXX			= c++
-# CXXFLAGS	= -fsanitize=address -Wall -Werror -Wextra -std=c++98 -g3 
-CXXFLAGS	= -Wall -Werror -Wextra -std=c++98 -g3 
+# CXXFLAGS	= -fsanitize=address -Wall -Werror -Wextra -std=c++98 -g3
+CXXFLAGS	= -Wall -Werror -Wextra -std=c++98 -g3
 RM 			= rm
 RMFLAGS		= -f
 OUT_DIR		= objs
@@ -12,7 +12,7 @@ SRC_DIR		= srcs
 FILE		= 	Client ClientManager \
 				Server ServerManager \
 				Config/ConfigParser Config/ConfigFunctions \
-				Http/Handler/Handler Http/Handler/ErrorHandler Http/Handler/StaticHandler Http/Handler/DynamicHandler Http/Handler/DeleteHandler \
+				Http/Handler/Handler Http/Handler/ErrorHandler Http/Handler/StaticHandler Http/Handler/DynamicHandler Http/Handler/DeleteHandler Http/Handler/RedirectHandler \
 				Message/Message Message/Request Message/Response \
 				Event \
 				Location \
@@ -40,4 +40,4 @@ fclean	: clean
 
 re		:
 	@make fclean
-	@make all 
+	@make all
