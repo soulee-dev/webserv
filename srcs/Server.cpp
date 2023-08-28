@@ -4,7 +4,7 @@
 #include <vector>
 
 Server::Server()
-    : listen(80), serverName(""), root("/"), autoIndex(false), clientBodySize(10240) {}
+    : listen(80), serverName(""), root("/"), autoIndex(false), clientBodySize(0) {}
 
 Server::~Server() {}
 

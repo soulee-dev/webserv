@@ -296,6 +296,10 @@ void Client::readBody(const char* buffer, size_t readSize)
 	{
         size_t contentLen = atoi(request.headers["content-length"].c_str());
         size_t maxLen = minLen(contentLen, server->getClientBodySize());
+
+		if (server->getClientBodySize() == 0)
+			maxLen = contentLen;
+
         size_t lengthToRead = maxLen - request.body.size();
 		if (lengthToRead > readBuffer.size())
 		{
