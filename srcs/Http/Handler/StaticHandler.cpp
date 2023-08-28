@@ -46,6 +46,7 @@ void	HandleDirectoryListing(Client& client, Request& request)
 	std::vector<unsigned char>			body;
 	std::map<std::string, std::string>	headers;
 
+	std::cout << "WHY DIRECTORYLISTING\n";
 	DIR	*dir = opendir(request.path.c_str());
 	if (!dir)
 		return HandleError(client, 404);
@@ -56,11 +57,16 @@ void	HandleDirectoryListing(Client& client, Request& request)
 	ss << "</h1><ul>";
 
 	struct dirent* entry;
+	std::string tmp_location_uri = client.getServer()->getServerName() + "/" + request.location_uri;
+	std::cout << "serverName : " << client.getServer()->getServerName() << std::endl;
 	while ((entry = readdir(dir)) != NULL)
 	{
 		ss << "<li><a href=";
-		ss << request.location_uri;
-		ss << request.file_name << "/";
+		// ss << request.location_uri;
+		ss << tmp_location_uri;
+		ss << request.file_name;
+		if (request.file_name != "")
+			ss << "/";
 		ss << entry->d_name;
 		ss << ">";
 		ss << entry->d_name;
@@ -79,7 +85,10 @@ void	ProcessDirectory(Client& client)
     Request& request = client.request;
     std::vector<std::string> indexVec = request.location.getIndex(); // 벡터에 대한 참조
     std::vector<std::string>::iterator it;
+	std::cout << "in directory" << std::endl;
 
+    if (request.location.getAutoIndex())
+        return HandleDirectoryListing(client, request);
     if (!indexVec.empty())
     {
         for (it = indexVec.begin(); it != indexVec.end(); ++it)
@@ -94,7 +103,5 @@ void	ProcessDirectory(Client& client)
             }
         }
     }
-    if (request.location.getAutoIndex())
-        return HandleDirectoryListing(client, request);
     return HandleError(client, 404);
 }

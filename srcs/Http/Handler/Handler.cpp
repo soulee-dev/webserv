@@ -90,11 +90,16 @@ bool	IsDirectory(std::string path)
 {
 	struct stat	buf;
 
+	std::cout << " in iddorecrtory. PATH : " << path << std::endl;
 	if (stat(path.c_str(), &buf) == 0)
 	{
 		if (S_ISDIR(buf.st_mode))
+		{
+			std::cout << "DIR!!" << std::endl;
 			return true;
+		}
 	}
+	std::cout << "NO DIR!!" << std::endl;
 	return false;
 }
 
@@ -157,6 +162,7 @@ void	ServeStatic(Client& client, std::string& path)
 	std::vector<unsigned char>			body;
 	std::map<std::string, std::string>	headers;
 
+	std::cout << "WHY SERVSTATIC!\n";
 	if (!IsFileExist(path))
 		return HandleError(client, 404);
 	if (!IsRegularFile(path) || !IsFileReadable(path))

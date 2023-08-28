@@ -14,8 +14,11 @@ void	HttpRequestManager::Handle(Client& client)
 	else
 	{
 		// Do Dynamic
+		std::cout << "in Handle : Dynamic\n";
 		OpenFd(client);
+		std::cout << "in handle 1\n";
 		RunCgi(client);
+		std::cout << "in handle 2\n";
 		client.response.status_code = 200;
 	}
 }
@@ -72,6 +75,7 @@ void	HttpRequestManager::Parse(Client& client)
 	}
 	else
 	{
+		std::cout << "in Parse : dynamic\n";
 		request.is_static = false;
 		size_t	pos = request.uri.find('?');
 		if (pos != std::string::npos)
@@ -93,6 +97,7 @@ void	HttpRequestManager::Parse(Client& client)
 	std::cout << "FILENAME: " << request.file_name << std::endl;
 	std::cout << "PATH_INFO: " << request.cgi_path_info << std::endl;
 	std::cout << "PATH: " << request.path << std::endl;
+	std::cout << "METHOD: " << request.method << std::endl;
 
 	std::map<std::string, std::string>::iterator it;
 	for (it = request.headers.begin(); it != request.headers.end(); ++it)

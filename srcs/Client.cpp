@@ -1,5 +1,6 @@
 #include "Client.hpp"
 #include "Event.hpp"
+#include "Http/Handler/Handler.hpp"
 #include "Server.hpp"
 #include "Color.hpp"
 #include "Http/HttpRequestManager.hpp"
@@ -51,9 +52,17 @@ int Client::readEventProcess(void)
 	}
 	else
 		return 0;
-	if (request.method != "DELETE")
-		events->changeEvents(getClientFd(), EVFILT_READ, EV_DISABLE, 0, 0, this);
-	if (request.method == "POST")
+	// if (request.method != "DELETE")
+	// if (request.method == "POST")
+	if (request.location.getAutoIndex())
+	{
+		std::cout << "IN READEVENT AUTOINDEX PROSESS\n";
+		sendBuffer = BuildResponse(response.status_code, response.headers, response.body);
+		events->changeEvents(getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, this);
+		return 1;
+	}
+	events->changeEvents(getClientFd(), EVFILT_READ, EV_DISABLE, 0, 0, this);
+	if (request.is_static == false)
 	{
 		events->changeEvents(request.pipe_fd[1], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, this);
 		events->changeEvents(request.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, this);

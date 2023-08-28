@@ -192,8 +192,9 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
 			std::cout << "EV_EOF detacted in client" << std::endl;
 			clientManager.addToDisconnectClient(currEvent.ident);
 		}
-		else if (clientManager.readEventProcess(currEvent)) // DELETE를 제외하고는 true가 나올 리가 없음
-            events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_ENABLE, 0, 0, currEvent.udata);
+		clientManager.readEventProcess(currEvent);
+		// else if (clientManager.readEventProcess(currEvent)) // DELETE를 제외하고는 true가 나올 리가 없음
+        //     events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_ENABLE, 0, 0, currEvent.udata);
     }
     else
     {
@@ -207,8 +208,7 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
         if (ret == 1)
         {
 			std::vector<unsigned char> empty_body;
-			if (currClient->request.method == "POST" || currClient->request.method == "PUT" || currClient->request.method == "GET" || currClient->request.method == "HEAD" || currClient->request.method == "DELETE")
-				currClient->events->changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
+			currClient->events->changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 			if (currClient->request.method == "PUT")
 				currClient->response.body = empty_body;
 			if (currClient->request.method == "DELETE")
