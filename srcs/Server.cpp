@@ -48,6 +48,11 @@ unsigned int Server::getClientBodySize(void) const
     return this->clientBodySize;
 }
 
+std::string Server::getUploadPath() const
+{
+    return this->uploadedPath;
+}
+
 bool Server::fillServer(std::map<std::string, Location>& mapLocations, std::map<std::string, std::string>& mapSentence)
 {
     std::map<std::string, std::string>::iterator it = mapSentence.begin();
@@ -75,6 +80,8 @@ bool Server::fillServer(std::map<std::string, Location>& mapLocations, std::map<
             this->setAutoIndex(it->second);
         else if (it->first == "client_max_body_size")
             this->setClientBodySize(it->second);
+        else if (it->first == "upload_path")
+            this->setUploadPath(it->second);
         else
             return true;
         it++;
@@ -155,4 +162,9 @@ void Server::setAutoIndex(std::string& input)
 void Server::setClientBodySize(std::string& input)
 {
     this->clientBodySize = std::strtod(input.c_str(), NULL);
+}
+
+void Server::setUploadPath(std::string& input)
+{
+    this->uploadedPath = input;
 }
