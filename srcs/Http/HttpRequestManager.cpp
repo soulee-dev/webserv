@@ -75,13 +75,12 @@ void	HttpRequestManager::Parse(Client& client)
 	}
 	else
 	{
-		std::cout << "in Parse : dynamic\n";
 		request.is_static = false;
-		size_t	pos = request.uri.find('?');
+		size_t	pos = request.file_name.find('?');
 		if (pos != std::string::npos)
 		{
-			request.cgi_args = request.uri.substr(pos + 1);
-			request.cgi_args = request.cgi_args.erase(request.cgi_args.size() - 1);
+			request.cgi_args = request.file_name.substr(pos + 1);
+			request.cgi_args = request.cgi_args.erase(request.cgi_args.size());
 		}
 		request.file_name = request.file_name.substr(0, pos);
 		size_t	path_pos = request.file_name.find("/", 10);
