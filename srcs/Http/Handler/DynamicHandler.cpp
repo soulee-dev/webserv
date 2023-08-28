@@ -1,6 +1,7 @@
 #include "DynamicHandler.hpp"
 #include "../../Client.hpp"
 #include <fcntl.h>
+#include <string>
 
 extern char **environ;
 
@@ -64,6 +65,8 @@ void	RunCgi(Client& client)
 	}
 	else
 	{
+		std::cout << "request.location.root : " << request.location.getRoot() << std::endl;
+		std::cout << "request.cgi_path_info : " << request.cgi_path_info << std::endl;
 		close(request.pipe_fd[0]);
 		request.pipe_fd[0] = -1;
 		close(request.pipe_fd_back[1]);
