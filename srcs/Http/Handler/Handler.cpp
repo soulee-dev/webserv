@@ -93,13 +93,15 @@ bool	IsDirectory(std::string path)
 	if (stat(path.c_str(), &buf) == 0)
 	{
 		if (S_ISDIR(buf.st_mode))
+		{
 			return true;
+		}
 	}
 	return false;
 }
 
 bool	IsRegularFile(std::string path)
-{	
+{
 	struct stat	buf;
 
 	if (stat(path.c_str(), &buf) == 0)
@@ -111,7 +113,7 @@ bool	IsRegularFile(std::string path)
 }
 
 bool	IsFileReadable(std::string path)
-{	
+{
 	struct stat	buf;
 
 	if (stat(path.c_str(), &buf) == 0)
@@ -123,7 +125,7 @@ bool	IsFileReadable(std::string path)
 }
 
 bool	IsFileExist(std::string path)
-{	
+{
 	struct stat	buf;
 
 	if (stat(path.c_str(), &buf) == 0)
@@ -146,6 +148,7 @@ void	ReadStaticFile(Client& client, std::string& file_name)
 		client.sendBuffer = BuildResponse(200, client.response.headers, client.response.body);
 		client.events->changeEvents(client.getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, &client);
 		close(client.request.file_fd);
+		client.request.file_fd = -1;
 	}
 	else
 		client.events->changeEvents(client.request.file_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &client);

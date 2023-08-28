@@ -5,7 +5,7 @@
 
 // constructors
 Location::Location()
-    : root("/"), allowMethod(0), autoIndex(false), clientBodySize(10240) {}
+    : root("/"), allowMethod(0), autoIndex(false), clientBodySize(0) {}
 // destructor
 Location::~Location() {}
 // copy constructors

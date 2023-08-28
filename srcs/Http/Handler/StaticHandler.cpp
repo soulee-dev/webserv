@@ -18,7 +18,7 @@ void	HandleStatic(Client& client)
 	{
 		struct stat file_stat;
 
-		client.request.file_fd = open(request.path.c_str(), O_RDONLY | O_CREAT, 0644);
+		client.request.file_fd = open(request.path.c_str(), O_WRONLY | O_CREAT, 0644);
 		if (errno == EEXIST)
 			client.response.status_code = 201;
 		else
@@ -43,24 +43,30 @@ int	is_directory(std::string fileName)
 
 void	HandleDirectoryListing(Client& client, Request& request)
 {
+	std::string							path;
 	std::vector<unsigned char>			body;
 	std::map<std::string, std::string>	headers;
 
+	std::cout << "WHY DIRECTORYLISTING\n";
 	DIR	*dir = opendir(request.path.c_str());
 	if (!dir)
 		return HandleError(client, 404);
 
+	if (request.location_uri != "/")
+		path = request.location_uri;
+	path += request.file_name;
 	std::stringstream	ss;
-	ss << "<!DOCTYPE html><head><title>Index of " << request.path;
-	ss << "</title></head><body><h1>Index of " << request.path;
+	ss << "<!DOCTYPE html><head><title>Index of " << path;
+	ss << "</title></head><body><h1>Index of " << path;
 	ss << "</h1><ul>";
 
 	struct dirent* entry;
+	std::cout << "serverName : " << client.getServer()->getServerName() << std::endl;
 	while ((entry = readdir(dir)) != NULL)
 	{
 		ss << "<li><a href=";
-		ss << request.location_uri;
-		ss << request.file_name << "/";
+		ss << path;
+		ss << "/";
 		ss << entry->d_name;
 		ss << ">";
 		ss << entry->d_name;
@@ -94,7 +100,10 @@ void	ProcessDirectory(Client& client)
             }
         }
     }
-    if (request.location.getAutoIndex())
+	if (request.location.getAutoIndex())
+	{
+		client.response.is_auto_index = true;
         return HandleDirectoryListing(client, request);
+	}
     return HandleError(client, 404);
 }

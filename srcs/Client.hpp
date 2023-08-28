@@ -59,7 +59,7 @@ public:
     SOCKET getClientFd(void) const;
 
     void errorEventProcess(void);
-    bool readEventProcess(void);
+    int readEventProcess(void);
     bool writeEventProcess(void);
     bool readMessage(void);
     bool checkMethod(void);

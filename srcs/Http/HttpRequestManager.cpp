@@ -14,10 +14,11 @@ void	HttpRequestManager::Handle(Client& client)
 	else
 	{
 		// Do Dynamic
+		std::cout << "in Handle : Dynamic\n";
 		OpenFd(client);
-    	client.events->changeEvents(client.request.pipe_fd[1], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, &client);
-    	client.events->changeEvents(client.request.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, &client);
+		std::cout << "in handle 1\n";
 		RunCgi(client);
+		std::cout << "in handle 2\n";
 		client.response.status_code = 200;
 	}
 }
@@ -75,11 +76,11 @@ void	HttpRequestManager::Parse(Client& client)
 	else
 	{
 		request.is_static = false;
-		size_t	pos = request.uri.find('?');
+		size_t	pos = request.file_name.find('?');
 		if (pos != std::string::npos)
 		{
-			request.cgi_args = request.uri.substr(pos + 1);
-			request.cgi_args = request.cgi_args.erase(request.cgi_args.size() - 1);
+			request.cgi_args = request.file_name.substr(pos + 1);
+			request.cgi_args = request.cgi_args.erase(request.cgi_args.size());
 		}
 		request.file_name = request.file_name.substr(0, pos);
 		size_t	path_pos = request.file_name.find("/", 10);
@@ -95,6 +96,7 @@ void	HttpRequestManager::Parse(Client& client)
 	std::cout << "FILENAME: " << request.file_name << std::endl;
 	std::cout << "PATH_INFO: " << request.cgi_path_info << std::endl;
 	std::cout << "PATH: " << request.path << std::endl;
+	std::cout << "METHOD: " << request.method << std::endl;
 
 	std::map<std::string, std::string>::iterator it;
 	for (it = request.headers.begin(); it != request.headers.end(); ++it)

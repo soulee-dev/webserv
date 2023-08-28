@@ -22,10 +22,12 @@ Thanks for visiting!"""
 
 html = html_template.format(buf, a, b, result)
 
-header_template = """Connection: close\r\nContent-length: {}\r\nContent-type: text/html\r\n\r\n"""
+# header_template = """Connection: close\r\nContent-length: {}\r\nContent-type: text/html\r\n\r\n"""
+header_template = """Connection: close\r\nContent-type: text/html\r\n\r\n"""
 
 header = header_template.format(len(html))
 
-print(header, end="")
+# print(header, end="")
+print(header_template)
 print(html)
 sys.exit()

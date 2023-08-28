@@ -8,18 +8,13 @@ Request::Request()
 
 void Request::clear(void)
 {
-	status_code = 0;
-	method = "";
-	http_version = "";
-	headers.clear();
-	body.clear();
+	Message::clear();
 
 	file_fd = -1;
 	file_size = 0;
 	RW_file_size = 0;
 	writeIndex = 0;
 	is_static = true;
-	is_put = false;
 	file_name.clear();
 	path.clear();
 	cgi_args.clear();

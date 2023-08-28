@@ -1,4 +1,6 @@
 #include "Client.hpp"
+#include "Event.hpp"
+#include "Http/Handler/Handler.hpp"
 #include "Server.hpp"
 #include "Color.hpp"
 #include "Http/HttpRequestManager.hpp"
@@ -31,7 +33,7 @@ void Client::errorEventProcess(void)
 	std::cout << "errorEventProcess" << std::endl;
 }
 
-bool Client::readEventProcess(void)
+int Client::readEventProcess(void)
 {
 	if (parseState == DONE)
 	{
@@ -49,20 +51,25 @@ bool Client::readEventProcess(void)
 		parseState = READY;
 	}
 	else
-		return false;
-	// Dynamic인 경우 Handle안에서 EVFILT를 걸어주기 때문에 해줄필요 없다.
-	if (request.is_static || parseState == ERROR)
+		return 0;
+	if (response.is_auto_index)
 	{
-		if (request.file_fd != -1 && !request.is_put)
-			events->changeEvents(request.file_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, this);
-		else if (request.file_fd != -1 && request.is_put)
-		{
-			events->changeEvents(request.file_fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, this);
-		}
-		else
-			events->changeEvents(getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, this);
+		std::cout << "IN READEVENT AUTOINDEX PROSESS\n";
+		sendBuffer = BuildResponse(response.status_code, response.headers, response.body);
+		events->changeEvents(getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, this);
+		return 1;
 	}
-	return true;
+	events->changeEvents(getClientFd(), EVFILT_READ, EV_DISABLE, 0, 0, this);
+	if (request.is_static == false)
+	{
+		events->changeEvents(request.pipe_fd[1], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, this);
+		events->changeEvents(request.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, this);
+	}
+	else if (request.method == "PUT")
+		events->changeEvents(request.file_fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, this);
+	else if (request.method == "GET" || request.method == "HEAD")
+		events->changeEvents(request.file_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, this);
+	return 1;
 }
 
 int Client::getClientFd(void) const
@@ -84,7 +91,7 @@ bool Client::writeEventProcess(void)
 	if (writeIndex == sendBuffer.size())
 	{
 		writeIndex = 0;
-		sendBuffer.clear();;
+		sendBuffer.clear();
 	}
 	return false;
 }
@@ -92,7 +99,7 @@ bool Client::writeEventProcess(void)
 bool Client::readMessage(void)
 {
 	const size_t BUFFER_SIZE = 65536;
-	char buffer[BUFFER_SIZE + 1];
+	char buffer[BUFFER_SIZE];
 	ssize_t readSize = read(client_fd, buffer, BUFFER_SIZE);
 
 	if (readSize <= 0)
@@ -101,7 +108,6 @@ bool Client::readMessage(void)
 			std::cout << "read() error" << std::endl;
 		return true;
 	}
-	buffer[readSize] = '\0';
 
 	switch (parseState)
 	{
@@ -152,14 +158,12 @@ void Client::readHeader(const char* buffer, size_t readSize)
 			if (request.headers.find("host") == request.headers.end())
 			{
 				parseState = ERROR;
-				std::cout<<"DEBUG1\n";
 				request.errorCode = BAD_REQUEST;
 				return;
 			}
 			else if (checkMethod())
 			{
 				parseState = ERROR;
-				std::cout << "DEBUG CHECKMETHOD\n";
 				request.errorCode = METHOD_NOT_ALLOWED;
 				return;
 			}
@@ -196,7 +200,6 @@ void Client::readHeader(const char* buffer, size_t readSize)
 		if (key.size() == 0)
 		{
 			parseState = ERROR;
-			std::cout<<"DEBUG3\n";
 			request.errorCode = BAD_REQUEST;
 			return;
 		}
@@ -205,7 +208,6 @@ void Client::readHeader(const char* buffer, size_t readSize)
 			if (isspace(key[i]))
 			{
 				parseState = ERROR;
-				std::cout<<"DEBUG4\n";
 				request.errorCode = BAD_REQUEST;
 				return;
 			}
@@ -214,7 +216,6 @@ void Client::readHeader(const char* buffer, size_t readSize)
 		if (value.size() == 0)
 		{
 			parseState = ERROR;
-			std::cout<<"DEBUG5\n";
 			request.errorCode = BAD_REQUEST;
 			return;
 		}
@@ -260,7 +261,6 @@ void Client::readChunked(const char* buffer, size_t readSize)
 				readBuffer[longBodySize + 1] != '\n')
 			{
 				parseState = ERROR;
-				std::cout<<"DEBUG6\n";
 				request.errorCode = BAD_REQUEST;
 				return;
 			}
@@ -288,6 +288,10 @@ void Client::readBody(const char* buffer, size_t readSize)
 	{
         size_t contentLen = atoi(request.headers["content-length"].c_str());
         size_t maxLen = minLen(contentLen, server->getClientBodySize());
+
+		if (server->getClientBodySize() == 0)
+			maxLen = contentLen;
+
         size_t lengthToRead = maxLen - request.body.size();
 		if (lengthToRead > readBuffer.size())
 		{
@@ -431,7 +435,6 @@ void Client::readUri(const char* buffer, size_t readSize)
 								&CRLF[2])) != readBuffer.end())
 	{
 		parseState = ERROR;
-		std::cout<<"DEBUG9\n";
 		request.errorCode = BAD_REQUEST;
 		readBuffer.erase(readBuffer.begin(), pos + 2);
 	}
@@ -450,7 +453,6 @@ void Client::readHttpVersion(const char* buffer, size_t readSize)
 		if (request.http_version != "HTTP/1.1" && request.http_version != "HTTP/1.0")
 		{
 			parseState = ERROR;
-			std::cout<<"DEBUG10\n";
 			request.errorCode = HTTP_VERSION_NOT_SUPPORT;
 			return;
 		}

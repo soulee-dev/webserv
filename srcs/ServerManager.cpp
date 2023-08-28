@@ -1,5 +1,6 @@
 #include "ServerManager.hpp"
 #include "Color.hpp"
+#include "Http/Handler/DeleteHandler.hpp"
 #include "Http/Handler/Handler.hpp"
 #include <map>
 #include <vector>
@@ -191,29 +192,32 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
 			std::cout << "EV_EOF detacted in client" << std::endl;
 			clientManager.addToDisconnectClient(currEvent.ident);
 		}
-		else if (clientManager.readEventProcess(currEvent))
-            events.changeEvents(currEvent.ident, EVFILT_WRITE, EV_ENABLE, 0, 0, currEvent.udata);
+		clientManager.readEventProcess(currEvent);
     }
     else
     {
-        ssize_t ret = clientManager.CgiToResReadProcess(currEvent);
+        ssize_t ret = clientManager.CgiToResReadProcess(currEvent); // 전부 read한 상황이면 1을 반환함
         if (ret != 0)
 		{
 			close(currEvent.ident); // Dynamic 일때는  pipe를 닫아주는 close // Static일때는 파일의 fd를 닫아줌
+			currClient->request.pipe_fd_back[0] = -1;
+			currClient->request.file_fd = -1;
 		}
         if (ret == 1)
         {
 			std::vector<unsigned char> empty_body;
+			currClient->events->changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 			if (currClient->request.method == "PUT")
 				currClient->response.body = empty_body;
+			if (currClient->request.method == "DELETE")
+				HandleDelete(*currClient);
 			else if (currClient->request.is_static == false)
 			{
 				currClient->response.headers["Connection"] = "close";
 				SetResponse(*currClient, 200, currClient->response.headers, currClient->response.body);
 			}
 			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, currClient->request.is_static);
-			events.changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
-			if (!currClient->request.is_static)
+			if (currClient->request.is_static == false)
 				wait(NULL);
         }
     }
@@ -231,12 +235,16 @@ void ServerManager::writeEventProcess(struct kevent& currEvent)
     }
     else
     {
-        ssize_t res = clientManager.ReqToCgiWriteProcess(currEvent);
-        if (res != 0)
+        ssize_t res = clientManager.ReqToCgiWriteProcess(currEvent); // PUT일때 전부 write했으면 1을 반환
+		if (res == 1)
 		{
 			Client* currClient = reinterpret_cast<Client*>(currEvent.udata);
-			close(currClient->request.pipe_fd[1]);
-		} 
+
+			currClient->response.headers["Connection"] = "keep-alive";
+			SetResponse(*currClient, 200, currClient->response.headers, currClient->response.body);
+			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, currClient->request.is_static);
+			currClient->events->changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
+		}
     }
 }
 

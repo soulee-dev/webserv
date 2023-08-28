@@ -50,6 +50,7 @@ void	RunCgi(Client& client)
 		setenv("PATH_INFO", request.cgi_path_info.c_str(), 1);
 		setenv("HTTP_X_SECRET_HEADER_FOR_TEST", request.headers["x-secret-header-for-test"].c_str(), 1);
 		setenv("CONTENT_TYPE", request.headers["content-type"].c_str(), 1);
+		setenv("HTTP_COOKIE", request.headers["cookie"].c_str(), 1);
 
 		if (request.uri.find(".bla") != std::string::npos)
 			request.path = "./tester/cgi_tester";
@@ -64,6 +65,8 @@ void	RunCgi(Client& client)
 	else
 	{
 		close(request.pipe_fd[0]);
+		request.pipe_fd[0] = -1;
 		close(request.pipe_fd_back[1]);
+		request.pipe_fd_back[1] = -1;
 	}
 }
