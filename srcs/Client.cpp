@@ -54,7 +54,7 @@ int Client::readEventProcess(void)
 		return 0;
 	// if (request.method != "DELETE")
 	// if (request.method == "POST")
-	if (request.location.getAutoIndex())
+	if (response.is_auto_index)
 	{
 		std::cout << "IN READEVENT AUTOINDEX PROSESS\n";
 		sendBuffer = BuildResponse(response.status_code, response.headers, response.body);

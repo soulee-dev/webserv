@@ -8,11 +8,7 @@ Request::Request()
 
 void Request::clear(void)
 {
-	status_code = 0;
-	method = "";
-	http_version = "";
-	headers.clear();
-	body.clear();
+	Message::clear();
 
 	file_fd = -1;
 	file_size = 0;

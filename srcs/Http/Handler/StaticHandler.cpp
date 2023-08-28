@@ -87,8 +87,6 @@ void	ProcessDirectory(Client& client)
     std::vector<std::string>::iterator it;
 	std::cout << "in directory" << std::endl;
 
-    if (request.location.getAutoIndex())
-        return HandleDirectoryListing(client, request);
     if (!indexVec.empty())
     {
         for (it = indexVec.begin(); it != indexVec.end(); ++it)
@@ -103,5 +101,10 @@ void	ProcessDirectory(Client& client)
             }
         }
     }
+	if (request.location.getAutoIndex())
+	{
+		client.response.is_auto_index = true;
+        return HandleDirectoryListing(client, request);
+	}
     return HandleError(client, 404);
 }

@@ -13,7 +13,7 @@ FILE		= 	Client ClientManager \
 				Server ServerManager \
 				Config/ConfigParser Config/ConfigFunctions \
 				Http/Handler/Handler Http/Handler/ErrorHandler Http/Handler/StaticHandler Http/Handler/DynamicHandler Http/Handler/DeleteHandler \
-				Message/Message Message/Request \
+				Message/Message Message/Request Message/Response \
 				Event \
 				Location \
 				Http/Handler/HttpStatusCodes Http/HttpRequestManager \
