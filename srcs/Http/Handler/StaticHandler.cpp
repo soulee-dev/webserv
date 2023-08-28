@@ -43,6 +43,7 @@ int	is_directory(std::string fileName)
 
 void	HandleDirectoryListing(Client& client, Request& request)
 {
+	std::string							path;
 	std::vector<unsigned char>			body;
 	std::map<std::string, std::string>	headers;
 
@@ -51,9 +52,12 @@ void	HandleDirectoryListing(Client& client, Request& request)
 	if (!dir)
 		return HandleError(client, 404);
 
+	if (request.location_uri != "/")
+		path = request.location_uri;
+	path += request.file_name;
 	std::stringstream	ss;
-	ss << "<!DOCTYPE html><head><title>Index of " << request.file_name;
-	ss << "</title></head><body><h1>Index of " << request.file_name;
+	ss << "<!DOCTYPE html><head><title>Index of " << path;
+	ss << "</title></head><body><h1>Index of " << path;
 	ss << "</h1><ul>";
 
 	struct dirent* entry;
@@ -61,7 +65,7 @@ void	HandleDirectoryListing(Client& client, Request& request)
 	while ((entry = readdir(dir)) != NULL)
 	{
 		ss << "<li><a href=";
-		ss << request.file_name;
+		ss << path;
 		ss << "/";
 		ss << entry->d_name;
 		ss << ">";
