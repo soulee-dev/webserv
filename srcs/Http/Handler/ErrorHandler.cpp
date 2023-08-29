@@ -1,5 +1,13 @@
 #include "ErrorHandler.hpp"
 #include "../../Client.hpp"
+#include <sys/stat.h>
+
+static std::string intToString(int number)
+{
+	std::stringstream sstream;
+	sstream << number;
+	return sstream.str();
+}
 
 void	HandleError(Client &client, int status_code)
 {
@@ -26,7 +34,13 @@ void	HandleError(Client &client, int status_code)
 	if (find_flag)
 		file_name = "./html/error_pages/" + it->second;
 	else
-		file_name = "./html/error_pages/40x.html";
+	{
+		std::cout << intToString(status_code);
+		file_name = "./html/error_pages/" + intToString(status_code) + ".html";
+		struct stat error_page_stat;
+		if (stat(file_name.c_str(), &error_page_stat) != 0 || !S_ISREG(error_page_stat.st_mode))
+			file_name = "./html/error_pages/40x.html";
+	}
 
 	// TODO check whether there is file
 	client.response.status_code = status_code;
