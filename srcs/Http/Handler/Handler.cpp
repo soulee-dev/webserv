@@ -70,7 +70,6 @@ std::vector<unsigned char>	BuildResponse(int status_code, std::map<std::string, 
 		char const * const CRLFCRLF = "\r\n\r\n";
 		int pos = std::search(body.begin(), body.end(), &CRLFCRLF[0], &CRLFCRLF[4]) - body.begin();
 		headers["Content-Length"] = itos(body.size() - pos - 4);
-		std::cout << "BUILD HEADER\n";
 		response = BuildHeader(status_code, headers, false);
 	}
 	response.insert(response.end(), body.begin(), body.end());

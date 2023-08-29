@@ -83,7 +83,6 @@ bool Client::writeEventProcess(void)
 	if (writeSize == -1)
 	{
 		std::cout << "write() error" << std::endl;
-		std::cout << errno << std::endl;
 		return true;
 	}
 	writeIndex += writeSize;

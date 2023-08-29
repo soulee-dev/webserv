@@ -3,6 +3,8 @@
 #include "Http/Handler/DeleteHandler.hpp"
 #include "Http/Handler/Handler.hpp"
 #include <map>
+#include <sys/signal.h>
+#include <sys/socket.h>
 #include <vector>
 
 ServerManager::~ServerManager(void) {}
@@ -65,7 +67,6 @@ int ServerManager::openPort(ServerManager::PORT port, Server& server)
 	hint.ai_socktype = SOCK_STREAM;
 
 	std::string strPortNumber = intToString(port);
-	std::cout << strPortNumber << std::endl;
 
 	int errorCode = getaddrinfo(server.getServerName().c_str(), strPortNumber.c_str(), &hint, &info);
 	if (errorCode == -1)
@@ -131,8 +132,12 @@ void ServerManager::runServerManager(void)
 
 int ServerManager::acceptClient(SOCKET server_fd)
 {
+	struct _linger linger;
+	linger.l_onoff = 1;
+	linger.l_linger = 0;
     const int client_fd = accept(server_fd, NULL, NULL);
     const int serverPort = portByServerSocket[server_fd];
+	setsockopt(client_fd, SOL_SOCKET, SO_LINGER, &linger, sizeof(_linger));
     if (client_fd == -1)
     {
         std::cout << "accept() error" << std::endl;
@@ -200,7 +205,6 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
     {
 		if (currEvent.flags & EV_EOF)
 		{
-			std::cout << "EV_EOF detacted in client" << std::endl;
 			clientManager.addToDisconnectClient(currEvent.ident);
 		}
 		clientManager.readEventProcess(currEvent);
