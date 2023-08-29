@@ -9,9 +9,18 @@ ServerManager::~ServerManager(void) {}
 
 ServerManager::ServerManager(void) {}
 
+void segSignalHandler(int signo)
+{
+	static_cast<void>(signo);
+	std::cout << "Segmentation Fault Detected!!" << std::endl;
+	std::cout << "Please Check server_name in your config file" << std::endl;
+	exit(1);
+}
+
 void ServerManager::initServers(void)
 {
 	std::map<PORT, Server>::iterator portIter = servers.begin();
+	signal(SIGSEGV, segSignalHandler);
 
 	if (events.initKqueue())
 	{
