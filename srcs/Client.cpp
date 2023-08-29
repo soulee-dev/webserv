@@ -82,7 +82,6 @@ bool Client::writeEventProcess(void)
 	int writeSize = write(client_fd, &sendBuffer[writeIndex], size);
 	if (writeSize == -1)
 	{
-		std::cout << "write() error" << std::endl;
 		return true;
 	}
 	writeIndex += writeSize;
@@ -102,8 +101,6 @@ bool Client::readMessage(void)
 
 	if (readSize <= 0)
 	{
-		if (readSize == -1)
-			std::cout << "read() error" << std::endl;
 		return true;
 	}
 
