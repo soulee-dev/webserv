@@ -2,10 +2,16 @@
 #include "../Client.hpp"
 #include "../Location.hpp"
 #include "Handler/Handler.hpp"
+#include "Handler/RedirectHandler.hpp"
 
 void	HttpRequestManager::Handle(Client& client)
 {
 	Parse(client);
+	if (client.request.location.getRedirection().empty() == false)
+	{
+		HandleRedirect(client);
+		return ;
+	}
 	if (client.request.is_static)
 	{
 		// Do Static

@@ -52,7 +52,7 @@ int Client::readEventProcess(void)
 	}
 	else
 		return 0;
-	if (response.is_auto_index)
+	if (response.is_auto_index || request.location.getRedirection().empty() == false)
 	{
 		sendBuffer = BuildResponse(response.status_code, response.headers, response.body);
 		events->changeEvents(getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, this);
