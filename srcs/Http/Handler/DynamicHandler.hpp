@@ -3,5 +3,5 @@
 #include "Handler.hpp"
 #include <unistd.h>
 
-void OpenFd(Client& client);
-void RunCgi(Client& client);
+bool OpenFd(Client& client);
+bool RunCgi(Client& client);

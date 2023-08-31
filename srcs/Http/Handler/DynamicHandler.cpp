@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <string>
 
+int g_exit_code = 0;
 extern char **environ;
 static std::string intToString(int number)
 {
@@ -12,22 +13,23 @@ static std::string intToString(int number)
 }
 
 
-void	OpenFd(Client &client)
+bool	OpenFd(Client &client)
 {
 	Request &request = client.request;
 
 	if (pipe(request.pipe_fd) == -1 || pipe(request.pipe_fd_back) == -1)
 	{
 		std::cerr << "Pipe error" << std::endl;
-		exit(0);
+		return false;
 	}
 	fcntl(request.pipe_fd[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 	fcntl(request.pipe_fd_back[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 	fcntl(request.pipe_fd[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 	fcntl(request.pipe_fd_back[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+	return true;
 }
 
-void	RunCgi(Client& client)
+bool	RunCgi(Client& client)
 {
 	Request &request = client.request;
 
@@ -35,7 +37,7 @@ void	RunCgi(Client& client)
 	if (pid == -1)
 	{
 		std::cerr << "Fork error" << std::endl;
-		exit(0);
+		return false;
 	}
 	if (pid == 0)
 	{
@@ -65,16 +67,28 @@ void	RunCgi(Client& client)
 
 		if (execve(request.path.c_str(), NULL, environ) == -1)
 		{
-			// TODO: Handle Error
-			std::cerr << "execve error" << std::endl;
-			exit(0);
+			g_exit_code = 126;
+			exit(126);
 		}
 	}
 	else
 	{
+		if (g_exit_code == 126)
+		{
+			close(request.pipe_fd[0]);
+			request.pipe_fd[0] = -1;
+			close(request.pipe_fd[1]);
+			request.pipe_fd[1] = -1;
+			close(request.pipe_fd_back[0]);
+			request.pipe_fd_back[0] = -1;
+			close(request.pipe_fd_back[1]);
+			request.pipe_fd_back[1] = -1;
+			return false;
+		}
 		close(request.pipe_fd[0]);
 		request.pipe_fd[0] = -1;
 		close(request.pipe_fd_back[1]);
 		request.pipe_fd_back[1] = -1;
 	}
+	return true;
 }

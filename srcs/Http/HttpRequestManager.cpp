@@ -20,8 +20,16 @@ void	HttpRequestManager::Handle(Client& client)
 	else
 	{
 		// Do Dynamic
-		OpenFd(client);
-		RunCgi(client);
+		if (!OpenFd(client))
+		{
+			client.request.is_error = true;
+			return HandleError(client, 500);
+		}
+		if (!RunCgi(client))
+		{
+			client.request.is_error = true;
+			return HandleError(client, 500);
+		}
 		client.response.status_code = 200;
 	}
 }

@@ -59,12 +59,12 @@ int Client::readEventProcess(void)
 		return 1;
 	}
 	events->changeEvents(getClientFd(), EVFILT_READ, EV_DISABLE, 0, 0, this);
-	if (request.is_static == false)
+	if (request.is_static == false && !request.is_error)
 	{
 		events->changeEvents(request.pipe_fd[1], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, this);
 		events->changeEvents(request.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, this);
 	}
-	else if (request.method == "PUT")
+	else if (request.method == "PUT" && request.is_static)
 		events->changeEvents(request.file_fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, this);
 	else if (request.method == "GET" || request.method == "HEAD")
 		events->changeEvents(request.file_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, this);
