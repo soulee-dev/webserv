@@ -48,3 +48,9 @@ public:
     void writeEventProcess(struct kevent& currEvent);
     void readEventProcess(struct kevent& currEvent);
 };
+
+struct _linger
+{
+    int l_onoff;
+    int l_linger;
+};

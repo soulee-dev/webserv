@@ -32,6 +32,7 @@ class Request : public Message
 		std::string	location_uri;
     	std::string uri;
 		enum ParseErrorCode errorCode;
+		bool	is_error;
 
 		void	clear(void);
 };

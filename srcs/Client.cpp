@@ -52,20 +52,19 @@ int Client::readEventProcess(void)
 	}
 	else
 		return 0;
-	if (response.is_auto_index)
+	if (response.is_auto_index || request.location.getRedirection().empty() == false)
 	{
-		std::cout << "IN READEVENT AUTOINDEX PROSESS\n";
 		sendBuffer = BuildResponse(response.status_code, response.headers, response.body);
 		events->changeEvents(getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, this);
 		return 1;
 	}
 	events->changeEvents(getClientFd(), EVFILT_READ, EV_DISABLE, 0, 0, this);
-	if (request.is_static == false)
+	if (request.is_static == false && !request.is_error)
 	{
 		events->changeEvents(request.pipe_fd[1], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, this);
 		events->changeEvents(request.pipe_fd_back[0], EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, this);
 	}
-	else if (request.method == "PUT")
+	else if (request.method == "PUT" && request.is_static)
 		events->changeEvents(request.file_fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, this);
 	else if (request.method == "GET" || request.method == "HEAD")
 		events->changeEvents(request.file_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, this);
@@ -83,8 +82,6 @@ bool Client::writeEventProcess(void)
 	int writeSize = write(client_fd, &sendBuffer[writeIndex], size);
 	if (writeSize == -1)
 	{
-		std::cout << "write() error" << std::endl;
-		std::cout << errno << std::endl;
 		return true;
 	}
 	writeIndex += writeSize;
@@ -104,8 +101,6 @@ bool Client::readMessage(void)
 
 	if (readSize <= 0)
 	{
-		if (readSize == -1)
-			std::cout << "read() error" << std::endl;
 		return true;
 	}
 

@@ -2,10 +2,16 @@
 #include "../Client.hpp"
 #include "../Location.hpp"
 #include "Handler/Handler.hpp"
+#include "Handler/RedirectHandler.hpp"
 
 void	HttpRequestManager::Handle(Client& client)
 {
 	Parse(client);
+	if (client.request.location.getRedirection().empty() == false)
+	{
+		HandleRedirect(client);
+		return ;
+	}
 	if (client.request.is_static)
 	{
 		// Do Static
@@ -14,11 +20,21 @@ void	HttpRequestManager::Handle(Client& client)
 	else
 	{
 		// Do Dynamic
-		std::cout << "in Handle : Dynamic\n";
-		OpenFd(client);
-		std::cout << "in handle 1\n";
-		RunCgi(client);
-		std::cout << "in handle 2\n";
+		if (!IsFileExist(client.request.path) || !IsRegularFile(client.request.path) || !IsFileReadable(client.request.path))
+		{
+			client.request.is_error = true;
+			return HandleError(client, 500);
+		}
+		if (!OpenFd(client))
+		{
+			client.request.is_error = true;
+			return HandleError(client, 500);
+		}
+		if (!RunCgi(client))
+		{
+			client.request.is_error = true;
+			return HandleError(client, 500);
+		}
 		client.response.status_code = 200;
 	}
 }
@@ -93,6 +109,13 @@ void	HttpRequestManager::Parse(Client& client)
 	request.location_uri = found_uri;
 	request.location = client.getServer()->getLocations()[found_uri];
 	request.path = request.location.getRoot() + request.file_name;
+	if (client.getServer()->getUploadPath() != "")
+	{
+		request.cgi_path_info = request.location.getRoot();// + request.cgi_path_info;
+		if (request.cgi_path_info[request.cgi_path_info.size() - 1] != '/')
+			request.cgi_path_info += "/";
+		request.cgi_path_info += client.getServer()->getUploadPath();
+	}
 	std::cout << "FILENAME: " << request.file_name << std::endl;
 	std::cout << "PATH_INFO: " << request.cgi_path_info << std::endl;
 	std::cout << "PATH: " << request.path << std::endl;

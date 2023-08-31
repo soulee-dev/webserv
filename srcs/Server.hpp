@@ -15,6 +15,7 @@ private:
     bool autoIndex;
     size_t clientBodySize;
     std::map<std::string, Location> locations;
+    std::string uploadedPath;
 
     void setListen(std::string& input);
     void setServerName(std::string& input);
@@ -23,6 +24,7 @@ private:
     bool setRedirection(std::string const& sentence);
     void setAutoIndex(std::string& input);
     void setClientBodySize(std::string& input);
+    void setUploadPath(std::string& input);
 
 public:
     Server();
@@ -37,4 +39,5 @@ public:
     unsigned int getClientBodySize() const;
     std::map<std::string, Location> getLocations() const;
     std::string getServerName() const;
+    std::string getUploadPath() const;
 };

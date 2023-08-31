@@ -3,15 +3,26 @@
 #include "Http/Handler/DeleteHandler.hpp"
 #include "Http/Handler/Handler.hpp"
 #include <map>
+#include <sys/signal.h>
+#include <sys/socket.h>
 #include <vector>
 
 ServerManager::~ServerManager(void) {}
 
 ServerManager::ServerManager(void) {}
 
+void segSignalHandler(int signo)
+{
+	static_cast<void>(signo);
+	std::cout << "Segmentation Fault Detected!!" << std::endl;
+	std::cout << "Please Check server_name in your config file" << std::endl;
+	exit(1);
+}
+
 void ServerManager::initServers(void)
 {
 	std::map<PORT, Server>::iterator portIter = servers.begin();
+	signal(SIGSEGV, segSignalHandler);
 
 	if (events.initKqueue())
 	{
@@ -31,7 +42,8 @@ void ServerManager::initServers(void)
 
 static std::string intToString(int number)
 {
-	std::stringstream sstream(number);
+	std::stringstream sstream;
+	sstream << number;
 	return sstream.str();
 }
 
@@ -120,8 +132,12 @@ void ServerManager::runServerManager(void)
 
 int ServerManager::acceptClient(SOCKET server_fd)
 {
+	struct _linger linger;
+	linger.l_onoff = 1;
+	linger.l_linger = 0;
     const int client_fd = accept(server_fd, NULL, NULL);
     const int serverPort = portByServerSocket[server_fd];
+	setsockopt(client_fd, SOL_SOCKET, SO_LINGER, &linger, sizeof(_linger));
     if (client_fd == -1)
     {
         std::cout << "accept() error" << std::endl;
@@ -189,7 +205,6 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
     {
 		if (currEvent.flags & EV_EOF)
 		{
-			std::cout << "EV_EOF detacted in client" << std::endl;
 			clientManager.addToDisconnectClient(currEvent.ident);
 		}
 		clientManager.readEventProcess(currEvent);
@@ -207,17 +222,17 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
         {
 			std::vector<unsigned char> empty_body;
 			currClient->events->changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
-			if (currClient->request.method == "PUT")
+			if (currClient->request.method == "PUT" && !currClient->request.is_error)
 				currClient->response.body = empty_body;
 			if (currClient->request.method == "DELETE")
 				HandleDelete(*currClient);
-			else if (currClient->request.is_static == false)
+			else if (currClient->request.is_static == false && !currClient->request.is_error)
 			{
 				currClient->response.headers["Connection"] = "close";
 				SetResponse(*currClient, 200, currClient->response.headers, currClient->response.body);
 			}
-			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, currClient->request.is_static);
-			if (currClient->request.is_static == false)
+			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, (currClient->request.is_static | currClient->request.is_error));
+			if (currClient->request.is_static == false && !currClient->request.is_error)
 				wait(NULL);
         }
     }
@@ -242,7 +257,7 @@ void ServerManager::writeEventProcess(struct kevent& currEvent)
 
 			currClient->response.headers["Connection"] = "keep-alive";
 			SetResponse(*currClient, 200, currClient->response.headers, currClient->response.body);
-			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, currClient->request.is_static);
+			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, (currClient->request.is_static | currClient->request.is_error));
 			currClient->events->changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 		}
     }

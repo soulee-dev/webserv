@@ -53,7 +53,7 @@ def main():
     if 'session' not in cookies:
         session_id = set_session_id()
         cookies['session'] = session_id
-        cookies['session']['path'] = '/cgi-bin'
+        cookies['session']['path'] = '/'
         session_data = {}
     else:
         session_id = cookies['session'].value

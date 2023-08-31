@@ -26,4 +26,5 @@ void Request::clear(void)
 	location_uri.clear();
 	uri.clear();
 	errorCode = NOT_ERROR;
+	is_error = false;
 }

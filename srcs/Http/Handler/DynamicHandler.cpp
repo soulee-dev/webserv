@@ -1,25 +1,34 @@
 #include "DynamicHandler.hpp"
 #include "../../Client.hpp"
 #include <fcntl.h>
+#include <string>
 
 extern char **environ;
+static std::string intToString(int number)
+{
+	std::stringstream sstream;
+	sstream << number;
+	return sstream.str();
+}
 
-void	OpenFd(Client &client)
+
+bool	OpenFd(Client &client)
 {
 	Request &request = client.request;
 
 	if (pipe(request.pipe_fd) == -1 || pipe(request.pipe_fd_back) == -1)
 	{
 		std::cerr << "Pipe error" << std::endl;
-		exit(0);
+		return false;
 	}
 	fcntl(request.pipe_fd[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 	fcntl(request.pipe_fd_back[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 	fcntl(request.pipe_fd[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 	fcntl(request.pipe_fd_back[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+	return true;
 }
 
-void	RunCgi(Client& client)
+bool	RunCgi(Client& client)
 {
 	Request &request = client.request;
 
@@ -27,7 +36,7 @@ void	RunCgi(Client& client)
 	if (pid == -1)
 	{
 		std::cerr << "Fork error" << std::endl;
-		exit(0);
+		return false;
 	}
 	if (pid == 0)
 	{
@@ -40,7 +49,7 @@ void	RunCgi(Client& client)
 		close(request.pipe_fd_back[0]);
 
 		int size = request.body.size();
-		std::string size_str = std::to_string(size);
+		std::string size_str = intToString(size);
 		const char *size_cstr = size_str.c_str();
 
 		setenv("QUERY_STRING", request.cgi_args.c_str(), 1);
@@ -57,9 +66,7 @@ void	RunCgi(Client& client)
 
 		if (execve(request.path.c_str(), NULL, environ) == -1)
 		{
-			// TODO: Handle Error
-			std::cerr << "execve error" << std::endl;
-			exit(0);
+			exit(1);
 		}
 	}
 	else
@@ -69,4 +76,5 @@ void	RunCgi(Client& client)
 		close(request.pipe_fd_back[1]);
 		request.pipe_fd_back[1] = -1;
 	}
+	return true;
 }

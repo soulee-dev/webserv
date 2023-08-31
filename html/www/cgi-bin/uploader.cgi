@@ -16,7 +16,8 @@ fileitem = form['filename']
 if fileitem.filename:
     # strip leading path from file name to avoid directory traversal attacks
     filename = os.path.basename(fileitem.filename)
-    with open('./html/www/uploaded_files/' + filename, 'wb') as file:
+    upload_path = os.environ.get("PATH_INFO") + "/";
+    with open(upload_path + filename, 'wb') as file:
         file.write(fileitem.file.read())
 
     message = 'The file "' + filename + '" was uploaded successfully'
