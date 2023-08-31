@@ -3,7 +3,6 @@
 #include <fcntl.h>
 #include <string>
 
-int g_exit_code = 0;
 extern char **environ;
 static std::string intToString(int number)
 {
@@ -67,24 +66,11 @@ bool	RunCgi(Client& client)
 
 		if (execve(request.path.c_str(), NULL, environ) == -1)
 		{
-			g_exit_code = 126;
-			exit(126);
+			exit(1);
 		}
 	}
 	else
 	{
-		if (g_exit_code == 126)
-		{
-			close(request.pipe_fd[0]);
-			request.pipe_fd[0] = -1;
-			close(request.pipe_fd[1]);
-			request.pipe_fd[1] = -1;
-			close(request.pipe_fd_back[0]);
-			request.pipe_fd_back[0] = -1;
-			close(request.pipe_fd_back[1]);
-			request.pipe_fd_back[1] = -1;
-			return false;
-		}
 		close(request.pipe_fd[0]);
 		request.pipe_fd[0] = -1;
 		close(request.pipe_fd_back[1]);
