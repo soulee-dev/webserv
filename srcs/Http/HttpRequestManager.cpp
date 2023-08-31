@@ -20,6 +20,11 @@ void	HttpRequestManager::Handle(Client& client)
 	else
 	{
 		// Do Dynamic
+		if (!IsFileExist(client.request.path) || !IsRegularFile(client.request.path) || !IsFileReadable(client.request.path))
+		{
+			client.request.is_error = true;
+			return HandleError(client, 500);
+		}
 		if (!OpenFd(client))
 		{
 			client.request.is_error = true;

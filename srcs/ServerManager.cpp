@@ -226,13 +226,13 @@ void ServerManager::readEventProcess(struct kevent& currEvent)
 				currClient->response.body = empty_body;
 			if (currClient->request.method == "DELETE")
 				HandleDelete(*currClient);
-			else if (currClient->request.is_static == false && !currClinet->request.is_error)
+			else if (currClient->request.is_static == false && !currClient->request.is_error)
 			{
 				currClient->response.headers["Connection"] = "close";
 				SetResponse(*currClient, 200, currClient->response.headers, currClient->response.body);
 			}
-			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, currClient->request.is_static);
-			if (currClient->request.is_static == false && !request.is_error)
+			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, (currClient->request.is_static | currClient->request.is_error));
+			if (currClient->request.is_static == false && !currClient->request.is_error)
 				wait(NULL);
         }
     }
@@ -257,7 +257,7 @@ void ServerManager::writeEventProcess(struct kevent& currEvent)
 
 			currClient->response.headers["Connection"] = "keep-alive";
 			SetResponse(*currClient, 200, currClient->response.headers, currClient->response.body);
-			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, currClient->request.is_static);
+			currClient->sendBuffer = BuildResponse(currClient->response.status_code, currClient->response.headers, currClient->response.body, (currClient->request.is_static | currClient->request.is_error));
 			currClient->events->changeEvents(currClient->getClientFd(), EVFILT_WRITE, EV_ENABLE, 0, 0, currClient);
 		}
     }
