@@ -3,7 +3,6 @@ NAME = webserv
 
 # Cmd & Options
 CXX			= c++
-# CXXFLAGS	= -fsanitize=address -Wall -Werror -Wextra -std=c++98 -g3
 CXXFLAGS	= -Wall -Werror -Wextra -std=c++98 -g3
 RM 			= rm
 RMFLAGS		= -f
@@ -23,7 +22,7 @@ OBJECTS		= $(addprefix $(OUT_DIR)/, $(addsuffix .o, $(FILE)))
 # Compile rules
 $(OUT_DIR)/%.o : $(SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@)
-	$(CXX) -c $(CXXFLAGS) -MJ $@.json $< -o $@
+	$(CXX) -c $(CXXFLAGS) $< -o $@
 
 .PHONY	: all no clean fclean re
 
